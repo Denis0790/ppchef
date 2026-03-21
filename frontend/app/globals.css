@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #F5F0E8;
+  --green: #4F7453;
+  --green-light: #7A9E7E;
+  --gold: #C4975A;
+  --text: #333333;
+  --text-muted: #888888;
+  --white: #ffffff;
+  --card-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  --radius: 16px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: 'Cormorant Garamond', serif;
+}
