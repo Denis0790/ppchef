@@ -33,6 +33,7 @@ def set_refresh_cookie(response: Response, token: str) -> None:
         path="/",
     )
 
+
 @router.post("/register", response_model=UserResponse, status_code=201)
 async def register(
     data: RegisterRequest,
@@ -64,7 +65,6 @@ async def refresh(
     db: AsyncSession = Depends(get_db),
 ):
     if not refresh_token:
-        from fastapi import HTTPException, status
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token отсутствует",
@@ -90,6 +90,7 @@ async def logout(
 async def me(current_user: User = Depends(get_current_user)):
     return current_user
 
+
 @router.put("/me", response_model=UserResponse)
 async def update_me(
     data: UpdateProfileRequest,
@@ -102,51 +103,54 @@ async def update_me(
     await db.refresh(current_user)
     return current_user
 
+
+# ── Восстановление пароля ─────────────────────────────────────────────────
+
 class PasswordResetRequest(BaseModel):
     email: EmailStr
+
 
 class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
+
 
 @router.post("/reset-password/request")
 async def request_password_reset(
     data: PasswordResetRequest,
     db: AsyncSession = Depends(get_db),
 ):
-    # Проверяем есть ли пользователь
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
 
-    # Всегда возвращаем success — чтобы не светить существование email
     if not user:
         return {"detail": "Если email зарегистрирован — письмо отправлено"}
 
-    # Генерируем токен
     token = secrets.token_urlsafe(32)
     token_hash = hashlib.sha256(token.encode()).hexdigest()
 
-    # Сохраняем в Redis на 15 минут
     redis = await get_redis()
     if redis:
         await redis.setex(f"reset:{token_hash}", 900, str(user.id))
 
-    # Отправляем письмо (пока просто логируем)
     reset_url = f"https://ppchef.ru/auth/reset?token={token}"
     print(f"[RESET PASSWORD] {user.email}: {reset_url}")
 
-    # TODO: когда будет домен — раскомментировать
+    # TODO: раскомментировать после деплоя + настройки Resend
     # from app.tasks.send_email import send_email_task
     # send_email_task.delay(
     #     to=user.email,
     #     subject="Восстановление пароля — ПП Шеф",
     #     html=f"""
-    #     <h2>Восстановление пароля</h2>
-    #     <p>Нажмите кнопку ниже чтобы сбросить пароль:</p>
-    #     <a href="{reset_url}" style="background:#4F7453;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">
-    #       Сбросить пароль
-    #     </a>
-    #     <p>Ссылка действует 15 минут.</p>
+    #     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+    #       <h2 style="color:#4F7453;">Восстановление пароля</h2>
+    #       <p>Нажмите кнопку ниже чтобы сбросить пароль:</p>
+    #       <a href="{reset_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
+    #         Сбросить пароль
+    #       </a>
+    #       <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 15 минут.</p>
+    #       <p style="color:#aaa;font-size:12px;">Если вы не запрашивали сброс — просто проигнорируйте письмо.</p>
+    #     </div>
     #     """,
     # )
 
@@ -178,8 +182,78 @@ async def confirm_password_reset(
 
     user.hashed_password = hash_password(data.new_password)
     await db.commit()
-
-    # Удаляем токен
     await redis.delete(f"reset:{token_hash}")
 
     return {"detail": "Пароль успешно изменён"}
+
+
+# ── Верификация email ─────────────────────────────────────────────────────
+
+class EmailVerifyRequest(BaseModel):
+    token: str
+
+
+@router.post("/verify-email/send")
+async def send_verification_email(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    if current_user.email_verified:
+        return {"detail": "Email уже подтверждён"}
+
+    token = secrets.token_urlsafe(32)
+    token_hash = hashlib.sha256(token.encode()).hexdigest()
+
+    redis = await get_redis()
+    if redis:
+        await redis.setex(f"verify:{token_hash}", 86400, str(current_user.id))
+
+    verify_url = f"https://ppchef.ru/auth/verify?token={token}"
+    print(f"[VERIFY EMAIL] {current_user.email}: {verify_url}")
+
+    # TODO: раскомментировать после деплоя + настройки Resend
+    # from app.tasks.send_email import send_email_task
+    # send_email_task.delay(
+    #     to=current_user.email,
+    #     subject="Подтвердите email — ПП Шеф",
+    #     html=f"""
+    #     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+    #       <h2 style="color:#4F7453;">Подтвердите ваш email</h2>
+    #       <p>Нажмите кнопку ниже чтобы подтвердить адрес электронной почты:</p>
+    #       <a href="{verify_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
+    #         Подтвердить email
+    #       </a>
+    #       <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 24 часа.</p>
+    #       <p style="color:#aaa;font-size:12px;">Если вы не регистрировались — просто проигнорируйте письмо.</p>
+    #     </div>
+    #     """,
+    # )
+
+    return {"detail": "Письмо отправлено"}
+
+
+@router.post("/verify-email/confirm")
+async def confirm_email(
+    data: EmailVerifyRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    token_hash = hashlib.sha256(data.token.encode()).hexdigest()
+
+    redis = await get_redis()
+    if not redis:
+        raise HTTPException(status_code=500, detail="Сервис недоступен")
+
+    user_id = await redis.get(f"verify:{token_hash}")
+    if not user_id:
+        raise HTTPException(status_code=400, detail="Ссылка недействительна или истекла")
+
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+    user.email_verified = True
+    await db.commit()
+    await redis.delete(f"verify:{token_hash}")
+
+    return {"detail": "Email подтверждён"}

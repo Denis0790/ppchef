@@ -15,7 +15,6 @@ const CATEGORIES = [
   { key: "dinner", label: "Ужин", emoji: "🍽️" },
   { key: "snack", label: "Перекус", emoji: "🥜" },
   { key: "dessert", label: "Десерт", emoji: "🍓" },
-  { key: "soup", label: "Суп", emoji: "🍲" },
   { key: "salad", label: "Салат", emoji: "🥙" },
   { key: "smoothie", label: "Смузи", emoji: "🥤" },
 ];
@@ -33,11 +32,9 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
       const raw = localStorage.getItem("userNorm");
       if (!raw) return;
       const norm = JSON.parse(raw);
-
       if (norm.show && norm.calories && recipe.calories) {
         setNormPercent(Math.round(recipe.calories * 100 / norm.calories));
       }
-
       if (norm.stop_words) {
         const stops = norm.stop_words.toLowerCase().split(",").map((s: string) => s.trim()).filter(Boolean);
         if (stops.length && recipe.ingredient_names?.length) {
@@ -53,6 +50,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
   function handleClick() {
     sessionStorage.setItem("scrollY", String(window.scrollY));
     sessionStorage.setItem("backTo", "/");
+    sessionStorage.setItem("isBack", "1");
   }
 
   return (
@@ -95,8 +93,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 5,
               background: "rgba(192,57,43,0.08)",
-              borderRadius: 20, padding: "3px 10px",
-              marginBottom: 10,
+              borderRadius: 20, padding: "3px 10px", marginBottom: 10,
             }}>
               <span style={{ fontSize: 11, color: "rgba(192,57,43,0.55)", fontWeight: 400 }}>
                 🚫 нежелательные ингредиенты
@@ -137,20 +134,22 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
       </div>
     </Link>
   );
-};
+}
+
 function checkIsBack(): boolean {
   if (typeof window === "undefined") return false;
   return sessionStorage.getItem("isBack") === "1";
 }
 
-export default function RecipeList({ initialData, popularRecipes, refCode }: { 
-  initialData: RecipesResponse, 
+export default function RecipeList({ initialData, popularRecipes, refCode }: {
+  initialData: RecipesResponse,
   popularRecipes: Recipe[],
   refCode?: string,
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const loaderRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
   const isBackRef = useRef(checkIsBack());
 
   const [recipes, setRecipes] = useState<Recipe[]>(initialData.items);
@@ -173,16 +172,15 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
   }, []);
 
   useEffect(() => {
-    const category = searchParams.get("category") || "";
     const isBack = isBackRef.current;
     isBackRef.current = false;
     sessionStorage.removeItem("isBack");
-    setActiveCategory(category);
 
     if (isBack) {
       const cachedStr = sessionStorage.getItem("cachedRecipes");
       const cachedPage = sessionStorage.getItem("cachedPage");
       const cachedHasMore = sessionStorage.getItem("cachedHasMore");
+      const cachedCategory = sessionStorage.getItem("cachedCategory") || "";
       const savedScroll = sessionStorage.getItem("scrollY");
 
       if (cachedStr) {
@@ -190,16 +188,38 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
         setRecipes(cached);
         setPage(parseInt(cachedPage || "1"));
         setHasMore(cachedHasMore === "1");
+        setActiveCategory(cachedCategory);
+
+        // Восстанавливаем URL
+        if (cachedCategory) {
+          window.history.replaceState(null, "", `/?category=${cachedCategory}`);
+        } else {
+          window.history.replaceState(null, "", "/");
+        }
+
+        // Восстанавливаем скролл страницы
         if (savedScroll && parseInt(savedScroll) > 0) {
           setTimeout(() => {
             window.scrollTo(0, parseInt(savedScroll));
             sessionStorage.removeItem("scrollY");
           }, 100);
         }
+
+        // Восстанавливаем скролл фильтров
+        setTimeout(() => {
+          const savedFilterScroll = sessionStorage.getItem("filterScrollX");
+          if (filterRef.current && savedFilterScroll) {
+            filterRef.current.scrollLeft = parseInt(savedFilterScroll);
+          }
+        }, 50);
+
         return;
       }
     }
 
+    // Обычная загрузка
+    const category = searchParams.get("category") || "";
+    setActiveCategory(category);
     setPage(1);
     setLoading(true);
     getRecipes({ category: category || undefined, page: 1, page_size: PAGE_SIZE })
@@ -248,6 +268,9 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
   }, [loadMore]);
 
   function handleCategory(category: string) {
+    if (filterRef.current) {
+      sessionStorage.setItem("filterScrollX", String(filterRef.current.scrollLeft));
+    }
     sessionStorage.removeItem("scrollY");
     sessionStorage.removeItem("cachedRecipes");
     sessionStorage.removeItem("cachedPage");
@@ -287,87 +310,90 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
           </div>
         </div>
 
-      {/* Фильтры */}
-      <div style={{
-        display: "flex", gap: 8, padding: "12px 16px",
-        overflowX: "auto", background: "#fff",
-        borderBottom: "1px solid #ece7de", scrollbarWidth: "none",
-      }}>
-        {CATEGORIES.map(({ key, label, emoji }) => (
-          <div key={key} onClick={() => handleCategory(key)} style={{
-            flexShrink: 0, padding: "6px 14px", borderRadius: 20,
-            background: activeCategory === key ? "#4F7453" : "#F5F0E8",
-            color: activeCategory === key ? "#fff" : "#888",
-            fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
-            fontWeight: activeCategory === key ? 600 : 400,
-            transition: "all 0.2s",
-          }}>
-            {emoji} {label}
-          </div>
-        ))}
-      </div>
-
-      {/* Список */}
-      <div style={{ padding: "16px 16px 80px" }}>
-        {loading ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>Загрузка...</div>
-        ) : recipes.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🥗</div>
-            <div>Рецептов пока нет</div>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {recipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
-            ))}
-          </div>
-        )}
-
-        <div ref={loaderRef} style={{ height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {loadingMore && <div style={{ color: "#aaa", fontSize: 13 }}>Загружаем ещё...</div>}
-          {!hasMore && recipes.length > 0 && (
-            <div style={{ color: "#ccc", fontSize: 12 }}>Все рецепты загружены 🎉</div>
-          )}
+        {/* Фильтры */}
+        <div
+          ref={filterRef}
+          style={{
+            display: "flex", gap: 8, padding: "12px 16px",
+            overflowX: "auto", background: "#fff",
+            borderBottom: "1px solid #ece7de", scrollbarWidth: "none",
+          }}
+        >
+          {CATEGORIES.map(({ key, label, emoji }) => (
+            <div key={key} onClick={() => handleCategory(key)} style={{
+              flexShrink: 0, padding: "6px 14px", borderRadius: 20,
+              background: activeCategory === key ? "#4F7453" : "#F5F0E8",
+              color: activeCategory === key ? "#fff" : "#888",
+              fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
+              fontWeight: activeCategory === key ? 600 : 400,
+              transition: "all 0.2s",
+            }}>
+              {emoji} {label}
+            </div>
+          ))}
         </div>
 
-        {!activeCategory && <PopularRecipes recipes={popularRecipes} />}
-      </div>
+        {/* Список */}
+        <div style={{ padding: "16px 16px 80px" }}>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>Загрузка...</div>
+          ) : recipes.length === 0 ? (
+            <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🥗</div>
+              <div>Рецептов пока нет</div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {recipes.map((recipe) => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </div>
+          )}
 
-      {showScrollTop && (
-        <div onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{
-          position: "fixed", bottom: 90, right: "calc(50% - 228px)",
-          width: 44, height: 44, borderRadius: "50%",
-          background: "#4F7453", color: "#fff",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: 20, cursor: "pointer",
-          boxShadow: "0 4px 16px rgba(79,116,83,0.4)", zIndex: 20,
-        }}>↑</div>
-      )}
-
-      {/* Нижняя навигация — 4 кнопки */}
-      <div style={{
-        position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-        width: "100%", maxWidth: 480, background: "#fff",
-        borderTop: "1px solid #ece7de", display: "flex",
-        justifyContent: "space-around", padding: "10px 0 20px",
-      }}>
-        {[
-          { icon: "🏠", label: "Главная", href: "/" },
-          { icon: "🔍", label: "Поиск", href: "/search" },
-          { icon: "❤️", label: "Избранное", href: "/favorites" },
-          { icon: "📊", label: "КБЖУ", href: "/kbju" },
-        ].map(({ icon, label, href }) => (
-          <div key={label} onClick={() => router.push(href)} style={{
-            display: "flex", flexDirection: "column",
-            alignItems: "center", gap: 4, cursor: "pointer",
-          }}>
-            <div style={{ fontSize: 22 }}>{icon}</div>
-            <div style={{ fontSize: 10, color: "#888" }}>{label}</div>
+          <div ref={loaderRef} style={{ height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {loadingMore && <div style={{ color: "#aaa", fontSize: 13 }}>Загружаем ещё...</div>}
+            {!hasMore && recipes.length > 0 && (
+              <div style={{ color: "#ccc", fontSize: 12 }}>Все рецепты загружены 🎉</div>
+            )}
           </div>
-        ))}
-      </div>
-    </main>
+
+          {!activeCategory && <PopularRecipes recipes={popularRecipes} />}
+        </div>
+
+        {showScrollTop && (
+          <div onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{
+            position: "fixed", bottom: 90, right: "calc(50% - 228px)",
+            width: 44, height: 44, borderRadius: "50%",
+            background: "#4F7453", color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 20, cursor: "pointer",
+            boxShadow: "0 4px 16px rgba(79,116,83,0.4)", zIndex: 20,
+          }}>↑</div>
+        )}
+
+        {/* Нижняя навигация */}
+        <div style={{
+          position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
+          width: "100%", maxWidth: 480, background: "#fff",
+          borderTop: "1px solid #ece7de", display: "flex",
+          justifyContent: "space-around", padding: "10px 0 20px",
+        }}>
+          {[
+            { icon: "🏠", label: "Главная", href: "/" },
+            { icon: "🔍", label: "Поиск", href: "/search" },
+            { icon: "❤️", label: "Избранное", href: "/favorites" },
+            { icon: "📊", label: "КБЖУ", href: "/kbju" },
+          ].map(({ icon, label, href }) => (
+            <div key={label} onClick={() => router.push(href)} style={{
+              display: "flex", flexDirection: "column",
+              alignItems: "center", gap: 4, cursor: "pointer",
+            }}>
+              <div style={{ fontSize: 22 }}>{icon}</div>
+              <div style={{ fontSize: 10, color: "#888" }}>{label}</div>
+            </div>
+          ))}
+        </div>
+      </main>
     </>
   );
 }
