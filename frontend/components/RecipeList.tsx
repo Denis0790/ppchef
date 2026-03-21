@@ -28,23 +28,25 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
   const [hasStopWords, setHasStopWords] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("userNorm");
-      if (!raw) return;
-      const norm = JSON.parse(raw);
-      if (norm.show && norm.calories && recipe.calories) {
-        setNormPercent(Math.round(recipe.calories * 100 / norm.calories));
-      }
-      if (norm.stop_words) {
-        const stops = norm.stop_words.toLowerCase().split(",").map((s: string) => s.trim()).filter(Boolean);
-        if (stops.length && recipe.ingredient_names?.length) {
-          const found = recipe.ingredient_names.some(ing =>
-            stops.some((stop: string) => ing.toLowerCase().includes(stop))
-          );
-          setHasStopWords(found);
+    setTimeout(() => {
+      try {
+        const raw = localStorage.getItem("userNorm");
+        if (!raw) return;
+        const norm = JSON.parse(raw);
+        if (norm.show && norm.calories && recipe.calories) {
+          setNormPercent(Math.round(recipe.calories * 100 / norm.calories));
         }
-      }
-    } catch {}
+        if (norm.stop_words) {
+          const stops = norm.stop_words.toLowerCase().split(",").map((s: string) => s.trim()).filter(Boolean);
+          if (stops.length && recipe.ingredient_names?.length) {
+            const found = recipe.ingredient_names.some(ing =>
+              stops.some((stop: string) => ing.toLowerCase().includes(stop))
+            );
+            setHasStopWords(found);
+          }
+        }
+      } catch {}
+    }, 0);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleClick() {

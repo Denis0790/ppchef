@@ -166,17 +166,25 @@ export default function ProfilePage() {
             О приложении
           </div>
           <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <span style={{ fontSize: 13, color: "#555" }}>Версия</span>
               <span style={{ fontSize: 13, color: "#aaa" }}>1.0.0</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <span style={{ fontSize: 13, color: "#555" }}>Сайт</span>
               <a href="https://ppchef.ru" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#4F7453", textDecoration: "none" }}>ppchef.ru</a>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div onClick={() => router.push("/terms")} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, cursor: "pointer" }}>
+              <span style={{ fontSize: 13, color: "#555" }}>Пользовательское соглашение</span>
+              <span style={{ fontSize: 13, color: "#4F7453" }}>→</span>
+            </div>
+            <div onClick={() => router.push("/privacy")} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, cursor: "pointer" }}>
               <span style={{ fontSize: 13, color: "#555" }}>Политика конфиденциальности</span>
-              <span style={{ fontSize: 13, color: "#4F7453", cursor: "pointer" }}>→</span>
+              <span style={{ fontSize: 13, color: "#4F7453" }}>→</span>
+            </div>
+            <div onClick={() => router.push("/offer")} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}>
+              <span style={{ fontSize: 13, color: "#555" }}>Публичная оферта</span>
+              <span style={{ fontSize: 13, color: "#4F7453" }}>→</span>
             </div>
           </div>
 
