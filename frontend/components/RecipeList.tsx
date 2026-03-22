@@ -290,28 +290,30 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
       <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8" }}>
 
         {/* Шапка */}
-        <div style={{
-          padding: "12px 20px", background: "#01311C",
-          borderBottom: "1px solid #ece7de",
-          position: "sticky", top: 0, zIndex: 10,
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-        }}>
-          <img src="/logo.svg" alt="ПП Шеф" style={{ height: 72, width: "auto" }} />
-          <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{ cursor: "pointer" }}>
-            <img src="/profile.svg" alt="Профиль" style={{ width: 44, height: 44 }} />
+          <div style={{
+            height: 96,
+            padding: "0 20px",
+            background: "#01311C",
+            borderBottom: "1px solid #ece7de",
+            position: "sticky", top: 0, zIndex: 10,
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <img src="/logo.svg" alt="ПП Шеф" style={{ height: 72, width: "auto" }} />
+            <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{ cursor: "pointer" }}>
+              <img src="/profile.svg" alt="Профиль" style={{ width: 44, height: 44 }} />
+            </div>
           </div>
-        </div>
 
-        {/* Фильтры */}
-        <div
-          ref={filterRef}
-          style={{
-            display: "flex", gap: 8, padding: "12px 16px",
-            overflowX: "auto", background: "#fff",
-            borderBottom: "1px solid #ece7de", scrollbarWidth: "none",
-            position: "sticky", top: 97, zIndex: 9,
-          }}
-        >
+          {/* Фильтры */}
+          <div
+            ref={filterRef}
+            style={{
+              display: "flex", gap: 8, padding: "12px 16px",
+              overflowX: "auto", background: "#fff",
+              borderBottom: "1px solid #ece7de", scrollbarWidth: "none",
+              position: "sticky", top: 96, zIndex: 6,
+            }}
+          >
           {CATEGORIES.map(({ key, label, emoji }) => (
             <div key={key} onClick={() => handleCategory(key)} style={{
               flexShrink: 0, padding: "6px 14px", borderRadius: 20,
