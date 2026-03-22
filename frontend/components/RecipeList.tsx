@@ -7,7 +7,6 @@ import PopularRecipes from "@/components/PopularRecipes";
 import { useAuth } from "@/lib/auth";
 import FavoriteButton from "@/components/FavoriteButton";
 import InstallBanner from "@/components/InstallBanner";
-import BottomNav from "@/components/BottomNav";
 
 
 const CATEGORIES = [
@@ -310,7 +309,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             display: "flex", gap: 8, padding: "12px 16px",
             overflowX: "auto", background: "#fff",
             borderBottom: "1px solid #ece7de", scrollbarWidth: "none",
-            position: "sticky", top: 82, zIndex: 9,
+            position: "sticky", top: 97, zIndex: 9,
           }}
         >
           {CATEGORIES.map(({ key, label, emoji }) => (
