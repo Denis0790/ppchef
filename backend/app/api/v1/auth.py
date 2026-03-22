@@ -27,7 +27,7 @@ def set_refresh_cookie(response: Response, token: str) -> None:
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=False,      # True на продакшне (HTTPS)
+        secure=True,      # True на продакшне (HTTPS)
         samesite="lax",
         max_age=COOKIE_MAX_AGE,
         path="/",
