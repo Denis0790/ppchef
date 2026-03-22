@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getMe, updateMe, User } from "@/lib/api";
+import BottomNav from "@/components/BottomNav";
 
 type Goal = "loss" | "maintain" | "gain";
 type Activity = "low" | "medium" | "high" | "very_high";
@@ -27,13 +28,6 @@ function calcNorm(gender: Gender, age: number, weight: number, height: number, a
   const carbs = Math.round((calories - protein * 4 - fat * 9) / 4);
   return { calories, protein, fat, carbs };
 }
-
-const NAV = [
-  { icon: "🏠", label: "Главная", href: "/" },
-  { icon: "🔍", label: "Поиск", href: "/search" },
-  { icon: "❤️", label: "Избранное", href: "/favorites" },
-  { icon: "📊", label: "КБЖУ", href: "/kbju", active: true },
-];
 
 export default function KbjuPage() {
   const router = useRouter();
@@ -109,32 +103,12 @@ export default function KbjuPage() {
     }
   }
 
-  const bottomNav = (
-    <div style={{
-      position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)",
-      width: "100%", maxWidth: 480, background: "#fff",
-      borderTop: "1px solid #ece7de", display: "flex",
-      justifyContent: "space-around", padding: "10px 0 20px",
-    }}>
-      {NAV.map(({ icon, label, href, active }) => (
-        <div key={label} onClick={() => router.push(href)} style={{
-          display: "flex", flexDirection: "column",
-          alignItems: "center", gap: 4, cursor: "pointer",
-        }}>
-          <div style={{ fontSize: 20 }}>{icon}</div>
-          <div style={{ fontSize: 10, color: active ? "#4F7453" : "#888", fontWeight: active ? 600 : 400 }}>{label}</div>
-        </div>
-      ))}
-    </div>
-  );
-
   if (loading) return (
     <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", color: "#aaa" }}>
       Загрузка...
     </main>
   );
 
-  // PAYWALL
   if (!isPremium) return (
     <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ padding: "16px 20px", background: "#fff", borderBottom: "1px solid #ece7de", display: "flex", alignItems: "center", gap: 12 }}>
@@ -143,7 +117,6 @@ export default function KbjuPage() {
       </div>
 
       <div style={{ padding: "32px 24px 100px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        {/* Размытое превью */}
         <div style={{ width: "100%", filter: "blur(4px)", pointerEvents: "none", marginBottom: -60, opacity: 0.6 }}>
           <div style={{ background: "#fff", borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
@@ -160,7 +133,6 @@ export default function KbjuPage() {
           </div>
         </div>
 
-        {/* Плашка */}
         <div style={{
           width: "100%", background: "linear-gradient(135deg, #4F7453, #7A9E7E)",
           borderRadius: 20, padding: "28px 24px",
@@ -198,7 +170,7 @@ export default function KbjuPage() {
           </div>
         </div>
       </div>
-      {bottomNav}
+      <BottomNav />
     </main>
   );
 
@@ -312,7 +284,6 @@ export default function KbjuPage() {
           </button>
         )}
       </div>
-      {bottomNav}
     </main>
   );
 }

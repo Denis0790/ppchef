@@ -348,3 +348,19 @@ export async function matchPartnerProducts(ingredients: string): Promise<Partner
 export async function getKitchenProducts(): Promise<PartnerMatch["product"][]> {
   return apiFetch<PartnerMatch["product"][]>(`/partners/kitchen`);
 }
+
+export interface AdminStats {
+  total_users: number;
+  today_users: number;
+  premium_users: number;
+  published_recipes: number;
+  draft_recipes: number;
+  suggested_recipes: number;
+  rps: number;
+}
+
+export async function getAdminStats(token: string): Promise<AdminStats> {
+  return apiFetch<AdminStats>("/admin/stats", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}

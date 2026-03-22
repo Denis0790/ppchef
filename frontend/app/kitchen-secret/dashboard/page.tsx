@@ -5,7 +5,8 @@ import { useAuth } from "@/lib/auth";
 import {
   adminGetRecipes, adminDeleteRecipe, adminPublishRecipe,
   adminUnpublishRecipe, adminGetRecipe, adminUpdateRecipe,
-  adminCreateRecipe, getMe, RecipeAdmin, RecipeCreateData
+  adminCreateRecipe, getMe, RecipeAdmin, RecipeCreateData,
+  getAdminStats, AdminStats,
 } from "@/lib/api";
 
 const CATEGORIES = [
@@ -91,6 +92,7 @@ export default function AdminDashboard() {
   const [form, setForm] = useState<RecipeCreateData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [stats, setStats] = useState<AdminStats | null>(null);
 
   useEffect(() => {
     if (!isReady) return;
@@ -99,6 +101,15 @@ export default function AdminDashboard() {
       if (!user.is_superuser) router.push("/");
     }).catch(() => router.push("/"));
   }, [isReady, isLoggedIn, token, router]);
+
+  useEffect(() => {
+    if (!token) return;
+    getAdminStats(token).then(setStats).catch(() => {});
+    const interval = setInterval(() => {
+      getAdminStats(token).then(setStats).catch(() => {});
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   const statusForTab = (t: Tab) => {
     if (t === "funnel") return "draft";
@@ -303,18 +314,25 @@ export default function AdminDashboard() {
 
           <div style={S.content}>
             {/* STATS */}
-            <div style={{ display: "flex", gap: 14, marginBottom: 24 }}>
-              {[
-                { label: "В воронке", value: tab === "funnel" ? total : "—", accent: true },
-                { label: "Опубликовано", value: tab === "published" ? total : "—" },
-                { label: "Предложено", value: tab === "suggest" ? total : "—" },
-              ].map(({ label, value, accent }) => (
-                <div key={label} style={S.statCard(accent)}>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 30, fontWeight: 600, color: accent ? "#fff" : "#333" }}>{value}</div>
-                  <div style={{ fontSize: 12, color: accent ? "rgba(255,255,255,0.6)" : "#888880", marginTop: 2 }}>{label}</div>
+          <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
+            {[
+              { label: "Всего пользователей", value: stats?.total_users ?? "—", accent: true },
+              { label: "Сегодня зарегалось", value: stats?.today_users ?? "—" },
+              { label: "Premium", value: stats?.premium_users ?? "—" },
+              { label: "Опубликовано", value: stats?.published_recipes ?? "—" },
+              { label: "В воронке", value: stats?.draft_recipes ?? "—" },
+              { label: "RPS (ср/сек)", value: stats ? stats.rps.toFixed(1) : "—" },
+            ].map(({ label, value, accent }) => (
+              <div key={label} style={{ ...S.statCard(!!accent), minWidth: 120, flex: "1 1 120px" }}>
+                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 28, fontWeight: 600, color: accent ? "#fff" : "#333" }}>
+                  {value}
                 </div>
-              ))}
-            </div>
+                <div style={{ fontSize: 12, color: accent ? "rgba(255,255,255,0.6)" : "#888880", marginTop: 2 }}>
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
 
             {/* TABS */}
             <div style={S.tabs}>

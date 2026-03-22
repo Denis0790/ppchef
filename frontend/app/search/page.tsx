@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { searchRecipes, SearchRecipe } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { useAuthPrompt } from "@/hooks/useAuthPrompt";
 
 const CATEGORIES: Record<string, string> = {
   breakfast: "Завтрак", lunch: "Обед", dinner: "Ужин",
@@ -24,6 +25,7 @@ export default function SearchPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [normCalories, setNormCalories] = useState<number | null>(null);
   const [showNorm, setShowNorm] = useState(false);
+  const { requirePremium, PromptComponent } = useAuthPrompt();
 
   useEffect(() => {
     try {
@@ -92,7 +94,7 @@ export default function SearchPage() {
 
   function switchMode(m: "title" | "ingredients") {
     if (m === "ingredients" && !isPremium) {
-      router.push("/subscription");
+      requirePremium();
       return;
     }
     setMode(m);
@@ -104,6 +106,7 @@ export default function SearchPage() {
 
   return (
     <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8" }}>
+      {PromptComponent}
 
       {/* Шапка */}
       <div style={{
@@ -234,21 +237,6 @@ export default function SearchPage() {
             ))}
           </div>
         )}
-      </div>
-
-      {/* Нижняя навигация */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, background: "#fff", borderTop: "1px solid #ece7de", display: "flex", justifyContent: "space-around", padding: "10px 0 20px" }}>
-        {[
-          { icon: "🏠", label: "Главная", href: "/" },
-          { icon: "🔍", label: "Поиск", href: "/search", active: true },
-          { icon: "❤️", label: "Избранное", href: "/favorites" },
-          { icon: "📊", label: "КБЖУ", href: "/kbju" },
-        ].map(({ icon, label, href, active }) => (
-          <div key={label} onClick={() => router.push(href)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer" }}>
-            <div style={{ fontSize: 22 }}>{icon}</div>
-            <div style={{ fontSize: 10, color: active ? "#4F7453" : "#888" }}>{label}</div>
-          </div>
-        ))}
       </div>
     </main>
   );

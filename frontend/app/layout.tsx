@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
+import BottomNavWrapper from "@/components/BottomNavWrapper";
+import CookieBanner from "@/components/CookieBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -13,6 +15,15 @@ export const metadata: Metadata = {
   creator: "ПП Шеф",
   metadataBase: new URL("https://ppchef.ru"),
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-180.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     type: "website",
     locale: "ru_RU",
@@ -38,9 +49,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
+      <head>
+        <link rel="apple-touch-icon" href="/icon-180.png" />
+      </head>
       <body>
         <AuthProvider>
           {children}
+          <BottomNavWrapper />
+          <CookieBanner />
         </AuthProvider>
       </body>
     </html>

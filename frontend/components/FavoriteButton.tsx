@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { addFavorite, removeFavorite, getFavorites } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { useAuthPrompt } from "@/hooks/useAuthPrompt";
 
 interface Props {
   recipeId: string;
@@ -11,7 +11,7 @@ interface Props {
 
 export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
   const { token, isLoggedIn } = useAuth();
-  const router = useRouter();
+  const { requireAuth, requirePremium, PromptComponent } = useAuthPrompt();
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
     e.preventDefault();
     e.stopPropagation();
     if (!isLoggedIn || !token) {
-      router.push("/auth");
+      requireAuth();
       return;
     }
     setLoading(true);
@@ -51,8 +51,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "";
       if (msg.includes("Premium") || msg.includes("Лимит") || msg.includes("10")) {
-        showToast("Лимит 10 рецептов — оформите Premium ⭐", "warning");
-        setTimeout(() => router.push("/subscription"), 2000);
+        requirePremium();
       } else if (!isFavorite) {
         setIsFavorite(true);
         showToast("Добавлено в избранное ❤️");
@@ -64,6 +63,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
 
   return (
     <>
+      {PromptComponent}
       <button onClick={toggle} disabled={loading} style={{
         background: isFavorite ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.92)",
         border: isFavorite ? "1.5px solid rgba(224,85,85,0.3)" : "1.5px solid rgba(0,0,0,0.08)",
@@ -83,10 +83,8 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
           position: "fixed", bottom: 100,
           left: "50%", transform: "translateX(-50%)",
           background: toastType === "warning" ? "#4F7453" : "rgba(0,0,0,0.75)",
-          color: "#fff",
-          padding: "10px 20px", borderRadius: 20,
-          fontSize: 14, fontWeight: 500,
-          zIndex: 100, whiteSpace: "nowrap",
+          color: "#fff", padding: "10px 20px", borderRadius: 20,
+          fontSize: 14, fontWeight: 500, zIndex: 100, whiteSpace: "nowrap",
           boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
         }}>
           {toast}

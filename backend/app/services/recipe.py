@@ -12,45 +12,40 @@ from app.schemas.recipe import RecipeCreate, RecipeUpdate
 from app.models.recipe import Recipe, RecipeStatus
 from app.schemas.recipe import RecipeFilterParams
 
-CACHE_RECIPES_TTL = 300      # 5 минут — список рецептов
-CACHE_RECIPE_TTL = 3600      # 1 час — карточка рецепта
-CACHE_POPULAR_TTL = 600      # 10 минут — популярные
+CACHE_RECIPES_TTL = 300
+CACHE_POPULAR_TTL = 600
 
 
 def _recipes_cache_key(filters: RecipeFilterParams) -> str:
-    key = f"recipes:{filters.category}:{filters.page}:{filters.page_size}:{filters.search}"
-    return key
+    return f"recipes:{filters.category}:{filters.page}:{filters.page_size}:{filters.search}"
 
 
 async def _invalidate_recipe_cache(recipe_id: uuid.UUID | None = None):
-    """Сбрасываем кэш при изменении рецептов."""
     redis = await get_redis()
     if not redis:
         return
-    # Сбрасываем кэш конкретного рецепта
     if recipe_id:
         await redis.delete(f"recipe:{recipe_id}")
-    # Сбрасываем все списки рецептов
     keys = await redis.keys("recipes:*")
     if keys:
         await redis.delete(*keys)
-    await redis.delete("popular_recipes")
+    keys2 = await redis.keys("popular_recipes:*")
+    if keys2:
+        await redis.delete(*keys2)
 
 
 async def get_recipes(
     filters: RecipeFilterParams,
     db: AsyncSession,
 ) -> tuple[list[Recipe], int]:
-
     cache_key = _recipes_cache_key(filters)
     redis = await get_redis()
 
-    # Пробуем кэш
     if redis:
         cached = await redis.get(cache_key)
         if cached:
             data = json.loads(cached)
-            recipe_ids = [d["id"] for d in data["items"]]
+            recipe_ids = data["items"]  # список строк uuid
             result = await db.execute(
                 select(Recipe)
                 .where(Recipe.id.in_(recipe_ids))
@@ -76,8 +71,7 @@ async def get_recipes(
         query = query.where(Recipe.title.ilike(f"%{filters.search}%"))
 
     count_query = select(func.count()).select_from(query.subquery())
-    total_result = await db.execute(count_query)
-    total = total_result.scalar_one()
+    total = (await db.execute(count_query)).scalar_one()
 
     query = query.options(selectinload(Recipe.ingredients))
     offset = (filters.page - 1) * filters.page_size
@@ -86,7 +80,6 @@ async def get_recipes(
     result = await db.execute(query)
     recipes = list(result.scalars().all())
 
-    # Сохраняем в кэш
     if redis:
         cache_data = {
             "total": total,
@@ -101,20 +94,12 @@ async def get_recipe_by_id(
     recipe_id: uuid.UUID,
     db: AsyncSession,
 ) -> Recipe:
-    cache_key = f"recipe:{recipe_id}"
-    redis = await get_redis()
-
-    # Пробуем кэш — для карточки кэшируем только id,
-    # сам объект берём из БД (SQLAlchemy объекты не сериализуются)
-    # Поэтому просто проверяем существование и берём из БД с кэшем на уровне connection pool
     query = (
         select(Recipe)
-        .where(
-            and_(
-                Recipe.id == recipe_id,
-                Recipe.status == RecipeStatus.published,
-            )
-        )
+        .where(and_(
+            Recipe.id == recipe_id,
+            Recipe.status == RecipeStatus.published,
+        ))
         .options(
             selectinload(Recipe.steps),
             selectinload(Recipe.ingredients),
@@ -123,12 +108,8 @@ async def get_recipe_by_id(
     )
     result = await db.execute(query)
     recipe = result.scalar_one_or_none()
-
     if not recipe:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Рецепт не найден",
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Рецепт не найден")
     return recipe
 
 
@@ -176,7 +157,6 @@ async def get_all_recipes_admin(
     page_size: int = 20,
 ) -> tuple[list[Recipe], int]:
     query = select(Recipe)
-
     if search:
         query = query.where(Recipe.title.ilike(f"%{search}%"))
     if category:
@@ -184,9 +164,7 @@ async def get_all_recipes_admin(
     if status:
         query = query.where(Recipe.status == status)
 
-    count_query = select(func.count()).select_from(query.subquery())
-    total = (await db.execute(count_query)).scalar_one()
-
+    total = (await db.execute(select(func.count()).select_from(query.subquery()))).scalar_one()
     offset = (page - 1) * page_size
     query = query.order_by(Recipe.created_at.desc()).offset(offset).limit(page_size)
     result = await db.execute(query)
@@ -232,74 +210,37 @@ async def create_recipe(data: RecipeCreate, db: AsyncSession) -> Recipe:
     await db.flush()
 
     for ing in data.ingredients:
-        db.add(RecipeIngredient(
-            recipe_id=recipe.id,
-            name=ing.name,
-            amount=ing.amount,
-        ))
-
+        db.add(RecipeIngredient(recipe_id=recipe.id, name=ing.name, amount=ing.amount))
     for step in data.steps:
-        db.add(RecipeStep(
-            recipe_id=recipe.id,
-            step_number=step.step_number,
-            text=step.text,
-            image_url=step.image_url,
-        ))
-
+        db.add(RecipeStep(recipe_id=recipe.id, step_number=step.step_number, text=step.text, image_url=step.image_url))
     for tag_name in data.tags:
-        db.add(RecipeTag(
-            recipe_id=recipe.id,
-            name=tag_name.strip(),
-        ))
+        db.add(RecipeTag(recipe_id=recipe.id, name=tag_name.strip()))
 
     await db.commit()
     await _invalidate_recipe_cache()
     return await get_recipe_admin(recipe.id, db)
 
 
-async def update_recipe(
-    recipe_id: uuid.UUID,
-    data: RecipeUpdate,
-    db: AsyncSession,
-) -> Recipe:
+async def update_recipe(recipe_id: uuid.UUID, data: RecipeUpdate, db: AsyncSession) -> Recipe:
     recipe = await get_recipe_admin(recipe_id, db)
-
     update_fields = data.model_dump(exclude_unset=True, exclude={"tags", "ingredients", "steps"})
     for field, value in update_fields.items():
         setattr(recipe, field, value)
-
     if data.status:
         recipe.is_published = data.status == RecipeStatus.published
 
     if data.ingredients is not None:
-        await db.execute(
-            __import__("sqlalchemy", fromlist=["delete"]).delete(RecipeIngredient).where(
-                RecipeIngredient.recipe_id == recipe_id
-            )
-        )
+        await db.execute(__import__("sqlalchemy", fromlist=["delete"]).delete(RecipeIngredient).where(RecipeIngredient.recipe_id == recipe_id))
         for ing in data.ingredients:
             db.add(RecipeIngredient(recipe_id=recipe_id, name=ing.name, amount=ing.amount))
 
     if data.steps is not None:
-        await db.execute(
-            __import__("sqlalchemy", fromlist=["delete"]).delete(RecipeStep).where(
-                RecipeStep.recipe_id == recipe_id
-            )
-        )
+        await db.execute(__import__("sqlalchemy", fromlist=["delete"]).delete(RecipeStep).where(RecipeStep.recipe_id == recipe_id))
         for step in data.steps:
-            db.add(RecipeStep(
-                recipe_id=recipe_id,
-                step_number=step.step_number,
-                text=step.text,
-                image_url=step.image_url,
-            ))
+            db.add(RecipeStep(recipe_id=recipe_id, step_number=step.step_number, text=step.text, image_url=step.image_url))
 
     if data.tags is not None:
-        await db.execute(
-            __import__("sqlalchemy", fromlist=["delete"]).delete(RecipeTag).where(
-                RecipeTag.recipe_id == recipe_id
-            )
-        )
+        await db.execute(__import__("sqlalchemy", fromlist=["delete"]).delete(RecipeTag).where(RecipeTag.recipe_id == recipe_id))
         for tag_name in data.tags:
             db.add(RecipeTag(recipe_id=recipe_id, name=tag_name.strip()))
 
@@ -355,12 +296,10 @@ async def search_by_title(
 
     result = await db.execute(
         select(Recipe)
-        .where(
-            and_(
-                Recipe.status == RecipeStatus.published,
-                Recipe.title.ilike(f"%{query}%"),
-            )
-        )
+        .where(and_(
+            Recipe.status == RecipeStatus.published,
+            Recipe.title.ilike(f"%{query}%"),
+        ))
         .options(selectinload(Recipe.ingredients))
         .order_by(Recipe.created_at.desc())
         .limit(limit)
@@ -379,8 +318,8 @@ async def search_by_ingredients(
     limit: int = 5,
 ) -> list[tuple[Recipe, int, int]]:
     cache_key = "fridge:" + hashlib.md5(",".join(sorted(ingredients)).encode()).hexdigest()
-
     redis = await get_redis()
+
     if redis:
         cached = await redis.get(cache_key)
         if cached:
@@ -401,28 +340,19 @@ async def search_by_ingredients(
     conditions = []
     for ing in ingredients:
         ing_lower = ing.lower().strip()
-        conditions.append(
-            or_(
-                RecipeIngredient.name_normalized.ilike(f"%{ing_lower}%"),
-                RecipeIngredient.name.ilike(f"%{ing_lower}%"),
-            )
-        )
+        conditions.append(or_(
+            RecipeIngredient.name_normalized.ilike(f"%{ing_lower}%"),
+            RecipeIngredient.name.ilike(f"%{ing_lower}%"),
+        ))
 
     match_subq = (
-        select(
-            RecipeIngredient.recipe_id,
-            func.count(RecipeIngredient.id).label("matches"),
-        )
+        select(RecipeIngredient.recipe_id, func.count(RecipeIngredient.id).label("matches"))
         .where(or_(*conditions))
         .group_by(RecipeIngredient.recipe_id)
         .subquery()
     )
-
     total_subq = (
-        select(
-            RecipeIngredient.recipe_id,
-            func.count(RecipeIngredient.id).label("total"),
-        )
+        select(RecipeIngredient.recipe_id, func.count(RecipeIngredient.id).label("total"))
         .group_by(RecipeIngredient.recipe_id)
         .subquery()
     )
@@ -432,20 +362,17 @@ async def search_by_ingredients(
         .join(match_subq, Recipe.id == match_subq.c.recipe_id)
         .join(total_subq, Recipe.id == total_subq.c.recipe_id)
         .where(Recipe.status == RecipeStatus.published)
+        .options(selectinload(Recipe.ingredients))
         .order_by(
             (match_subq.c.matches * 100 / total_subq.c.total).desc(),
             match_subq.c.matches.desc(),
         )
         .limit(limit)
     )
-
     rows = result.all()
 
     if redis and rows:
-        cache_data = [
-            {"id": str(r[0].id), "matches": r[1], "total": r[2]}
-            for r in rows
-        ]
+        cache_data = [{"id": str(r[0].id), "matches": r[1], "total": r[2]} for r in rows]
         await redis.setex(cache_key, 600, json.dumps(cache_data))
 
     return [(row[0], row[1], row[2]) for row in rows]

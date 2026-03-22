@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getMe, User } from "@/lib/api";
+import BottomNav from "@/components/BottomNav";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -192,20 +193,6 @@ export default function ProfilePage() {
             {menuItem("🚪", "Выйти", handleLogout, "#e05555")}
           </div>
         </div>
-      </div>
-
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, background: "#fff", borderTop: "1px solid #ece7de", display: "flex", justifyContent: "space-around", padding: "10px 0 20px" }}>
-        {[
-          { icon: "🏠", label: "Главная", href: "/" },
-          { icon: "🔍", label: "Поиск", href: "/search" },
-          { icon: "❤️", label: "Избранное", href: "/favorites" },
-          { icon: "📊", label: "КБЖУ", href: "/kbju" },
-        ].map(({ icon, label, href }) => (
-          <div key={label} onClick={() => router.push(href)} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer" }}>
-            <div style={{ fontSize: 22 }}>{icon}</div>
-            <div style={{ fontSize: 10, color: "#888" }}>{label}</div>
-          </div>
-        ))}
       </div>
     </main>
   );

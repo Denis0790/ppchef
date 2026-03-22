@@ -1,7 +1,10 @@
 import uuid
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from datetime import datetime, timezone, timedelta
+from app.models.user import User
+from sqlalchemy import select, func, cast, Date
+from app.core.redis import get_redis
 from app.db.session import get_db
 from app.core.dependencies import get_current_superuser
 from app.models.user import User
@@ -94,3 +97,57 @@ async def admin_unpublish_recipe(
     _: User = Depends(get_current_superuser),
 ):
     return await unpublish_recipe(recipe_id, db)
+
+@router.get("/stats")
+async def get_stats(
+    db: AsyncSession = Depends(get_db),
+    _: User = Depends(get_current_superuser),
+):
+    now = datetime.now(timezone.utc)
+    today = now.date()
+
+    # Всего пользователей
+    total_users = (await db.execute(select(func.count()).select_from(User))).scalar_one()
+
+    # Зарегалось сегодня
+    today_users = (await db.execute(
+        select(func.count()).select_from(User)
+        .where(cast(User.created_at, Date) == today)
+    )).scalar_one()
+
+    # Premium пользователей
+    premium_users = (await db.execute(
+        select(func.count()).select_from(User).where(User.is_premium == True)
+    )).scalar_one()
+
+    # Всего рецептов по статусам
+    from app.models.recipe import Recipe, RecipeStatus
+    published = (await db.execute(
+        select(func.count()).select_from(Recipe)
+        .where(Recipe.status == RecipeStatus.published)
+    )).scalar_one()
+    draft = (await db.execute(
+        select(func.count()).select_from(Recipe)
+        .where(Recipe.status == RecipeStatus.draft)
+    )).scalar_one()
+    suggested = (await db.execute(
+        select(func.count()).select_from(Recipe)
+        .where(Recipe.status == "suggested")
+    )).scalar_one()
+
+    # Запросы в секунду из Redis
+    redis = await get_redis()
+    rps = 0
+    if redis:
+        current = await redis.get("rps:current")
+        rps = float(current) if current else 0
+
+    return {
+        "total_users": total_users,
+        "today_users": today_users,
+        "premium_users": premium_users,
+        "published_recipes": published,
+        "draft_recipes": draft,
+        "suggested_recipes": suggested,
+        "rps": rps,
+    }
