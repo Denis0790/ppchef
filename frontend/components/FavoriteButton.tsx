@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 interface Props {
   recipeId: string;
-  variant?: "card" | "inline"; // card — абсолютное позиционирование, inline — в ленте
+  variant?: "card" | "inline";
 }
 
 export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
@@ -15,6 +15,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<"normal" | "warning">("normal");
 
   useEffect(() => {
     if (!isLoggedIn || !token) return;
@@ -23,9 +24,10 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
     }).catch(() => {});
   }, [isLoggedIn, token, recipeId]);
 
-  function showToast(msg: string) {
+  function showToast(msg: string, type: "normal" | "warning" = "normal") {
     setToast(msg);
-    setTimeout(() => setToast(null), 2000);
+    setToastType(type);
+    setTimeout(() => setToast(null), 3000);
   }
 
   async function toggle(e: React.MouseEvent) {
@@ -46,8 +48,12 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
         setIsFavorite(true);
         showToast("Добавлено в избранное ❤️");
       }
-    } catch {
-      if (!isFavorite) {
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.includes("Premium") || msg.includes("Лимит") || msg.includes("10")) {
+        showToast("Лимит 10 рецептов — оформите Premium ⭐", "warning");
+        setTimeout(() => router.push("/subscription"), 2000);
+      } else if (!isFavorite) {
         setIsFavorite(true);
         showToast("Добавлено в избранное ❤️");
       }
@@ -56,33 +62,32 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
     }
   }
 
-  const btn = (
-    <button onClick={toggle} disabled={loading} style={{
-      background: isFavorite ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.92)",
-      border: isFavorite ? "1.5px solid rgba(224,85,85,0.3)" : "1.5px solid rgba(0,0,0,0.08)",
-      borderRadius: 12, padding: "7px 11px", fontSize: 18,
-      cursor: loading ? "default" : "pointer",
-      opacity: loading ? 0.6 : 1,
-      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-      transition: "all 0.2s",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      ...(variant === "card" ? { position: "absolute" as const, top: 16, right: 16 } : {}),
-    }}>
-      {isFavorite ? "❤️" : "🤍"}
-    </button>
-  );
-
   return (
     <>
-      {btn}
+      <button onClick={toggle} disabled={loading} style={{
+        background: isFavorite ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.92)",
+        border: isFavorite ? "1.5px solid rgba(224,85,85,0.3)" : "1.5px solid rgba(0,0,0,0.08)",
+        borderRadius: 12, padding: "7px 11px", fontSize: 18,
+        cursor: loading ? "default" : "pointer",
+        opacity: loading ? 0.6 : 1,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+        transition: "all 0.2s",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        ...(variant === "card" ? { position: "absolute" as const, top: 16, right: 16 } : {}),
+      }}>
+        {isFavorite ? "❤️" : "🤍"}
+      </button>
+
       {toast && (
         <div style={{
           position: "fixed", bottom: 100,
           left: "50%", transform: "translateX(-50%)",
-          background: "rgba(0,0,0,0.75)", color: "#fff",
+          background: toastType === "warning" ? "#4F7453" : "rgba(0,0,0,0.75)",
+          color: "#fff",
           padding: "10px 20px", borderRadius: 20,
           fontSize: 14, fontWeight: 500,
           zIndex: 100, whiteSpace: "nowrap",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
         }}>
           {toast}
         </div>

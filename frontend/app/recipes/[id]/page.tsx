@@ -95,10 +95,8 @@ export default async function RecipePage({
           ? <img src={recipe.image_url} alt={recipe.title}
               style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           : "🥗"}
-
         <BackButton />
         <FavoriteButton recipeId={recipe.id} />
-
         <div style={{
           position: "absolute", bottom: 16, right: 16,
           background: "#4F7453", color: "#fff",
@@ -113,8 +111,7 @@ export default async function RecipePage({
         <h1 style={{
           fontFamily: "'Cormorant Garamond', serif",
           fontSize: 28, fontWeight: 700,
-          color: "#333", marginBottom: 8,
-          lineHeight: 1.2,
+          color: "#333", marginBottom: 8, lineHeight: 1.2,
         }}>
           {recipe.title}
         </h1>
@@ -147,6 +144,7 @@ export default async function RecipePage({
           </div>
         )}
 
+        {/* Ингредиенты */}
         {recipe.ingredients.length > 0 && (
           <div style={{
             background: "#fff", borderRadius: 16,
@@ -163,10 +161,16 @@ export default async function RecipePage({
           </div>
         )}
 
+        {/* Партнёр — доставка продуктов (после ингредиентов) */}
         {recipe.ingredients.length > 0 && (
-          <PartnerBlock ingredients={recipe.ingredients} />
+          <PartnerBlock
+            ingredients={recipe.ingredients}
+            variant="delivery"
+            recipeId={recipe.id}
+          />
         )}
 
+        {/* Шаги приготовления */}
         {recipe.steps.length > 0 && (
           <div style={{
             background: "#fff", borderRadius: 16,
@@ -195,6 +199,15 @@ export default async function RecipePage({
               </div>
             ))}
           </div>
+        )}
+
+        {/* Партнёр — кухонные товары (после шагов) */}
+        {recipe.steps.length > 0 && (
+          <PartnerBlock
+            ingredients={recipe.ingredients}
+            variant="kitchen"
+            recipeId={recipe.id}
+          />
         )}
 
         {recipe.nutritionist_tips && (

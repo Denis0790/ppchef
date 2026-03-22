@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import FavoriteButton from "@/components/FavoriteButton";
 import InstallBanner from "@/components/InstallBanner";
 
+
 const CATEGORIES = [
   { key: "", label: "Все", emoji: "🌿" },
   { key: "breakfast", label: "Завтрак", emoji: "🌅" },
@@ -290,25 +291,14 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
 
         {/* Шапка */}
         <div style={{
-          padding: "16px 20px", background: "#fff",
+          padding: "12px 20px", background: "#01311C",
           borderBottom: "1px solid #ece7de",
           position: "sticky", top: 0, zIndex: 10,
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
-          <div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 700, color: "#4F7453" }}>
-              🌿 ПП Шеф
-            </div>
-            <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>Рецепты правильного питания</div>
-          </div>
-          <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{
-            width: 38, height: 38, borderRadius: "50%",
-            background: "#F5F0E8", display: "flex",
-            alignItems: "center", justifyContent: "center",
-            cursor: "pointer", fontSize: 20,
-            border: "1.5px solid #ece7de",
-          }}>
-            👤
+          <img src="/logo.svg" alt="ПП Шеф" style={{ height: 72, width: "auto" }} />
+          <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{ cursor: "pointer" }}>
+            <img src="/profile.svg" alt="Профиль" style={{ width: 44, height: 44 }} />
           </div>
         </div>
 
@@ -319,6 +309,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             display: "flex", gap: 8, padding: "12px 16px",
             overflowX: "auto", background: "#fff",
             borderBottom: "1px solid #ece7de", scrollbarWidth: "none",
+            position: "sticky", top: 82, zIndex: 9,
           }}
         >
           {CATEGORIES.map(({ key, label, emoji }) => (

@@ -1,11 +1,13 @@
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 
 from app.models.recipe import Favorite, Recipe, RecipeStatus
 from app.models.user import User
+
+FREE_FAVORITES_LIMIT = 10
 
 
 async def get_favorites(
@@ -56,6 +58,18 @@ async def add_favorite(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Рецепт уже в избранном",
         )
+
+    # Проверяем лимит для бесплатных пользователей
+    if not user.is_premium:
+        count_result = await db.execute(
+            select(func.count()).where(Favorite.user_id == user.id)
+        )
+        count = count_result.scalar_one()
+        if count >= FREE_FAVORITES_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Бесплатный аккаунт позволяет сохранять до {FREE_FAVORITES_LIMIT} рецептов. Оформите Premium для безлимитного избранного.",
+            )
 
     favorite = Favorite(user_id=user.id, recipe_id=recipe_id)
     db.add(favorite)
