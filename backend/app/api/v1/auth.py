@@ -136,23 +136,22 @@ async def request_password_reset(
     reset_url = f"https://ppchef.ru/auth/reset?token={token}"
     print(f"[RESET PASSWORD] {user.email}: {reset_url}")
 
-    # TODO: раскомментировать после деплоя + настройки Resend
-    # from app.tasks.send_email import send_email_task
-    # send_email_task.delay(
-    #     to=user.email,
-    #     subject="Восстановление пароля — ПП Шеф",
-    #     html=f"""
-    #     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-    #       <h2 style="color:#4F7453;">Восстановление пароля</h2>
-    #       <p>Нажмите кнопку ниже чтобы сбросить пароль:</p>
-    #       <a href="{reset_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
-    #         Сбросить пароль
-    #       </a>
-    #       <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 15 минут.</p>
-    #       <p style="color:#aaa;font-size:12px;">Если вы не запрашивали сброс — просто проигнорируйте письмо.</p>
-    #     </div>
-    #     """,
-    # )
+    from app.tasks.send_email import send_email_task
+    send_email_task.delay(
+         to=user.email,
+         subject="Восстановление пароля — ПП Шеф",
+         html=f"""
+         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+           <h2 style="color:#4F7453;">Восстановление пароля</h2>
+           <p>Нажмите кнопку ниже чтобы сбросить пароль:</p>
+           <a href="{reset_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
+             Сбросить пароль
+           </a>
+           <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 15 минут.</p>
+           <p style="color:#aaa;font-size:12px;">Если вы не запрашивали сброс — просто проигнорируйте письмо.</p>
+         </div>
+         """,
+     )
 
     return {"detail": "Если email зарегистрирован — письмо отправлено"}
 
@@ -211,23 +210,22 @@ async def send_verification_email(
     verify_url = f"https://ppchef.ru/auth/verify?token={token}"
     print(f"[VERIFY EMAIL] {current_user.email}: {verify_url}")
 
-    # TODO: раскомментировать после деплоя + настройки Resend
-    # from app.tasks.send_email import send_email_task
-    # send_email_task.delay(
-    #     to=current_user.email,
-    #     subject="Подтвердите email — ПП Шеф",
-    #     html=f"""
-    #     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-    #       <h2 style="color:#4F7453;">Подтвердите ваш email</h2>
-    #       <p>Нажмите кнопку ниже чтобы подтвердить адрес электронной почты:</p>
-    #       <a href="{verify_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
-    #         Подтвердить email
-    #       </a>
-    #       <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 24 часа.</p>
-    #       <p style="color:#aaa;font-size:12px;">Если вы не регистрировались — просто проигнорируйте письмо.</p>
-    #     </div>
-    #     """,
-    # )
+    from app.tasks.send_email import send_email_task
+    send_email_task.delay(
+        to=current_user.email,
+         subject="Подтвердите email — ПП Шеф",
+         html=f"""
+         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+           <h2 style="color:#4F7453;">Подтвердите ваш email</h2>
+           <p>Нажмите кнопку ниже чтобы подтвердить адрес электронной почты:</p>
+           <a href="{verify_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
+             Подтвердить email
+           </a>
+           <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 24 часа.</p>
+           <p style="color:#aaa;font-size:12px;">Если вы не регистрировались — просто проигнорируйте письмо.</p>
+         </div>
+         """,
+     )
 
     return {"detail": "Письмо отправлено"}
 
