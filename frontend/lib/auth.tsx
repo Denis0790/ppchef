@@ -100,11 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    doRefresh().finally(() => setIsReady(true));
+    doRefresh().finally(() => {
+      setTimeout(() => setIsReady(true), 100); // ← было просто setIsReady(true)
+    });
     return () => {
       if (refreshTimer.current) clearTimeout(refreshTimer.current);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
