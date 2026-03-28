@@ -8,7 +8,6 @@ import { useAuth } from "@/lib/auth";
 import FavoriteButton from "@/components/FavoriteButton";
 import InstallBanner from "@/components/InstallBanner";
 
-
 const CATEGORIES = [
   { key: "", label: "Все", svg: "/icon_filter/vse.svg", svgActive: "/icon_filter/vse2.svg" },
   { key: "breakfast", label: "Завтрак", svg: "/icon_filter/zavtrak.svg", svgActive: "/icon_filter/zavtrak2.svg" },
@@ -21,6 +20,48 @@ const CATEGORIES = [
 ];
 
 const PAGE_SIZE = 10;
+
+// ─── ДИЗАЙН-ТОКЕНЫ ────────────────────────────────────────────────────────────
+const DESIGN = {
+  // Цвета шапки
+  headerBg: "#01311C",           // фон шапки
+  headerHeight: 96,              // высота шапки (px)
+  logoHeight: 72,                // высота логотипа (px)
+  profileIconSize: 44,           // размер иконки профиля (px)
+
+  // Цвета фильтров
+  filterBg: "#E1FAC0",           // фон полосы фильтров
+  filterBorder: "#cfe7b3",       // граница полосы фильтров
+  filterActiveBg: "#013125",     // фон активной кнопки фильтра
+  filterActiveText: "#A6ED49",   // текст активной кнопки фильтра
+  filterInactiveText: "#013125", // текст неактивной кнопки фильтра
+  filterBorderColor: "#013125",  // граница кнопок фильтра
+  filterIconSize: 22,            // размер иконки в фильтре (px)
+  // Для замены SVG иконок фильтров — папка /public/icon_filter/
+  // Активная иконка: svgActive, неактивная: svg (они инвертированы в коде)
+
+  // Цвета карточки рецепта
+  cardBg: "#fff",                // фон карточки
+  cardImageHeight: 180,          // высота картинки в карточке (px)
+  cardImagePlaceholderBg: "linear-gradient(135deg, #e8e0d0 0%, #d5cab8 100%)",
+  cardCategoryBadgeBg: "#4F7453",
+  cardCategoryBadgeText: "#fff",
+  cardTitleColor: "#333",
+  cardKbjuBg: "#F5F0E8",        // фон ячеек КБЖУ
+  cardKbjuValueColor: "#4F7453",
+  cardTimeColor: "#888",
+
+  // Основной фон страницы
+  pageBg: "#F5F0E8",
+
+  // Кнопка "наверх"
+  scrollBtnBg: "#4F7453",
+  scrollBtnColor: "#fff",
+  scrollBtnSize: 44,             // размер кнопки (px)
+  scrollBtnBottom: 90,           // отступ снизу (px)
+  scrollBtnRight: 16,            // ← отступ справа (px)
+};
+// ──────────────────────────────────────────────────────────────────────────────
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
   const emoji = CATEGORIES.find(c => c.key === recipe.category)?.svgActive || "🥗";
@@ -59,24 +100,29 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/recipes/${recipe.id}`} onClick={handleClick} style={{ textDecoration: "none" }}>
       <div style={{
-        background: "#fff", borderRadius: 16,
-        overflow: "hidden", boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
+        background: DESIGN.cardBg,
+        borderRadius: 16,
+        overflow: "hidden",
+        boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
         cursor: "pointer",
       }}>
+        {/* ── Картинка карточки ── */}
         <div style={{
-          height: 180,
-          background: "linear-gradient(135deg, #e8e0d0 0%, #d5cab8 100%)",
+          height: DESIGN.cardImageHeight,
+          background: DESIGN.cardImagePlaceholderBg,
           display: "flex", alignItems: "center",
-          justifyContent: "center", fontSize: 64, position: "relative",
-          overflow: "hidden",
+          justifyContent: "center", fontSize: 64,
+          position: "relative", overflow: "hidden",
         }}>
           {recipe.image_url
             ? <img src={recipe.image_url} alt={recipe.title}
                 style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             : emoji}
+          {/* Бейдж категории — слева снизу */}
           <div style={{
             position: "absolute", bottom: 12, left: 12,
-            background: "#4F7453", color: "#fff",
+            background: DESIGN.cardCategoryBadgeBg,
+            color: DESIGN.cardCategoryBadgeText,
             fontSize: 11, fontWeight: 600,
             padding: "4px 10px", borderRadius: 20,
           }}>
@@ -84,14 +130,18 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           </div>
           <FavoriteButton recipeId={recipe.id} variant="card" />
         </div>
+
+        {/* ── Контент карточки ── */}
         <div style={{ padding: "14px 16px 16px" }}>
           <div style={{
-            fontSize: 17, fontWeight: 600, color: "#333",
+            fontSize: 17, fontWeight: 600,
+            color: DESIGN.cardTitleColor,
             marginBottom: hasStopWords ? 6 : 10,
             fontFamily: "'Cormorant Garamond', serif",
           }}>
             {recipe.title}
           </div>
+
           {hasStopWords && (
             <div style={{
               display: "inline-flex", alignItems: "center", gap: 5,
@@ -103,6 +153,8 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               </span>
             </div>
           )}
+
+          {/* ── КБЖУ ── */}
           <div style={{
             display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
             gap: 6, marginBottom: 12,
@@ -114,18 +166,19 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               { label: "Углев", value: recipe.carbs },
             ].map(({ label, value }) => (
               <div key={label} style={{
-                background: "#F5F0E8", borderRadius: 10,
-                padding: "6px 4px", textAlign: "center",
+                background: DESIGN.cardKbjuBg,
+                borderRadius: 10, padding: "6px 4px", textAlign: "center",
               }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#4F7453" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: DESIGN.cardKbjuValueColor }}>
                   {value ? Math.round(value) : "—"}
                 </div>
                 <div style={{ fontSize: 10, color: "#888" }}>{label}</div>
               </div>
             ))}
           </div>
+
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#888" }}>
+            <div style={{ display: "flex", gap: 16, fontSize: 13, color: DESIGN.cardTimeColor }}>
               {recipe.cook_time_minutes && <span>⏱ {recipe.cook_time_minutes} мин</span>}
               {recipe.servings && <span>🍽 {recipe.servings} порц.</span>}
             </div>
@@ -193,14 +246,12 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
         setHasMore(cachedHasMore === "1");
         setActiveCategory(cachedCategory);
 
-        // Восстанавливаем URL
         if (cachedCategory) {
           window.history.replaceState(null, "", `/?category=${cachedCategory}`);
         } else {
           window.history.replaceState(null, "", "/");
         }
 
-        // Восстанавливаем скролл страницы
         if (savedScroll && parseInt(savedScroll) > 0) {
           setTimeout(() => {
             window.scrollTo(0, parseInt(savedScroll));
@@ -208,7 +259,6 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
           }, 100);
         }
 
-        // Восстанавливаем скролл фильтров
         setTimeout(() => {
           const savedFilterScroll = sessionStorage.getItem("filterScrollX");
           if (filterRef.current && savedFilterScroll) {
@@ -220,7 +270,6 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
       }
     }
 
-    // Обычная загрузка
     const category = searchParams.get("category") || "";
     setActiveCategory(category);
     setPage(1);
@@ -287,89 +336,90 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
   return (
     <>
       <InstallBanner />
-      <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8" }}>
+      <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: DESIGN.pageBg }}>
 
-        {/* Шапка */}
-          <div style={{
-            height: 96,
-            padding: "0 20px",
-            background: "#01311C",
-            borderBottom: "1px solid #ece7de",
-            position: "sticky", top: 0, zIndex: 10,
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-          }}>
-            <img src="/logo.svg" alt="ПП Шеф" style={{ height: 72, width: "auto" }} />
-            <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{ cursor: "pointer" }}>
-              <img src="/profile.svg" alt="Профиль" style={{ width: 44, height: 44 }} />
-            </div>
+        {/* ── SEO: скрытый H1 для поисковиков ── */}
+        <h1 style={{
+          position: "absolute", width: 1, height: 1,
+          overflow: "hidden", clip: "rect(0,0,0,0)",
+          whiteSpace: "nowrap", margin: 0,
+        }}>
+          Рецепты правильного питания с расчётом КБЖУ — ПП Шеф
+        </h1>
+
+        {/* ── ШАПКА ──────────────────────────────────────────────────────────
+            Логотип: /public/logo.svg
+            Иконка профиля: /public/profile.svg
+            Высота: DESIGN.headerHeight
+            Фон: DESIGN.headerBg
+        ────────────────────────────────────────────────────────────────────── */}
+        <div style={{
+          height: DESIGN.headerHeight,
+          padding: "0 20px",
+          background: DESIGN.headerBg,
+          borderBottom: "1px solid #ece7de",
+          position: "sticky", top: 0, zIndex: 10,
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <img src="/logo.svg" alt="ПП Шеф" style={{ height: DESIGN.logoHeight, width: "auto" }} />
+          <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{ cursor: "pointer" }}>
+            <img src="/profile.svg" alt="Профиль" style={{ width: DESIGN.profileIconSize, height: DESIGN.profileIconSize }} />
           </div>
+        </div>
 
-          {/* Фильтры */}
-          <div
-            ref={filterRef}
-            style={{
-              display: "flex",
-              gap: 8,
-              padding: "12px 16px",
-              overflowX: "auto",
-              background: "#E1FAC0",
-              borderBottom: "1px solid #cfe7b3",
-              scrollbarWidth: "none",
-              position: "sticky",
-              top: 72,
-              zIndex: 6,
-            }}
-          >
-            {CATEGORIES.map(({ key, label, svg, svgActive }) => {
-              const active = activeCategory === key;
+        {/* ── ФИЛЬТРЫ КАТЕГОРИЙ ───────────────────────────────────────────────
+            Иконки: /public/icon_filter/*.svg
+            Активная: svg (светлая), неактивная: svgActive (тёмная) — можно поменять местами
+            Фон полосы: DESIGN.filterBg
+            Кнопки: DESIGN.filterActiveBg / DESIGN.filterInactiveText
+        ────────────────────────────────────────────────────────────────────── */}
+        <div
+          ref={filterRef}
+          style={{
+            display: "flex", gap: 8,
+            padding: "12px 16px",
+            overflowX: "auto",
+            background: DESIGN.filterBg,
+            borderBottom: `1px solid ${DESIGN.filterBorder}`,
+            scrollbarWidth: "none",
+            position: "sticky",
+            top: DESIGN.headerHeight - 24,
+            zIndex: 6,
+          }}
+        >
+          {CATEGORIES.map(({ key, label, svg, svgActive }) => {
+            const active = activeCategory === key;
+            return (
+              <div
+                key={key}
+                onClick={() => handleCategory(key)}
+                style={{
+                  flexShrink: 0,
+                  display: "flex", alignItems: "center", gap: 6,
+                  height: 38, padding: "0 14px", borderRadius: 20,
+                  background: active ? DESIGN.filterActiveBg : DESIGN.filterBg,
+                  border: `1.5px solid ${DESIGN.filterBorderColor}`,
+                  cursor: "pointer", whiteSpace: "nowrap",
+                  transition: "all 0.2s ease", boxSizing: "border-box",
+                }}
+              >
+                <img
+                  src={active ? svg : svgActive}
+                  alt={label}
+                  style={{ width: DESIGN.filterIconSize, height: DESIGN.filterIconSize, display: "block", flexShrink: 0 }}
+                />
+                <span style={{
+                  fontSize: 12, fontWeight: active ? 600 : 500, lineHeight: 1,
+                  color: active ? DESIGN.filterActiveText : DESIGN.filterInactiveText,
+                }}>
+                  {label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
-              return (
-                <div
-                  key={key}
-                  onClick={() => handleCategory(key)}
-                  style={{
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    height: 38,
-                    padding: "0 14px",
-                    borderRadius: 20,
-                    background: active ? "#013125" : "#E1FAC0",
-                    border: "1.5px solid #013125",
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    transition: "all 0.2s ease",
-                    boxSizing: "border-box",
-                  }}
-                >
-                  <img
-                    src={active ? svg : svgActive}
-                    alt={label}
-                    style={{
-                      width: 22,
-                      height: 22,
-                      display: "block",
-                      flexShrink: 0,
-                    }}
-                  />
-
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: active ? 600 : 500,
-                      color: active ? "#A6ED49" : "#013125",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-        {/* Список */}
+        {/* ── СПИСОК РЕЦЕПТОВ ── */}
         <div style={{ padding: "16px 16px 80px" }}>
           {loading ? (
             <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>Загрузка...</div>
@@ -396,15 +446,30 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
           {!activeCategory && <PopularRecipes recipes={popularRecipes} />}
         </div>
 
+        {/* ── КНОПКА НАВЕРХ ──────────────────────────────────────────────────
+            Размер: DESIGN.scrollBtnSize
+            Отступ справа: DESIGN.scrollBtnRight (фиксированный, не calc)
+            Отступ снизу: DESIGN.scrollBtnBottom
+            Фон: DESIGN.scrollBtnBg
+        ────────────────────────────────────────────────────────────────────── */}
         {showScrollTop && (
-          <div onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} style={{
-            position: "fixed", bottom: 90, right: "calc(50% - 228px)",
-            width: 44, height: 44, borderRadius: "50%",
-            background: "#4F7453", color: "#fff",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 20, cursor: "pointer",
-            boxShadow: "0 4px 16px rgba(79,116,83,0.4)", zIndex: 20,
-          }}>↑</div>
+          <div
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            style={{
+              position: "fixed",
+              bottom: DESIGN.scrollBtnBottom,
+              right: DESIGN.scrollBtnRight,  // ← исправлено, теперь видна полностью
+              width: DESIGN.scrollBtnSize,
+              height: DESIGN.scrollBtnSize,
+              borderRadius: "50%",
+              background: DESIGN.scrollBtnBg,
+              color: DESIGN.scrollBtnColor,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 20, cursor: "pointer",
+              boxShadow: "0 4px 16px rgba(79,116,83,0.4)",
+              zIndex: 20,
+            }}
+          >↑</div>
         )}
       </main>
     </>
