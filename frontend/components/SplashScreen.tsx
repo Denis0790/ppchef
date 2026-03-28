@@ -1,69 +1,130 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useEffect, useState } from "react";
 
 export default function SplashScreen() {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(() => {
+    if (typeof window === "undefined") return false;
 
-    useEffect(() => {
     const shown = sessionStorage.getItem("splash_shown");
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone;
 
-    if (shown) return;
+    if (!isStandalone || shown) return false;
 
-    const id = setTimeout(() => {
-        setShow(true);
-        sessionStorage.setItem("splash_shown", "1");
+    sessionStorage.setItem("splash_shown", "1");
+    return true;
+  });
 
-        setTimeout(() => setShow(false), 2000);
-    }, 0);
+  useEffect(() => {
+    if (!show) return;
 
-    return () => clearTimeout(id);
-    }, []);
+    const timer = setTimeout(() => {
+      setShow(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [show]);
 
   if (!show) return null;
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 99999,
-      background: "#013125",
-      display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center", gap: 32,
-      transition: "opacity 0.4s ease",
-    }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 99999,
+        background: "#013125",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 32,
+      }}
+    >
       <style>{`
         @keyframes popIn {
-          from { opacity: 0; transform: scale(0.6); }
-          to   { opacity: 1; transform: scale(1); }
+          from {
+            opacity: 0;
+            transform: scale(0.6);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
         }
+
         @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50%       { transform: scale(1.04); }
+          0%, 100% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.04);
+          }
         }
+
         @keyframes blink {
-          0%, 100% { opacity: 0.2; }
-          50%       { opacity: 1; }
+          0%, 100% {
+            opacity: 0.25;
+          }
+          50% {
+            opacity: 1;
+          }
         }
-        .splash-logo {
-          animation: popIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards,
-                     pulse 2.4s ease 0.8s infinite;
-          opacity: 0;
-        }
-        .splash-dot { width: 8px; height: 8px; border-radius: 50%; background: #A6ED49; }
-        .splash-dot1 { animation: blink 1.2s ease 0.9s infinite; opacity: 0.2; }
-        .splash-dot2 { animation: blink 1.2s ease 1.1s infinite; opacity: 0.2; }
-        .splash-dot3 { animation: blink 1.2s ease 1.3s infinite; opacity: 0.2; }
       `}</style>
 
-      <img
-        src="/logo.png"
-        alt="ПП Шеф"
-        className="splash-logo"
-        style={{ width: 220, height: "auto" }}
-      />
+      <div
+        style={{
+          animation: "popIn 0.5s ease, pulse 1.8s ease-in-out infinite",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 18,
+        }}
+      >
+        <img
+          src="/icons/logo.svg"
+          alt="PP Chef"
+          style={{
+            width: 96,
+            height: 96,
+            display: "block",
+          }}
+        />
 
-      <div style={{ display: "flex", gap: 8 }}>
-        <div className="splash-dot splash-dot1" />
-        <div className="splash-dot splash-dot2" />
-        <div className="splash-dot splash-dot3" />
+        <div
+          style={{
+            color: "#A6ED49",
+            fontSize: 28,
+            fontWeight: 700,
+            fontFamily: "'DM Sans', sans-serif",
+            letterSpacing: "0.4px",
+          }}
+        >
+          ПП Шеф
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          alignItems: "center",
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              background: "#A6ED49",
+              animation: `blink 1s ease-in-out ${i * 0.2}s infinite`,
+            }}
+          />
+        ))}
       </div>
     </div>
   );
