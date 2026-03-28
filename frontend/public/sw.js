@@ -74,4 +74,9 @@ self.addEventListener("fetch", (event) => {
         });
     })
   );
+  self.addEventListener("message", (event) => {
+  if (event.data === "skipWaiting") {
+    self.skipWaiting();
+  }
+});
 });

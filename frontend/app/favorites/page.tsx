@@ -39,7 +39,11 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     if (!isReady) return;
-    if (!isLoggedIn) { router.push("/auth"); return; }
+    if (!isLoggedIn) {
+      // Небольшая задержка — на случай если токен ещё обновляется
+      const t = setTimeout(() => router.push("/auth"), 300);
+      return () => clearTimeout(t);
+    }
 
     getFavorites(token!)
       .then(data => {
