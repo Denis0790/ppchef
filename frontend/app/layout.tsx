@@ -59,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="google-site-verification" content="A5zI8khOj5S8wpVDHRu2gPfBZ4dxQKedQoKbUBV-g3o" />
         <meta name="verify-admitad" content="8d9cecedfc" />
+        <meta name="yandex-verification" content="8e476522b94846ba" />
       </head>
       <body>
         <AuthProvider>
