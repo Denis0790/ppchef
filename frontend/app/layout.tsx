@@ -5,8 +5,8 @@ import BottomNavWrapper from "@/components/BottomNavWrapper";
 import CookieBanner from "@/components/CookieBanner";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import IOSInstallBanner from "@/components/IOSInstallBanner";
+import SplashScreen from "@/components/SplashScreen";
 import OfflineBanner from "@/components/OfflineBanner";
-import SplashHider from "@/components/SplashHider";
 
 export const metadata: Metadata = {
   title: {
@@ -67,46 +67,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body>
-        {/* ── Сплэш — показывается ДО загрузки React ── */}
-        <div id="splash-screen" style={{
-          position: "fixed", inset: 0, zIndex: 99999,
-          background: "#013125",
-          display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", gap: 32,
-        }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="ПП Шеф" style={{ width: 200, height: "auto" }} />
-          <div style={{ display: "flex", gap: 8 }}>
-            <span id="d1" style={{ width: 8, height: 8, borderRadius: "50%", background: "#A6ED49", display: "block" }} />
-            <span id="d2" style={{ width: 8, height: 8, borderRadius: "50%", background: "#A6ED49", display: "block" }} />
-            <span id="d3" style={{ width: 8, height: 8, borderRadius: "50%", background: "#A6ED49", display: "block" }} />
-          </div>
-        </div>
-
-        <style>{`
-          @keyframes splashBlink {
-            0%, 100% { opacity: 0.2; }
-            50% { opacity: 1; }
-          }
-          @keyframes splashPop {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-          }
-          #splash-screen img {
-            animation: splashPop 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;
-          }
-          #d1 { animation: splashBlink 1s ease 0s infinite; opacity: 0.2; }
-          #d2 { animation: splashBlink 1s ease 0.2s infinite; opacity: 0.2; }
-          #d3 { animation: splashBlink 1s ease 0.4s infinite; opacity: 0.2; }
-          #splash-screen.hidden {
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            pointer-events: none;
-          }
-        `}</style>
-
         <AuthProvider>
-          <SplashHider />
+          <SplashScreen />
           <OfflineBanner />
           <ServiceWorkerRegister />
           <IOSInstallBanner />
