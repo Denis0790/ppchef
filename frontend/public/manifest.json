@@ -4,7 +4,7 @@
   "description": "Рецепты правильного питания",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F5F0E8",
+  "background_color": "#013125",
   "theme_color": "#4F7453",
   "orientation": "portrait",
   "icons": [

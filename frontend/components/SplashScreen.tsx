@@ -84,7 +84,7 @@ export default function SplashScreen() {
         }}
       >
         <img
-          src="/icons/logo.svg"
+          src="logo.png"
           alt="PP Chef"
           style={{
             width: 96,
