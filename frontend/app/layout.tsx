@@ -3,6 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import BottomNavWrapper from "@/components/BottomNavWrapper";
 import CookieBanner from "@/components/CookieBanner";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import IOSInstallBanner from "@/components/IOSInstallBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -51,9 +53,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ru">
       <head>
         <link rel="apple-touch-icon" href="/icon-180.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="ПП Шеф" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="google-site-verification" content="google-site-verification: google32bb03640cb1dcac.html" />
+        <meta name="verify-admitad" content="8d9cecedfc" />
       </head>
       <body>
         <AuthProvider>
+          <ServiceWorkerRegister />
+          <IOSInstallBanner />
           {children}
           <BottomNavWrapper />
           <CookieBanner />

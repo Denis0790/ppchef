@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ПП Шеф — нет соединения</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #F5F0E8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .emoji { font-size: 64px; margin-bottom: 16px; }
+    h1 { font-size: 24px; color: #4F7453; margin-bottom: 8px; }
+    p { font-size: 14px; color: #888; line-height: 1.6; margin-bottom: 24px; }
+    button {
+      background: #4F7453; color: #fff; border: none;
+      border-radius: 12px; padding: 14px 32px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="emoji">🌿</div>
+  <h1>Нет соединения</h1>
+  <p>Проверьте подключение к интернету.<br/>Последние загруженные рецепты доступны в кэше.</p>
+  <button onclick="window.location.reload()">Попробовать снова</button>
+</body>
+</html>
