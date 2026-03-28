@@ -16,7 +16,6 @@ from app.core.security import hash_password
 from sqlalchemy import select
 from typing import Optional
 import random
-from app.services.auth import create_tokens_for_user
 
 class VerifyCodeRequest(BaseModel):
     email: EmailStr
@@ -330,11 +329,14 @@ async def verify_registration_code(
     user.is_active = True
     user.email_verified = True
     await db.commit()
-    await db.refresh(user)
     await redis.delete(f"verify_code:{data.email}")
 
     # Сразу логиним
-
-    token_response, refresh_token = await create_tokens_for_user(user, db, request)
+    from app.services.auth import login_user
+    from app.schemas.auth import LoginRequest as LR
+    token_response, refresh_token = await login_user(
+        LR(email=data.email, password=...),  # см. примечание ниже
+        db, request
+    )
     set_refresh_cookie(response, refresh_token)
     return token_response
