@@ -57,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="ПП Шеф" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="google-site-verification" content="google-site-verification: google32bb03640cb1dcac.html" />
+        <meta name="google-site-verification" content="A5zI8khOj5S8wpVDHRu2gPfBZ4dxQKedQoKbUBV-g3o" />
         <meta name="verify-admitad" content="8d9cecedfc" />
       </head>
       <body>
