@@ -364,3 +364,10 @@ export async function getAdminStats(token: string): Promise<AdminStats> {
     headers: { Authorization: `Bearer ${token}` },
   });
 }
+
+export async function verifyCode(email: string, code: string) {
+  return apiFetch("/auth/verify-code", {
+    method: "POST",
+    body: JSON.stringify({ email, code }),
+  });
+}

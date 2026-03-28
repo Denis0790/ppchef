@@ -165,6 +165,9 @@ services:
     container_name: ppchef_frontend
     restart: unless-stopped
     env_file: ./frontend/.env
+    #volumes:
+     # - ./frontend:/app
+      #- /app/node_modules
     ports:
       - "3000:3000"
     depends_on:

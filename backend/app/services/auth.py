@@ -31,10 +31,12 @@ async def register_user(
         )
 
     user = User(
-        email=data.email,
-        hashed_password=hash_password(data.password),
-        ref_code=generate_ref_code(),
-    )
+    email=data.email,
+    hashed_password=hash_password(data.password),
+    ref_code=generate_ref_code(),
+    is_active=False,
+    email_verified=False,
+)
     db.add(user)
     await db.flush()
 
@@ -152,3 +154,28 @@ async def logout_user(
     if rt:
         rt.revoked_at = datetime.now(timezone.utc)
         await db.commit()
+
+
+async def create_tokens_for_user(
+    user: User,
+    db: AsyncSession,
+    request: Request,
+) -> tuple[TokenResponse, str]:
+    """Выдаёт токены без проверки пароля — используется после верификации кода."""
+    access_token = create_access_token(str(user.id))
+    refresh_token = secrets.token_urlsafe(64)
+
+    rt = RefreshToken(
+        user_id=user.id,
+        token_hash=hash_token(refresh_token),
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+        expires_at=datetime.now(timezone.utc) + timedelta(
+            days=settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        ),
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(rt)
+    await db.commit()
+
+    return TokenResponse(access_token=access_token), refresh_token

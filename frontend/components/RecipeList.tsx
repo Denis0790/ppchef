@@ -10,20 +10,20 @@ import InstallBanner from "@/components/InstallBanner";
 
 
 const CATEGORIES = [
-  { key: "", label: "Все", emoji: "🌿" },
-  { key: "breakfast", label: "Завтрак", emoji: "🌅" },
-  { key: "lunch", label: "Обед", emoji: "🥗" },
-  { key: "dinner", label: "Ужин", emoji: "🍽️" },
-  { key: "snack", label: "Перекус", emoji: "🥜" },
-  { key: "dessert", label: "Десерт", emoji: "🍓" },
-  { key: "salad", label: "Салат", emoji: "🥙" },
-  { key: "smoothie", label: "Смузи", emoji: "🥤" },
+  { key: "", label: "Все", svg: "/icon_filter/vse.svg", svgActive: "/icon_filter/vse2.svg" },
+  { key: "breakfast", label: "Завтрак", svg: "/icon_filter/zavtrak.svg", svgActive: "/icon_filter/zavtrak2.svg" },
+  { key: "lunch", label: "Обед", svg: "/icon_filter/obed.svg", svgActive: "/icon_filter/obed2.svg" },
+  { key: "dinner", label: "Ужин", svg: "/icon_filter/ujin.svg", svgActive: "/icon_filter/ujin2.svg" },
+  { key: "snack", label: "Перекус", svg: "/icon_filter/perekus.svg", svgActive: "/icon_filter/perekus2.svg" },
+  { key: "dessert", label: "Десерт", svg: "/icon_filter/desert.svg", svgActive: "/icon_filter/desert2.svg" },
+  { key: "salad", label: "Салат", svg: "/icon_filter/salat.svg", svgActive: "/icon_filter/salat2.svg" },
+  { key: "smoothie", label: "Смузи", svg: "/icon_filter/smuzy.svg", svgActive: "/icon_filter/smuzy2.svg" },
 ];
 
 const PAGE_SIZE = 10;
 
 function RecipeCard({ recipe }: { recipe: Recipe }) {
-  const emoji = CATEGORIES.find(c => c.key === recipe.category)?.emoji || "🥗";
+  const emoji = CATEGORIES.find(c => c.key === recipe.category)?.svgActive || "🥗";
   const label = CATEGORIES.find(c => c.key === recipe.category)?.label || recipe.category;
   const [normPercent, setNormPercent] = useState<number | null>(null);
   const [hasStopWords, setHasStopWords] = useState(false);
@@ -308,25 +308,66 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
           <div
             ref={filterRef}
             style={{
-              display: "flex", gap: 8, padding: "12px 16px",
-              overflowX: "auto", background: "#fff",
-              borderBottom: "1px solid #ece7de", scrollbarWidth: "none",
-              position: "sticky", top: 96, zIndex: 6,
+              display: "flex",
+              gap: 8,
+              padding: "12px 16px",
+              overflowX: "auto",
+              background: "#E1FAC0",
+              borderBottom: "1px solid #cfe7b3",
+              scrollbarWidth: "none",
+              position: "sticky",
+              top: 72,
+              zIndex: 6,
             }}
           >
-          {CATEGORIES.map(({ key, label, emoji }) => (
-            <div key={key} onClick={() => handleCategory(key)} style={{
-              flexShrink: 0, padding: "6px 14px", borderRadius: 20,
-              background: activeCategory === key ? "#4F7453" : "#F5F0E8",
-              color: activeCategory === key ? "#fff" : "#888",
-              fontSize: 13, cursor: "pointer", whiteSpace: "nowrap",
-              fontWeight: activeCategory === key ? 600 : 400,
-              transition: "all 0.2s",
-            }}>
-              {emoji} {label}
-            </div>
-          ))}
-        </div>
+            {CATEGORIES.map(({ key, label, svg, svgActive }) => {
+              const active = activeCategory === key;
+
+              return (
+                <div
+                  key={key}
+                  onClick={() => handleCategory(key)}
+                  style={{
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    height: 38,
+                    padding: "0 14px",
+                    borderRadius: 20,
+                    background: active ? "#013125" : "#E1FAC0",
+                    border: "1.5px solid #013125",
+                    cursor: "pointer",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.2s ease",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <img
+                    src={active ? svg : svgActive}
+                    alt={label}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      display: "block",
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: active ? 600 : 500,
+                      color: active ? "#A6ED49" : "#013125",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
 
         {/* Список */}
         <div style={{ padding: "16px 16px 80px" }}>

@@ -15,6 +15,11 @@ from app.core.redis import get_redis
 from app.core.security import hash_password
 from sqlalchemy import select
 from typing import Optional
+import random
+
+class VerifyCodeRequest(BaseModel):
+    email: EmailStr
+    code: str
 
 router = APIRouter()
 
@@ -34,7 +39,7 @@ def set_refresh_cookie(response: Response, token: str) -> None:
     )
 
 
-@router.post("/register", response_model=UserResponse, status_code=201)
+@router.post("/register", response_model=dict, status_code=201)
 async def register(
     data: RegisterRequest,
     request: Request,
@@ -42,8 +47,49 @@ async def register(
     ref: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    user = await register_user(data, db, request, ref_code=ref)
-    return user
+    # Проверяем — вдруг уже зарегистрирован
+    result = await db.execute(select(User).where(User.email == data.email))
+    existing = result.scalar_one_or_none()
+    if existing and existing.is_active:
+        raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
+
+    # Создаём юзера неактивным (или обновляем существующего неактивного)
+    if not existing:
+        user = await register_user(data, db, request, ref_code=ref)
+        # register_user должен создавать с is_active=False
+    else:
+        user = existing
+
+    # Генерируем 4-значный код
+    code = str(random.randint(1000, 9999))
+
+    redis = await get_redis()
+    if redis:
+        # Ключ: email → код, TTL 10 минут
+        await redis.setex(f"verify_code:{data.email}", 600, code)
+
+    # Отправляем письмо
+    from app.tasks.send_email import send_email_task
+    send_email_task.delay(
+        to=data.email,
+        subject="Ваш код подтверждения — ПП Шеф",
+        html=f"""
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+          <h2 style="color:#4F7453;">Добро пожаловать в ПП Шеф! 🌿</h2>
+          <p>Ваш код подтверждения:</p>
+          <div style="font-size:48px;font-weight:700;letter-spacing:12px;color:#4F7453;
+                      text-align:center;padding:24px;background:#f5f0e8;
+                      border-radius:16px;margin:16px 0;">
+            {code}
+          </div>
+          <p style="color:#aaa;font-size:12px;">Код действует 10 минут.</p>
+          <p style="color:#aaa;font-size:12px;">Если вы не регистрировались — проигнорируйте письмо.</p>
+        </div>
+        """,
+    )
+
+    return {"detail": "Код отправлен на email", "email": data.email}
+
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -255,3 +301,42 @@ async def confirm_email(
     await redis.delete(f"verify:{token_hash}")
 
     return {"detail": "Email подтверждён"}
+
+@router.post("/verify-code", response_model=TokenResponse)
+async def verify_registration_code(
+    data: VerifyCodeRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    redis = await get_redis()
+    if not redis:
+        raise HTTPException(status_code=500, detail="Сервис недоступен")
+
+    saved_code = await redis.get(f"verify_code:{data.email}")
+    if not saved_code:
+        raise HTTPException(status_code=400, detail="Код истёк или не был отправлен")
+
+    if saved_code != data.code:
+        raise HTTPException(status_code=400, detail="Неверный код")
+
+    # Активируем юзера
+    result = await db.execute(select(User).where(User.email == data.email))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+    user.is_active = True
+    user.email_verified = True
+    await db.commit()
+    await redis.delete(f"verify_code:{data.email}")
+
+    # Сразу логиним
+    from app.services.auth import login_user
+    from app.schemas.auth import LoginRequest as LR
+    token_response, refresh_token = await login_user(
+        LR(email=data.email, password=...),  # см. примечание ниже
+        db, request
+    )
+    set_refresh_cookie(response, refresh_token)
+    return token_response
