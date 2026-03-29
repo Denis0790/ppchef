@@ -5,7 +5,6 @@ import BottomNavWrapper from "@/components/BottomNavWrapper";
 import CookieBanner from "@/components/CookieBanner";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import IOSInstallBanner from "@/components/IOSInstallBanner";
-import SplashScreen from "@/components/SplashScreen";
 import OfflineBanner from "@/components/OfflineBanner";
 
 export const metadata: Metadata = {
@@ -68,7 +67,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthProvider>
-          <SplashScreen />
           <OfflineBanner />
           <ServiceWorkerRegister />
           <IOSInstallBanner />
