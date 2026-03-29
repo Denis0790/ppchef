@@ -1,20 +1,18 @@
-"use client";
-
-export default function Loading() {
+export function InlineSpinner({ size = 24 }: { size?: number }) {
+  const border = Math.max(2, Math.round(size / 8));
   return (
-    <main style={{
-      maxWidth: 480, margin: "0 auto",
-      minHeight: "100vh", background: "#F5F0E8",
-      display: "flex", alignItems: "center",
-      justifyContent: "center",
-    }}>
-      <div style={{
-        width: 40, height: 40, borderRadius: "50%",
-        border: "3px solid #ece7de",
-        borderTop: "3px solid #01311C",
-        animation: "spin 0.8s linear infinite",
-      }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </main>
+    <div
+      role="status"
+      aria-live="polite"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        border: `${border}px solid #ece7de`,
+        borderTop: `${border}px solid #01311C`,
+        animation: "ppchef-spin 0.8s linear infinite",
+        display: "inline-block",
+      }}
+    />
   );
 }
