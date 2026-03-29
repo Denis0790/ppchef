@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getMe, User } from "@/lib/api";
-// import BottomNav from "@/components/BottomNav"; // раскомментируйте, если нужен
+
 
 function getErrorStatus(err: unknown): number | undefined {
   if (typeof err === "object" && err !== null) {
@@ -42,70 +42,40 @@ export default function ProfilePage() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    // Если есть флаг готовности auth — ждём, пока он станет true
-    if (typeof isReady !== "undefined" && !isReady) {
-      console.debug("[Profile] auth not ready, waiting");
+    if (!isReady) return;
+    if (!isLoggedIn || !token) {
+      router.replace("/auth");
+      setLoading(false);
       return;
     }
 
     let mounted = true;
-
-    // Если пользователь не залогинен — редиректим и завершаем
-    if (!isLoggedIn) {
-      console.debug("[Profile] not logged in — redirect to /auth");
-      router.replace("/auth");
-      setLoading(false);
-      return () => {
-        mounted = false;
-      };
-    }
-
-    // Защита: token должен быть определён
-    if (!token) {
-      console.warn("[Profile] token missing while isLoggedIn=true — redirect to /auth");
-      router.replace("/auth");
-      setLoading(false);
-      return () => {
-        mounted = false;
-      };
-    }
-
     (async () => {
       try {
         const u = await getMe(token);
-
         if (!mounted) return;
-
-        // Валидация ответа (на случай, если SW/nginx вернул HTML)
         if (!u || typeof u !== "object" || !("id" in u)) {
-          console.warn("[Profile] unexpected getMe response", u);
           router.replace("/auth");
           return;
         }
-
         setUser(u);
       } catch (err: unknown) {
-        console.error("[Profile] getMe failed", err);
+        if (!mounted) return;
         const status = getErrorStatus(err);
         if (status === 401 || status === 403) {
-          try { logout?.(); } catch (e) { /* ignore */ }
+          try { logout?.(); } catch {}
           router.replace("/auth");
-        } else {
-          // Для остальных ошибок — не редиректим сразу, можно показать сообщение в UI
-          // Например: setFetchError(true);
         }
       } finally {
         if (mounted) setLoading(false);
       }
     })();
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [isReady, isLoggedIn, token, router, logout]);
 
   function handleLogout() {
-    try { logout?.(); } catch (e) { /* ignore */ }
+    try { logout?.(); } catch {}
     router.push("/");
   }
 
@@ -137,11 +107,6 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading) return (
-    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", color: "#aaa" }}>
-      Загрузка...
-    </main>
-  );
 
   const menuItem = (icon: string, label: string, onClick: () => void, color = "#333") => (
     <div onClick={onClick} style={{
@@ -169,7 +134,6 @@ export default function ProfilePage() {
 
       <div style={{ padding: "24px 20px 100px" }}>
 
-        {/* Аватар */}
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#4F7453", color: "#fff", fontSize: 28, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
             {user?.email ? user.email[0].toUpperCase() : "?"}
@@ -180,7 +144,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Реферальный блок */}
         <div style={{ background: "linear-gradient(135deg, #4F7453, #7A9E7E)", borderRadius: 16, padding: 20, marginBottom: 16, color: "#fff" }}>
           <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.8, marginBottom: 4, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>🎁 Пригласите друзей</div>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
@@ -219,25 +182,15 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Меню */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-
-          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 4, paddingLeft: 4 }}>
-            Аккаунт
-          </div>
+          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginBottom: 4, paddingLeft: 4 }}>Аккаунт</div>
           {menuItem("🔑", "Восстановление пароля", () => router.push("/auth/reset"))}
           {menuItem("📝", "Предложить рецепт", () => router.push("/suggest"))}
 
-          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginTop: 8, marginBottom: 4, paddingLeft: 4 }}>
-            Подписка
-          </div>
+          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginTop: 8, marginBottom: 4, paddingLeft: 4 }}>Подписка</div>
           {menuItem("⭐", "Управление подпиской", () => router.push("/subscription"))}
 
-          {/* Поддержка */}
-          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginTop: 8, marginBottom: 4, paddingLeft: 4 }}>
-            Поддержка
-          </div>
-
+          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginTop: 8, marginBottom: 4, paddingLeft: 4 }}>Поддержка</div>
           <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
             <div style={{ fontSize: 13, color: "#555", marginBottom: 12, lineHeight: 1.6 }}>
               Есть вопрос или нашли ошибку? Напишите нам — ответим в течение дня.
@@ -254,10 +207,7 @@ export default function ProfilePage() {
             </a>
           </div>
 
-          {/* О приложении */}
-          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginTop: 8, marginBottom: 4, paddingLeft: 4 }}>
-            О приложении
-          </div>
+          <div style={{ fontSize: 11, color: "#aaa", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: 0.5, marginTop: 8, marginBottom: 4, paddingLeft: 4 }}>О приложении</div>
           <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
               <span style={{ fontSize: 13, color: "#555" }}>Версия</span>

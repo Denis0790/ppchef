@@ -3,17 +3,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getMe, updateMe, User } from "@/lib/api";
-import BottomNav from "@/components/BottomNav";
+import AuthPrompt from "@/components/AuthPrompt";
 
 type Goal = "loss" | "maintain" | "gain";
 type Activity = "low" | "medium" | "high" | "very_high";
 type Gender = "male" | "female";
 
 const ACTIVITY_MAP: Record<Activity, number> = {
-  low: 1.2,
-  medium: 1.375,
-  high: 1.55,
-  very_high: 1.725,
+  low: 1.2, medium: 1.375, high: 1.55, very_high: 1.725,
 };
 
 function calcNorm(gender: Gender, age: number, weight: number, height: number, activity: Activity, goal: Goal) {
@@ -36,6 +33,7 @@ export default function KbjuPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   const [gender, setGender] = useState<Gender>("female");
   const [age, setAge] = useState("28");
@@ -50,33 +48,26 @@ export default function KbjuPage() {
   useEffect(() => {
     if (!isReady) return;
 
-    let mounted = true;
-
-    // Если пользователь не залогинен — перенаправляем и прекращаем дальнейшие действия
     if (!isLoggedIn) {
-      // replace чтобы не оставлять историю
-      router.replace("/auth");
+      setShowAuthPrompt(true);
       setLoading(false);
-      return () => { mounted = false; };
+      return;
     }
 
-    // Защита: token должен быть определён
     if (!token) {
-      console.warn("[Auth] token is missing despite isLoggedIn=true");
-      router.replace("/auth");
+      setShowAuthPrompt(true);
       setLoading(false);
-      return () => { mounted = false; };
+      return;
     }
 
+    let mounted = true;
     (async () => {
       try {
         const u = await getMe(token);
         if (!mounted) return;
-
         setUser(u);
         setStopWords(u.stop_words || "");
         setShowPercent(Boolean(u.show_daily_percent));
-
         if (u.daily_calories) {
           const n = {
             calories: u.daily_calories,
@@ -85,37 +76,23 @@ export default function KbjuPage() {
             carbs: u.daily_carbs || 0,
           };
           setNorm(n);
-
           try {
             if (typeof window !== "undefined") {
-              localStorage.setItem(
-                "userNorm",
-                JSON.stringify({
-                  ...n,
-                  show: Boolean(u.show_daily_percent),
-                  stop_words: u.stop_words || "",
-                })
-              );
+              localStorage.setItem("userNorm", JSON.stringify({
+                ...n, show: Boolean(u.show_daily_percent), stop_words: u.stop_words || "",
+              }));
             }
-          } catch (e) {
-            console.warn("[Auth] localStorage set failed", e);
-          }
+          } catch {}
         }
       } catch (err) {
-        console.error("[Auth] getMe failed", err);
-        // не делаем автоматический logout без явной причины; показываем fallback
-        // при 401 можно принудительно обновить refresh flow или редиректить
-        // router.replace("/auth"); // опционально
+        console.error("[Kbju] getMe failed", err);
       } finally {
         if (mounted) setLoading(false);
       }
     })();
 
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [isReady, isLoggedIn, token, router]);
-
 
   function handleCalc() {
     const a = parseInt(age), w = parseInt(weight), h = parseInt(height);
@@ -136,12 +113,9 @@ export default function KbjuPage() {
         stop_words: stopWords || null,
       });
       localStorage.setItem("userNorm", JSON.stringify({
-        calories: norm.calories,
-        protein: norm.protein,
-        fat: norm.fat,
-        carbs: norm.carbs,
-        show: showPercent,
-        stop_words: stopWords,
+        calories: norm.calories, protein: norm.protein,
+        fat: norm.fat, carbs: norm.carbs,
+        show: showPercent, stop_words: stopWords,
       }));
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -151,11 +125,22 @@ export default function KbjuPage() {
   }
 
   if (!isReady || loading) return (
-  <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center" }}>
-    <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid #ece7de", borderTop: "3px solid #01311C", animation: "spin 0.8s linear infinite" }} />
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-  </main>
-);
+    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid #ece7de", borderTop: "3px solid #01311C", animation: "spin 0.8s linear infinite" }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </main>
+  );
+
+  // Незалогиненный — показываем страницу с модалом поверх
+  if (showAuthPrompt) return (
+    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
+      <div style={{ padding: "16px 20px", background: "#fff", borderBottom: "1px solid #ece7de", display: "flex", alignItems: "center", gap: 12 }}>
+        <div onClick={() => router.push("/")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>←</div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, color: "#4F7453" }}>📊 Моя норма КБЖУ</div>
+      </div>
+      <AuthPrompt type="auth" onClose={() => router.push("/")} />
+    </main>
+  );
 
   if (!isPremium) return (
     <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
@@ -163,7 +148,6 @@ export default function KbjuPage() {
         <div onClick={() => router.push("/")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>←</div>
         <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, color: "#4F7453" }}>📊 Моя норма КБЖУ</div>
       </div>
-
       <div style={{ padding: "32px 24px 100px", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <div style={{ width: "100%", filter: "blur(4px)", pointerEvents: "none", marginBottom: -60, opacity: 0.6 }}>
           <div style={{ background: "#fff", borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
@@ -180,45 +164,25 @@ export default function KbjuPage() {
             <div style={{ height: 120, background: "#F5F0E8", borderRadius: 10 }} />
           </div>
         </div>
-
-        <div style={{
-          width: "100%", background: "linear-gradient(135deg, #4F7453, #7A9E7E)",
-          borderRadius: 20, padding: "28px 24px",
-          boxShadow: "0 8px 32px rgba(79,116,83,0.3)",
-          textAlign: "center", color: "#fff", zIndex: 1,
-        }}>
+        <div style={{ width: "100%", background: "linear-gradient(135deg, #4F7453, #7A9E7E)", borderRadius: 20, padding: "28px 24px", boxShadow: "0 8px 32px rgba(79,116,83,0.3)", textAlign: "center", color: "#fff", zIndex: 1 }}>
           <div style={{ fontSize: 36, marginBottom: 8 }}>⭐</div>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
-            Premium функция
-          </div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Premium функция</div>
           <div style={{ fontSize: 14, opacity: 0.85, lineHeight: 1.6, marginBottom: 20 }}>
             Расчёт суточной нормы КБЖУ, стоп-слова и процент от нормы в каждом рецепте
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24, textAlign: "left" }}>
-            {[
-              "📊 Калькулятор суточной нормы КБЖУ",
-              "🚫 Стоп-слова для нежелательных продуктов",
-              "💯 % от нормы в каждом рецепте",
-              "🔍 Поиск рецептов по холодильнику",
-            ].map(item => (
+            {["📊 Калькулятор суточной нормы КБЖУ", "🚫 Стоп-слова для нежелательных продуктов", "💯 % от нормы в каждом рецепте", "🔍 Поиск рецептов по холодильнику"].map(item => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, opacity: 0.9 }}>
                 <span style={{ flexShrink: 0 }}>✓</span> {item}
               </div>
             ))}
           </div>
-          <button onClick={() => router.push("/subscription")} style={{
-            width: "100%", height: 50, background: "#fff",
-            color: "#4F7453", border: "none", borderRadius: 14,
-            fontSize: 16, fontWeight: 700, cursor: "pointer",
-          }}>
+          <button onClick={() => router.push("/subscription")} style={{ width: "100%", height: 50, background: "#fff", color: "#4F7453", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
             Попробовать за 90 ₽/мес →
           </button>
-          <div style={{ fontSize: 11, opacity: 0.6, marginTop: 10 }}>
-            Или 790 ₽ за год — выгоднее на 27%
-          </div>
+          <div style={{ fontSize: 11, opacity: 0.6, marginTop: 10 }}>Или 790 ₽ за год — выгоднее на 27%</div>
         </div>
       </div>
-      <BottomNav />
     </main>
   );
 
@@ -234,12 +198,9 @@ export default function KbjuPage() {
   return (
     <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ padding: "20px 20px 16px", background: "#fff", borderBottom: "1px solid #ece7de", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 700, color: "#4F7453" }}>
-          📊 Моя норма КБЖУ
-        </div>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 700, color: "#4F7453" }}>📊 Моя норма КБЖУ</div>
         <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>Рассчитайте суточную норму</div>
       </div>
-
       <div style={{ padding: "16px 16px 100px", display: "flex", flexDirection: "column", gap: 14 }}>
         {norm && (
           <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
@@ -247,12 +208,7 @@ export default function KbjuPage() {
               {user?.daily_calories ? "✅ Ваша норма сохранена" : "📋 Расчётная норма"}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-              {[
-                { label: "Ккал", value: norm.calories },
-                { label: "Белки", value: norm.protein },
-                { label: "Жиры", value: norm.fat },
-                { label: "Углев", value: norm.carbs },
-              ].map(({ label, value }) => (
+              {[{ label: "Ккал", value: norm.calories }, { label: "Белки", value: norm.protein }, { label: "Жиры", value: norm.fat }, { label: "Углев", value: norm.carbs }].map(({ label, value }) => (
                 <div key={label} style={{ background: "#F5F0E8", borderRadius: 12, padding: "10px 6px", textAlign: "center" }}>
                   <div style={{ fontSize: 18, fontWeight: 700, color: "#4F7453" }}>{value}</div>
                   <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{label}</div>
@@ -267,7 +223,6 @@ export default function KbjuPage() {
             </div>
           </div>
         )}
-
         <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#333", marginBottom: 14, fontFamily: "'Cormorant Garamond', serif" }}>Калькулятор</div>
           <div style={{ marginBottom: 14 }}>
@@ -311,7 +266,6 @@ export default function KbjuPage() {
             Рассчитать
           </button>
         </div>
-
         <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#333", marginBottom: 6, fontFamily: "'Cormorant Garamond', serif" }}>🚫 Стоп-слова</div>
           <div style={{ fontSize: 13, color: "#888", marginBottom: 10, lineHeight: 1.5 }}>
@@ -321,13 +275,8 @@ export default function KbjuPage() {
             placeholder="свинина, молоко, орехи, глютен..." rows={3}
             style={{ width: "100%", border: "1.5px solid #ece7de", borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: "inherit", background: "#F5F0E8", outline: "none", resize: "none", color: "#333" }} />
         </div>
-
         {norm && (
-          <button onClick={handleSave} disabled={saving} style={{
-            width: "100%", height: 50, borderRadius: 14, border: "none",
-            background: saved ? "#7A9E7E" : "#4F7453",
-            color: "#fff", fontSize: 16, fontWeight: 600, cursor: "pointer",
-          }}>
+          <button onClick={handleSave} disabled={saving} style={{ width: "100%", height: 50, borderRadius: 14, border: "none", background: saved ? "#7A9E7E" : "#4F7453", color: "#fff", fontSize: 16, fontWeight: 600, cursor: "pointer" }}>
             {saved ? "✅ Сохранено!" : saving ? "Сохраняем..." : "Сохранить норму"}
           </button>
         )}

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getFavorites, Recipe } from "@/lib/api";
 import Link from "next/link";
+import AuthPrompt from "@/components/AuthPrompt";
 
 const CACHE_KEY = "favorites_cache";
 
@@ -21,6 +22,7 @@ const CATEGORIES = [
 export default function FavoritesPage() {
   const router = useRouter();
   const { token, isLoggedIn, isReady } = useAuth();
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
     if (typeof window === "undefined") return [];
@@ -41,8 +43,13 @@ export default function FavoritesPage() {
 
   useEffect(() => {
     if (!isReady) return;
+
     if (!isLoggedIn) {
-      const t = setTimeout(() => router.push("/auth"), 300);
+      // Используем setTimeout чтобы setState был асинхронным
+      const t = setTimeout(() => {
+        setShowAuthPrompt(true);
+        setLoading(false);
+      }, 0);
       return () => clearTimeout(t);
     }
 
@@ -57,11 +64,11 @@ export default function FavoritesPage() {
 
   }, [isReady, isLoggedIn, token, router]);
 
-    function handleCardClick() {
-      sessionStorage.setItem("backTo", "/favorites");
-    }
+  function handleCardClick() {
+    sessionStorage.setItem("backTo", "/favorites");
+  }
 
-  if (!isReady) return (
+  if (!isReady || loading && recipes.length === 0) return (
     <main style={{
       maxWidth: 480, margin: "0 auto", minHeight: "100vh",
       background: "#F5F0E8", display: "flex",
@@ -83,6 +90,11 @@ export default function FavoritesPage() {
       minHeight: "100vh", background: "#F5F0E8",
       fontFamily: "'DM Sans', sans-serif",
     }}>
+      {/* Модал для незалогиненных */}
+      {showAuthPrompt && (
+        <AuthPrompt type="auth" onClose={() => router.push("/")} />
+      )}
+
       <div style={{
         padding: "20px 20px 16px", background: "#fff",
         borderBottom: "1px solid #ece7de",
@@ -100,9 +112,7 @@ export default function FavoritesPage() {
       </div>
 
       <div style={{ padding: "16px 16px 80px" }}>
-        {loading && recipes.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>Загрузка...</div>
-        ) : recipes.length === 0 ? (
+        {recipes.length === 0 && !showAuthPrompt ? (
           <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>❤️</div>
             <div style={{ marginBottom: 8 }}>Пока нет избранных рецептов</div>
