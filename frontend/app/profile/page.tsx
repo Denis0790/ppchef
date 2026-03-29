@@ -3,7 +3,36 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getMe, User } from "@/lib/api";
-import BottomNav from "@/components/BottomNav";
+// import BottomNav from "@/components/BottomNav"; // раскомментируйте, если нужен
+
+function getErrorStatus(err: unknown): number | undefined {
+  if (typeof err === "object" && err !== null) {
+    const e = err as { status?: number; response?: { status?: number } };
+    return e.status ?? e.response?.status;
+  }
+  return undefined;
+}
+
+function hasShareApi(): boolean {
+  return typeof navigator !== "undefined" && "share" in navigator && typeof (navigator as Navigator & { share?: (data: ShareData) => Promise<void> }).share === "function";
+}
+
+async function tryShare(link: string): Promise<boolean> {
+  const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+  const shareFn = nav.share;
+  if (!shareFn) return false;
+  try {
+    await shareFn({
+      title: "ПП Шеф — рецепты правильного питания",
+      text: "Готовлю по ПП рецептам — попробуй и ты! За регистрацию по моей ссылке получишь скидку 🌿",
+      url: link,
+    });
+    return true;
+  } catch (err) {
+    console.warn("[Profile] navigator.share failed", err);
+    return false;
+  }
+}
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -12,66 +41,97 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-
   useEffect(() => {
-  // Если есть флаг готовности auth — ждём, пока он станет true
-    if (typeof isReady !== "undefined" && !isReady) return;
+    // Если есть флаг готовности auth — ждём, пока он станет true
+    if (typeof isReady !== "undefined" && !isReady) {
+      console.debug("[Profile] auth not ready, waiting");
+      return;
+    }
 
     let mounted = true;
 
+    // Если пользователь не залогинен — редиректим и завершаем
     if (!isLoggedIn) {
+      console.debug("[Profile] not logged in — redirect to /auth");
       router.replace("/auth");
       setLoading(false);
-      return () => { mounted = false; };
+      return () => {
+        mounted = false;
+      };
     }
 
+    // Защита: token должен быть определён
     if (!token) {
-      console.warn("[Profile] token missing while isLoggedIn=true");
+      console.warn("[Profile] token missing while isLoggedIn=true — redirect to /auth");
       router.replace("/auth");
       setLoading(false);
-      return () => { mounted = false; };
+      return () => {
+        mounted = false;
+      };
     }
 
     (async () => {
       try {
         const u = await getMe(token);
+
         if (!mounted) return;
+
+        // Валидация ответа (на случай, если SW/nginx вернул HTML)
+        if (!u || typeof u !== "object" || !("id" in u)) {
+          console.warn("[Profile] unexpected getMe response", u);
+          router.replace("/auth");
+          return;
+        }
+
         setUser(u);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("[Profile] getMe failed", err);
+        const status = getErrorStatus(err);
+        if (status === 401 || status === 403) {
+          try { logout?.(); } catch (e) { /* ignore */ }
+          router.replace("/auth");
+        } else {
+          // Для остальных ошибок — не редиректим сразу, можно показать сообщение в UI
+          // Например: setFetchError(true);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
     })();
 
-    return () => { mounted = false; };
-  }, [isReady, isLoggedIn, token, router]);
-
-
+    return () => {
+      mounted = false;
+    };
+  }, [isReady, isLoggedIn, token, router, logout]);
 
   function handleLogout() {
-    logout();
+    try { logout?.(); } catch (e) { /* ignore */ }
     router.push("/");
   }
 
-  function getRefLink() {
-    return `${window.location.origin}/?ref=${user?.ref_code}`;
+  function getRefLink(): string {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/?ref=${user?.ref_code ?? ""}`;
   }
 
   function copyRefLink() {
-    navigator.clipboard.writeText(getRefLink());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      const link = getRefLink();
+      if (!link) return;
+      navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      console.warn("[Profile] copyRefLink failed", e);
+    }
   }
 
-  function shareRefLink() {
+  async function shareRefLink() {
     const link = getRefLink();
-    if (navigator.share) {
-      navigator.share({
-        title: "ПП Шеф — рецепты правильного питания",
-        text: "Готовлю по ПП рецептам — попробуй и ты! За регистрацию по моей ссылке получишь скидку 🌿",
-        url: link,
-      });
+    if (!link) return;
+    if (hasShareApi()) {
+      const ok = await tryShare(link);
+      if (!ok) copyRefLink();
     } else {
       copyRefLink();
     }
