@@ -49,27 +49,73 @@ export default function KbjuPage() {
 
   useEffect(() => {
     if (!isReady) return;
-    if (!isLoggedIn) { router.push("/auth"); return; }
-    getMe(token!).then(u => {
-      setUser(u);
-      setStopWords(u.stop_words || "");
-      setShowPercent(u.show_daily_percent || false);
-      if (u.daily_calories) {
-        const n = {
-          calories: u.daily_calories,
-          protein: u.daily_protein || 0,
-          fat: u.daily_fat || 0,
-          carbs: u.daily_carbs || 0,
-        };
-        setNorm(n);
-        localStorage.setItem("userNorm", JSON.stringify({
-          ...n,
-          show: u.show_daily_percent || false,
-          stop_words: u.stop_words || "",
-        }));
+
+    let mounted = true;
+
+    // Если пользователь не залогинен — перенаправляем и прекращаем дальнейшие действия
+    if (!isLoggedIn) {
+      // replace чтобы не оставлять историю
+      router.replace("/auth");
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
+    // Защита: token должен быть определён
+    if (!token) {
+      console.warn("[Auth] token is missing despite isLoggedIn=true");
+      router.replace("/auth");
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
+    (async () => {
+      try {
+        const u = await getMe(token);
+        if (!mounted) return;
+
+        setUser(u);
+        setStopWords(u.stop_words || "");
+        setShowPercent(Boolean(u.show_daily_percent));
+
+        if (u.daily_calories) {
+          const n = {
+            calories: u.daily_calories,
+            protein: u.daily_protein || 0,
+            fat: u.daily_fat || 0,
+            carbs: u.daily_carbs || 0,
+          };
+          setNorm(n);
+
+          try {
+            if (typeof window !== "undefined") {
+              localStorage.setItem(
+                "userNorm",
+                JSON.stringify({
+                  ...n,
+                  show: Boolean(u.show_daily_percent),
+                  stop_words: u.stop_words || "",
+                })
+              );
+            }
+          } catch (e) {
+            console.warn("[Auth] localStorage set failed", e);
+          }
+        }
+      } catch (err) {
+        console.error("[Auth] getMe failed", err);
+        // не делаем автоматический logout без явной причины; показываем fallback
+        // при 401 можно принудительно обновить refresh flow или редиректить
+        // router.replace("/auth"); // опционально
+      } finally {
+        if (mounted) setLoading(false);
       }
-    }).finally(() => setLoading(false));
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, [isReady, isLoggedIn, token, router]);
+
 
   function handleCalc() {
     const a = parseInt(age), w = parseInt(weight), h = parseInt(height);

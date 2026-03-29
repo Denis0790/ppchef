@@ -7,15 +7,47 @@ import BottomNav from "@/components/BottomNav";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { token, logout, isLoggedIn, isPremium } = useAuth();
+  const { token, logout, isLoggedIn, isPremium, isReady } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
+
   useEffect(() => {
-    if (!isLoggedIn) { router.push("/auth"); return; }
-    getMe(token!).then(u => setUser(u)).finally(() => setLoading(false));
-  }, [isLoggedIn, token, router]);
+  // Если есть флаг готовности auth — ждём, пока он станет true
+    if (typeof isReady !== "undefined" && !isReady) return;
+
+    let mounted = true;
+
+    if (!isLoggedIn) {
+      router.replace("/auth");
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
+    if (!token) {
+      console.warn("[Profile] token missing while isLoggedIn=true");
+      router.replace("/auth");
+      setLoading(false);
+      return () => { mounted = false; };
+    }
+
+    (async () => {
+      try {
+        const u = await getMe(token);
+        if (!mounted) return;
+        setUser(u);
+      } catch (err) {
+        console.error("[Profile] getMe failed", err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+
+    return () => { mounted = false; };
+  }, [isReady, isLoggedIn, token, router]);
+
+
 
   function handleLogout() {
     logout();
