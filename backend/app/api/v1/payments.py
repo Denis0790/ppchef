@@ -54,7 +54,7 @@ async def create_payment(
             }
         )
 
-    if resp.status_code != 200:
+    if resp.status_code not in (200, 201):
         raise HTTPException(status_code=500, detail="Ошибка создания платежа")
 
     payment = resp.json()
