@@ -69,7 +69,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <AuthProvider>
           <OfflineBanner />
-          <ServiceWorkerRegister />
           <IOSInstallBanner />
           {children}
           <BottomNavWrapper />
