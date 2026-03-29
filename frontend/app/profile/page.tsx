@@ -4,32 +4,22 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getMe, User } from "@/lib/api";
 
-
-function getErrorStatus(err: unknown): number | undefined {
-  if (typeof err === "object" && err !== null) {
-    const e = err as { status?: number; response?: { status?: number } };
-    return e.status ?? e.response?.status;
-  }
-  return undefined;
-}
-
 function hasShareApi(): boolean {
-  return typeof navigator !== "undefined" && "share" in navigator && typeof (navigator as Navigator & { share?: (data: ShareData) => Promise<void> }).share === "function";
+  return typeof navigator !== "undefined" && "share" in navigator &&
+    typeof (navigator as Navigator & { share?: (data: ShareData) => Promise<void> }).share === "function";
 }
 
 async function tryShare(link: string): Promise<boolean> {
   const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
-  const shareFn = nav.share;
-  if (!shareFn) return false;
+  if (!nav.share) return false;
   try {
-    await shareFn({
+    await nav.share({
       title: "ПП Шеф — рецепты правильного питания",
       text: "Готовлю по ПП рецептам — попробуй и ты! За регистрацию по моей ссылке получишь скидку 🌿",
       url: link,
     });
     return true;
-  } catch (err) {
-    console.warn("[Profile] navigator.share failed", err);
+  } catch {
     return false;
   }
 }
@@ -59,20 +49,17 @@ export default function ProfilePage() {
           return;
         }
         setUser(u);
-      } catch (err: unknown) {
+      } catch {
         if (!mounted) return;
-        const status = getErrorStatus(err);
-        if (status === 401 || status === 403) {
-          try { logout?.(); } catch {}
-          router.replace("/auth");
-        }
+        router.replace("/auth");
       } finally {
         if (mounted) setLoading(false);
       }
     })();
 
     return () => { mounted = false; };
-  }, [isReady, isLoggedIn, token, router, logout]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady, isLoggedIn, token]);
 
   function handleLogout() {
     try { logout?.(); } catch {}
@@ -91,9 +78,7 @@ export default function ProfilePage() {
       navigator.clipboard.writeText(link);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      console.warn("[Profile] copyRefLink failed", e);
-    }
+    } catch {}
   }
 
   async function shareRefLink() {
@@ -107,6 +92,22 @@ export default function ProfilePage() {
     }
   }
 
+  // ← ключевое исправление: ждём isReady и loading
+  if (!isReady || loading) return (
+    <main style={{
+      maxWidth: 480, margin: "0 auto", minHeight: "100vh",
+      background: "#F5F0E8", display: "flex",
+      alignItems: "center", justifyContent: "center",
+    }}>
+      <div style={{
+        width: 40, height: 40, borderRadius: "50%",
+        border: "3px solid #ece7de",
+        borderTop: "3px solid #01311C",
+        animation: "spin 0.8s linear infinite",
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </main>
+  );
 
   const menuItem = (icon: string, label: string, onClick: () => void, color = "#333") => (
     <div onClick={onClick} style={{
@@ -126,14 +127,12 @@ export default function ProfilePage() {
 
   return (
     <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
-
       <div style={{ padding: "16px 20px", background: "#fff", borderBottom: "1px solid #ece7de", display: "flex", alignItems: "center", gap: 12 }}>
         <div onClick={() => router.push("/")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>←</div>
         <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, color: "#4F7453" }}>Профиль</div>
       </div>
 
       <div style={{ padding: "24px 20px 100px" }}>
-
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#4F7453", color: "#fff", fontSize: 28, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
             {user?.email ? user.email[0].toUpperCase() : "?"}
@@ -146,13 +145,10 @@ export default function ProfilePage() {
 
         <div style={{ background: "linear-gradient(135deg, #4F7453, #7A9E7E)", borderRadius: 16, padding: 20, marginBottom: 16, color: "#fff" }}>
           <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.8, marginBottom: 4, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>🎁 Пригласите друзей</div>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, marginBottom: 8 }}>
-            Получите Premium бесплатно
-          </div>
+          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Получите Premium бесплатно</div>
           <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 16, lineHeight: 1.6 }}>
             Приглашайте друзей по своей ссылке — за каждые <b>3 друга</b> получаете <b>1 месяц Premium</b> в подарок 🎁
           </div>
-
           <div style={{ marginBottom: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.85, marginBottom: 6 }}>
               <span>Приглашено: <b>{refCount}</b></span>
@@ -167,11 +163,9 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-
           <div style={{ background: "rgba(0,0,0,0.15)", borderRadius: 10, padding: "8px 12px", marginBottom: 10, fontSize: 12, fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", opacity: 0.9 }}>
             {user?.ref_code ? `${typeof window !== "undefined" ? window.location.origin : "ppchef.ru"}/?ref=${user.ref_code}` : "—"}
           </div>
-
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={copyRefLink} style={{ flex: 1, height: 42, background: "rgba(255,255,255,0.2)", color: "#fff", border: "1.5px solid rgba(255,255,255,0.4)", borderRadius: 12, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
               {copied ? "✅ Скопировано!" : "📋 Скопировать"}
