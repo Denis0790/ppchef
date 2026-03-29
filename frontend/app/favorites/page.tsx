@@ -23,6 +23,7 @@ export default function FavoritesPage() {
   const { token, isLoggedIn, isReady } = useAuth();
 
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
+    if (typeof window === "undefined") return [];
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) return JSON.parse(cached);
@@ -31,6 +32,7 @@ export default function FavoritesPage() {
   });
 
   const [fromCache, setFromCache] = useState(() => {
+    if (typeof window === "undefined") return false;
     try { return !!localStorage.getItem(CACHE_KEY); } catch {}
     return false;
   });
@@ -40,7 +42,6 @@ export default function FavoritesPage() {
   useEffect(() => {
     if (!isReady) return;
     if (!isLoggedIn) {
-      // Небольшая задержка — на случай если токен ещё обновляется
       const t = setTimeout(() => router.push("/auth"), 300);
       return () => clearTimeout(t);
     }
@@ -56,9 +57,9 @@ export default function FavoritesPage() {
 
   }, [isReady, isLoggedIn, token, router]);
 
-  function handleCardClick() {
-    sessionStorage.setItem("backTo", "/favorites");
-  }
+    function handleCardClick() {
+      sessionStorage.setItem("backTo", "/favorites");
+    }
 
   if (!isReady) return (
     <main style={{

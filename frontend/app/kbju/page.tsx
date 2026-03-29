@@ -31,7 +31,7 @@ function calcNorm(gender: Gender, age: number, weight: number, height: number, a
 
 export default function KbjuPage() {
   const router = useRouter();
-  const { token, isLoggedIn, isPremium } = useAuth();
+  const { token, isLoggedIn, isReady, isPremium } = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,6 +48,7 @@ export default function KbjuPage() {
   const [showPercent, setShowPercent] = useState(false);
 
   useEffect(() => {
+    if (!isReady) return;
     if (!isLoggedIn) { router.push("/auth"); return; }
     getMe(token!).then(u => {
       setUser(u);
@@ -68,7 +69,7 @@ export default function KbjuPage() {
         }));
       }
     }).finally(() => setLoading(false));
-  }, [isLoggedIn, token, router]);
+  }, [isReady, isLoggedIn, token, router]);
 
   function handleCalc() {
     const a = parseInt(age), w = parseInt(weight), h = parseInt(height);
@@ -103,11 +104,12 @@ export default function KbjuPage() {
     }
   }
 
-  if (loading) return (
-    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", color: "#aaa" }}>
-      Загрузка...
-    </main>
-  );
+  if (!isReady || loading) return (
+  <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid #ece7de", borderTop: "3px solid #01311C", animation: "spin 0.8s linear infinite" }} />
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  </main>
+);
 
   if (!isPremium) return (
     <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
