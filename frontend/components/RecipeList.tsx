@@ -52,7 +52,7 @@ const DESIGN = {
   cardTimeColor: "#888",
 
   // Основной фон страницы
-  pageBg: "##F8FFEE",
+  pageBg: "#F8FFEE",
 
   // Кнопка "наверх"
   scrollBtnBg: "#4F7453",
