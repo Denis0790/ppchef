@@ -9,14 +9,14 @@ import FavoriteButton from "@/components/FavoriteButton";
 import InstallBanner from "@/components/InstallBanner";
 
 const CATEGORIES = [
-  { key: "", label: "Все", svg: "/icon_filter/vse.svg", svgActive: "/icon_filter/vse2.svg" },
-  { key: "breakfast", label: "Завтрак", svg: "/icon_filter/zavtrak.svg", svgActive: "/icon_filter/zavtrak2.svg" },
-  { key: "lunch", label: "Обед", svg: "/icon_filter/obed.svg", svgActive: "/icon_filter/obed2.svg" },
-  { key: "dinner", label: "Ужин", svg: "/icon_filter/ujin.svg", svgActive: "/icon_filter/ujin2.svg" },
-  { key: "snack", label: "Перекус", svg: "/icon_filter/perekus.svg", svgActive: "/icon_filter/perekus2.svg" },
-  { key: "dessert", label: "Десерт", svg: "/icon_filter/desert.svg", svgActive: "/icon_filter/desert2.svg" },
-  { key: "salad", label: "Салат", svg: "/icon_filter/salat.svg", svgActive: "/icon_filter/salat2.svg" },
-  { key: "smoothie", label: "Смузи", svg: "/icon_filter/smuzy.svg", svgActive: "/icon_filter/smuzy2.svg" },
+  { key: "", label: "все", svg: "/icon_filter/vse.svg", svgActive: "/icon_filter/vse2.svg" },
+  { key: "breakfast", label: "завтрак", svg: "/icon_filter/zavtrak.svg", svgActive: "/icon_filter/zavtrak2.svg" },
+  { key: "lunch", label: "обед", svg: "/icon_filter/obed.svg", svgActive: "/icon_filter/obed2.svg" },
+  { key: "dinner", label: "ужин", svg: "/icon_filter/ujin.svg", svgActive: "/icon_filter/ujin2.svg" },
+  { key: "snack", label: "перекус", svg: "/icon_filter/perekus.svg", svgActive: "/icon_filter/perekus2.svg" },
+  { key: "dessert", label: "десерт", svg: "/icon_filter/desert.svg", svgActive: "/icon_filter/desert2.svg" },
+  { key: "salad", label: "салат", svg: "/icon_filter/salat.svg", svgActive: "/icon_filter/salat2.svg" },
+  { key: "smoothie", label: "смузи", svg: "/icon_filter/smuzy.svg", svgActive: "/icon_filter/smuzy2.svg" },
 ];
 
 const PAGE_SIZE = 10;
@@ -25,12 +25,12 @@ const PAGE_SIZE = 10;
 const DESIGN = {
   // Цвета шапки
   headerBg: "#01311C",           // фон шапки
-  headerHeight: 96,              // высота шапки (px)
-  logoHeight: 72,                // высота логотипа (px)
+  headerHeight: 88,              // высота шапки (px)
+  logoHeight: 54,                // высота логотипа (px)
   profileIconSize: 44,           // размер иконки профиля (px)
 
   // Цвета фильтров
-  filterBg: "#E1FAC0",           // фон полосы фильтров
+  filterBg: "#F8FFEE",           // фон полосы фильтров
   filterBorder: "#cfe7b3",       // граница полосы фильтров
   filterActiveBg: "#013125",     // фон активной кнопки фильтра
   filterActiveText: "#A6ED49",   // текст активной кнопки фильтра
@@ -52,7 +52,7 @@ const DESIGN = {
   cardTimeColor: "#888",
 
   // Основной фон страницы
-  pageBg: "#F5F0E8",
+  pageBg: "##F8FFEE",
 
   // Кнопка "наверх"
   scrollBtnBg: "#4F7453",
@@ -383,7 +383,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             borderBottom: `1px solid ${DESIGN.filterBorder}`,
             scrollbarWidth: "none",
             position: "sticky",
-            top: DESIGN.headerHeight - 24,
+            top: DESIGN.headerHeight - 38,
             zIndex: 6,
           }}
         >
