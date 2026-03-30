@@ -37,12 +37,15 @@ async def create_payment(
     if data.plan not in PLANS:
         raise HTTPException(status_code=400, detail="Неверный тариф")
 
+    print("Shop ID:", settings.YUKASSA_SHOP_ID)
+    print("Key prefix:", settings.YUKASSA_SECRET_KEY[:10])
+
     plan = PLANS[data.plan]
     idempotence_key = str(uuid.uuid4())
 
     async with httpx.AsyncClient() as client:
         resp = await client.post(
-            "https://api.yookassa.ru/v2/payments",
+            "https://api.yookassa.ru/v3/payments",
             auth=(settings.YUKASSA_SHOP_ID, settings.YUKASSA_SECRET_KEY),
             headers={"Idempotence-Key": idempotence_key, "Content-Type": "application/json"},
             json={
@@ -55,6 +58,8 @@ async def create_payment(
         )
 
     if resp.status_code not in (200, 201):
+        print("YooKassa error:", resp.status_code, resp.text)
+        print("Request body:", resp.request.content)
         raise HTTPException(status_code=500, detail="Ошибка создания платежа")
 
     payment = resp.json()

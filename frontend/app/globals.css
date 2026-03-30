@@ -4,6 +4,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
 }
 
 :root {
@@ -31,28 +33,23 @@ h1, h2, h3 {
 
 html {
   overflow-y: scroll;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
 }
 
 html::-webkit-scrollbar {
-  display: none; /* Chrome/Safari */
+  display: none;
 }
 
-main {
-  animation: pageFadeIn 0.15s ease;
-}
-
-@keyframes pageFadeIn {
-  from { opacity: 0.7; }
-  to { opacity: 1; }
+button, a, [role="button"] {
+  user-select: none;
 }
 
 @font-face {
   font-family: "Satoshi";
   src: url("/fonts/Satoshi-Italic.woff2") format("woff2");
-  font-weight: 400 700; /* диапазон — покрывает все варианты */
+  font-weight: 400 700;
   font-style: italic;
-  font-display: swap; /* не блокирует рендер */
+  font-display: swap;
 }
 
 main {
@@ -60,11 +57,11 @@ main {
 }
 
 @keyframes pageFadeIn {
-  from { 
+  from {
     opacity: 0;
     transform: translateY(4px);
   }
-  to { 
+  to {
     opacity: 1;
     transform: translateY(0);
   }
