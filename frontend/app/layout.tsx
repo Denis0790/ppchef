@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     url: "https://ppchef.ru", siteName: "ПП Шеф",
     title: "ПП Шеф — рецепты правильного питания",
     description: "Вкусные и полезные рецепты для здорового образа жизни. КБЖУ, поиск по ингредиентам, стоп-слова.",
-    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "ПП Шеф" }],
+    images: [{ url: "/icon-512.png", width: 1200, height: 630, alt: "ПП Шеф" }],
   },
   twitter: {
     card: "summary_large_image",

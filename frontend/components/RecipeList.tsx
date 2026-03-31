@@ -100,98 +100,184 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/recipes/${recipe.id}`} onClick={handleClick} style={{ textDecoration: "none" }}>
       <div style={{
+        // ── ОБЁРТКА КАРТОЧКИ ──────────────────────────────────────────
+        // Фон: DESIGN.cardBg | Скругление: 16px | Тень лёгкая
         background: DESIGN.cardBg,
         borderRadius: 16,
         overflow: "hidden",
         boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
         cursor: "pointer",
+        marginBottom: 0,
       }}>
-        {/* ── Картинка карточки ── */}
+
+        {/* ── БЛОК ФОТО ─────────────────────────────────────────────────
+            Высота: DESIGN.cardImageHeight (по умолчанию ~200px)
+            Фото занимает всю ширину, objectFit: cover
+            Поверх фото — левый нижний угол: бейдж категории
+            Поверх фото — правый нижний угол: кнопка избранного
+        ──────────────────────────────────────────────────────────────── */}
         <div style={{
           height: DESIGN.cardImageHeight,
+          position: "relative",
+          overflow: "hidden",
           background: DESIGN.cardImagePlaceholderBg,
-          display: "flex", alignItems: "center",
-          justifyContent: "center", fontSize: 64,
-          position: "relative", overflow: "hidden",
         }}>
+          {/* Само фото или эмодзи-заглушка */}
           {recipe.image_url
-            ? <img src={recipe.image_url} alt={recipe.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : emoji}
-          {/* Бейдж категории — слева снизу */}
+            ? <img
+                src={recipe.image_url}
+                alt={recipe.title}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            : <div style={{
+                width: "100%", height: "100%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 64,
+              }}>{emoji}</div>
+          }
+
+          {/* Бейдж категории — левый нижний угол
+              Фон: DESIGN.cardCategoryBadgeBg (тёмно-зелёный)
+              Текст: DESIGN.cardCategoryBadgeText (белый)
+          */}
           <div style={{
             position: "absolute", bottom: 12, left: 12,
             background: DESIGN.cardCategoryBadgeBg,
             color: DESIGN.cardCategoryBadgeText,
             fontSize: 11, fontWeight: 600,
-            padding: "4px 10px", borderRadius: 20,
+            padding: "4px 12px", borderRadius: 20,
           }}>
             {label}
           </div>
-          <FavoriteButton recipeId={recipe.id} variant="card" />
+
+          {/* Кнопка «В избранное» — правый нижний угол
+              Компонент FavoriteButton с пропом variant="card"
+          */}
+          <div style={{ position: "absolute", bottom: 10, right: 12 }}>
+            <FavoriteButton recipeId={recipe.id} variant="card" />
+          </div>
         </div>
 
-        {/* ── Контент карточки ── */}
-        <div style={{ padding: "14px 16px 16px" }}>
-          <div style={{
-            fontSize: 17, fontWeight: 600,
-            color: DESIGN.cardTitleColor,
-            marginBottom: hasStopWords ? 6 : 10,
-            fontFamily: "'Cormorant Garamond', serif",
-          }}>
-            {recipe.title}
+        {/* ── КОНТЕНТ ПОД ФОТО ─────────────────────────────────────────
+            Два столбца: левый (название + мета) | правый (КБЖУ)
+            Padding: 12px 14px 14px
+        ──────────────────────────────────────────────────────────────── */}
+        <div style={{
+          padding: "12px 14px 14px",
+          display: "flex",
+          gap: 12,
+          alignItems: "flex-start",
+        }}>
+
+          {/* ── ЛЕВАЯ КОЛОНКА: название + предупреждение + мета ─────────
+              flex: 1 — занимает всё доступное место
+          ──────────────────────────────────────────────────────────────── */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+
+            {/* Название рецепта
+                Шрифт: Cormorant Garamond, 17px, жирный
+                Цвет: DESIGN.cardTitleColor
+                Ограничение: 2 строки с обрезкой
+            */}
+            <div style={{
+              fontSize: 17, fontWeight: 600, lineHeight: 1.3,
+              color: DESIGN.cardTitleColor,
+              marginBottom: 6,
+              fontFamily: "'Cormorant Garamond', serif",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}>
+              {recipe.title}
+            </div>
+
+            {/* Предупреждение о нежелательных ингредиентах
+                Показывается только если hasStopWords === true
+                Фон: полупрозрачный красный
+            */}
+            {hasStopWords && (
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 4,
+                background: "rgba(192,57,43,0.08)",
+                borderRadius: 20, padding: "3px 10px", marginBottom: 8,
+              }}>
+                <span style={{ fontSize: 11, color: "rgba(192,57,43,0.55)", fontWeight: 400 }}>
+                  🚫 нежелательные ингредиенты
+                </span>
+              </div>
+            )}
+
+            {/* Мета-строка: время · порции · % нормы
+                Цвет: DESIGN.cardTimeColor (серый)
+                Иконки через символы ⏱ 🍽
+            */}
+            <div style={{
+              display: "flex", alignItems: "center",
+              flexWrap: "wrap", gap: "2px 12px",
+              fontSize: 12, color: DESIGN.cardTimeColor,
+              marginTop: 4,
+            }}>
+              {recipe.cook_time_minutes && (
+                <span>⏱ {recipe.cook_time_minutes} мин</span>
+              )}
+              {recipe.servings && (
+                <span>🍽 {recipe.servings} порц.</span>
+              )}
+              {normPercent !== null && (
+                <span>{normPercent}% нормы</span>
+              )}
+            </div>
           </div>
 
-          {hasStopWords && (
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 5,
-              background: "rgba(192,57,43,0.08)",
-              borderRadius: 20, padding: "3px 10px", marginBottom: 10,
-            }}>
-              <span style={{ fontSize: 11, color: "rgba(192,57,43,0.55)", fontWeight: 400 }}>
-                🚫 нежелательные ингредиенты
-              </span>
-            </div>
-          )}
-
-          {/* ── КБЖУ ── */}
+          {/* ── ПРАВАЯ КОЛОНКА: КБЖУ в столбик ──────────────────────────
+              4 бейджа вертикально: Ккал / Белки / Жиры / Углеводы
+              Каждый бейдж: значение жирно + подпись мелко
+              Ширина фиксирована ~72px
+              Цвета бейджей — DESIGN.cardKbjuBg (или можно задать индивидуально)
+          ──────────────────────────────────────────────────────────────── */}
           <div style={{
-            display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 6, marginBottom: 12,
+            display: "flex", flexDirection: "column", gap: 4,
+            flexShrink: 0, width: 72,
           }}>
             {[
-              { label: "Ккал", value: recipe.calories },
-              { label: "Белки", value: recipe.protein },
-              { label: "Жиры", value: recipe.fat },
-              { label: "Углев", value: recipe.carbs },
-            ].map(({ label, value }) => (
+              { label: "ккал",      value: recipe.calories, color: "#4a7c59" }, // зелёный
+              { label: "белки",     value: recipe.protein,  color: "#5b8fa8" }, // голубой
+              { label: "жиры",      value: recipe.fat,      color: "#c09c5a" }, // золотой
+              { label: "углеводы",  value: recipe.carbs,    color: "#7a6fa8" }, // фиолетовый
+              // ↑ цвета бейджей — меняйте под вашу палитру DESIGN.*
+            ].map(({ label, value, color }) => (
               <div key={label} style={{
-                background: DESIGN.cardKbjuBg,
-                borderRadius: 10, padding: "6px 4px", textAlign: "center",
+                background: color,
+                borderRadius: 8,
+                padding: "3px 6px",
+                textAlign: "center",
+                minWidth: 0,
               }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: DESIGN.cardKbjuValueColor }}>
+                {/* Значение: белый, жирный */}
+                <div style={{
+                  fontSize: 13, fontWeight: 700,
+                  color: "#fff", lineHeight: 1.2,
+                }}>
                   {value ? Math.round(value) : "—"}
                 </div>
-                <div style={{ fontSize: 10, color: "#888" }}>{label}</div>
+                {/* Подпись: белый полупрозрачный */}
+                <div style={{
+                  fontSize: 9, fontWeight: 500,
+                  color: "rgba(255,255,255,0.8)",
+                  textTransform: "lowercase", lineHeight: 1,
+                }}>
+                  {label}
+                </div>
               </div>
             ))}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ display: "flex", gap: 16, fontSize: 13, color: DESIGN.cardTimeColor }}>
-              {recipe.cook_time_minutes && <span>⏱ {recipe.cook_time_minutes} мин</span>}
-              {recipe.servings && <span>🍽 {recipe.servings} порц.</span>}
-            </div>
-            <span style={{ fontSize: 11, color: "#aaa" }}>
-              {normPercent !== null ? `${normPercent}% нормы` : ""}
-            </span>
-          </div>
         </div>
       </div>
     </Link>
   );
 }
-
 function checkIsBack(): boolean {
   if (typeof window === "undefined") return false;
   return sessionStorage.getItem("isBack") === "1";
@@ -383,7 +469,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             borderBottom: `1px solid ${DESIGN.filterBorder}`,
             scrollbarWidth: "none",
             position: "sticky",
-            top: DESIGN.headerHeight - 38,
+            top: DESIGN.headerHeight,
             zIndex: 6,
           }}
         >
