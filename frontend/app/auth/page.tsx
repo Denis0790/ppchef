@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // app/auth/page.tsx
 "use client";
 import { useState, useEffect, useRef } from "react";
@@ -5,14 +6,11 @@ import { useRouter } from "next/navigation";
 import { login, register, apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
-
-// ── Стили ──────────────────────────────────────────────────────
 const globalStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&display=swap');
 
   * { box-sizing: border-box; }
 
-  /* Убираем автозаполнение браузера */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus {
@@ -21,13 +19,13 @@ const globalStyles = `
     caret-color: #F8FFEE;
   }
 
-  /* Спиннер — используется в InlineSpinner */
   @keyframes ppchef-spin {
     to { transform: rotate(360deg); }
   }
 
   .auth-input {
     width: 100%;
+    height: 56px;
     background: transparent;
     border: 1.5px solid #A6ED49;
     border-radius: 100px;
@@ -45,8 +43,9 @@ const globalStyles = `
   .auth-input::placeholder { color: #7aad7a; }
 
   .submit-btn {
-    width: 100%;
-    padding: 15px 0;
+    width: 318px;
+    height: 56px;
+    padding: 0;
     background: #A6ED49;
     color: #013125;
     border: none;
@@ -58,6 +57,9 @@ const globalStyles = `
     letter-spacing: 0.04em;
     transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
     box-shadow: 0 4px 20px rgba(166,237,73,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .submit-btn:disabled {
     opacity: 0.4;
@@ -87,10 +89,14 @@ const globalStyles = `
     outline: none;
     background: transparent;
   }
-  .tab-btn.active  { background: #A6ED49; color: #013125; box-shadow: 0 2px 12px rgba(166,237,73,0.25); }
-  .tab-btn.inactive { color: #F8FFEE; opacity: 0.6; }
+  .tab-btn.active   { background: #A6ED49; color: #013125; box-shadow: 0 2px 12px rgba(166,237,73,0.25); }
+  .tab-btn.inactive { color: #A6ED49; opacity: 0.7; }
 
-  .input-wrap { position: relative; margin-bottom: 14px; width: 100%; }
+  .input-wrap {
+    position: relative;
+    width: 318px;
+    margin-bottom: 12px;
+  }
   .input-icon {
     position: absolute;
     left: 16px;
@@ -138,18 +144,19 @@ const globalStyles = `
   .forgot-link:hover { opacity: 0.75; }
 
   .back-link {
-    margin-top: 28px;
+    margin-top: 62px;
     font-size: 12px;
     color: #F8FFEE;
-    opacity: 0.5;
+    opacity: 0.7;
     cursor: pointer;
     font-family: 'Unbounded', sans-serif;
     letter-spacing: 0.02em;
     transition: opacity 0.2s;
   }
-  .back-link:hover { opacity: 0.8; }
+  .back-link:hover { opacity: 1; }
 
   .error-box {
+    width: 318px;
     background: rgba(224,85,85,0.12);
     color: #ff8585;
     border: 1px solid rgba(224,85,85,0.3);
@@ -161,34 +168,39 @@ const globalStyles = `
   }
 `;
 
-// ── Валидация email ────────────────────────────────────────────
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// ── Иконка email ───────────────────────────────────────────────
 function IconEmail() {
   return (
-    <svg className="input-icon" width="18" height="18" viewBox="0 0 24 24"
-      fill="none" stroke="#A6ED49" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="4"/>
-      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-    </svg>
+    <img className="input-icon" src="/icon_auth/log.svg" alt="" width={18} height={18} />
   );
 }
 
-// ── Иконка замка ───────────────────────────────────────────────
 function IconLock() {
   return (
-    <svg className="input-icon" width="18" height="18" viewBox="0 0 24 24"
-      fill="none" stroke="#A6ED49" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="5" y="11" width="14" height="10" rx="2"/>
-      <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+    <img className="input-icon" src="/icon_auth/pas.svg" alt="" width={18} height={18} />
+  );
+}
+
+function IconEye({ visible }: { visible: boolean }) {
+  return visible ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="#A6ED49" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="#A6ED49" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
     </svg>
   );
 }
 
-// ── Чекбокс с ссылкой ─────────────────────────────────────────
 const Checkbox = ({ checked, onChange, label, link, linkLabel }: {
   checked: boolean; onChange: () => void; label: string; link?: string; linkLabel?: string;
 }) => {
@@ -216,12 +228,10 @@ const Checkbox = ({ checked, onChange, label, link, linkLabel }: {
   );
 };
 
-// ── Главный компонент ──────────────────────────────────────────
 export default function AuthPage() {
   const router = useRouter();
   const { setToken } = useAuth();
 
-  // Состояние формы
   const [mode, setMode]             = useState<"login" | "register">("login");
   const [step, setStep]             = useState<"form" | "verify">("form");
   const [email, setEmail]           = useState("");
@@ -230,32 +240,28 @@ export default function AuthPage() {
   const [agreeData, setAgreeData]   = useState(false);
   const [loading, setLoading]       = useState(false);
   const [error, setError]           = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Состояние верификации
   const [code, setCode]             = useState(["", "", "", ""]);
   const [resendTimer, setResendTimer] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Считываем реферальный код из URL и сохраняем в localStorage
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
     if (ref) localStorage.setItem("ref_code", ref);
   }, []);
 
-  // Таймер повторной отправки кода
   useEffect(() => {
     if (resendTimer <= 0) return;
     const t = setTimeout(() => setResendTimer(r => r - 1), 1000);
     return () => clearTimeout(t);
   }, [resendTimer]);
 
-  // Кнопка активна только если все нужные поля заполнены
   const canSubmit = mode === "login"
     ? !loading && !!email && !!password
     : !loading && !!email && !!password && agreeTerms && agreeData;
 
-  // ── Отправка формы входа / регистрации ────────────────────
   async function handleSubmit() {
     setError("");
     if (!isValidEmail(email)) { setError("Введите корректный email адрес"); return; }
@@ -275,7 +281,6 @@ export default function AuthPage() {
         localStorage.removeItem("ref_code");
         setStep("verify");
         setResendTimer(60);
-        // Фокус на первую цифру после перехода к верификации
         setTimeout(() => inputRefs.current[0]?.focus(), 100);
       }
     } catch (e: unknown) {
@@ -285,14 +290,12 @@ export default function AuthPage() {
     }
   }
 
-  // ── Подтверждение кода вручную (кнопка) ───────────────────
   async function handleVerify() {
     const fullCode = code.join("");
     if (fullCode.length !== 4) { setError("Введите 4-значный код"); return; }
     await handleVerifyWithCode(fullCode);
   }
 
-  // ── Подтверждение кода (общая логика) ─────────────────────
   async function handleVerifyWithCode(fullCode: string) {
     setError("");
     setLoading(true);
@@ -305,7 +308,6 @@ export default function AuthPage() {
       router.push("/");
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Неверный код");
-      // Очищаем поля и возвращаем фокус при ошибке
       setCode(["", "", "", ""]);
       setTimeout(() => inputRefs.current[0]?.focus(), 50);
     } finally {
@@ -313,7 +315,6 @@ export default function AuthPage() {
     }
   }
 
-  // ── Повторная отправка кода ────────────────────────────────
   async function handleResend() {
     if (resendTimer > 0) return;
     setError("");
@@ -330,46 +331,23 @@ export default function AuthPage() {
     }
   }
 
-  // ── Ввод цифры в поле кода ────────────────────────────────
   function handleCodeInput(index: number, value: string) {
     const digit = value.replace(/\D/g, "").slice(-1);
     const newCode = [...code];
     newCode[index] = digit;
     setCode(newCode);
-    // Переходим на следующий инпут
     if (digit && index < 3) inputRefs.current[index + 1]?.focus();
-    // Автоверификация при вводе последней цифры
     if (digit && index === 3 && newCode.join("").length === 4) {
       setTimeout(() => handleVerifyWithCode(newCode.join("")), 100);
     }
   }
 
-  // ── Backspace — возврат на предыдущий инпут ───────────────
   function handleCodeKeyDown(index: number, e: React.KeyboardEvent) {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   }
-  const [showPassword, setShowPassword] = useState(false);
-  // ── Иконка глаза (показать/скрыть пароль) ─────────────────────
-  function IconEye({ visible }: { visible: boolean }) {
-    return visible ? (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-        stroke="#A6ED49" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>
-    ) : (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-        stroke="#A6ED49" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-        <line x1="1" y1="1" x2="23" y2="23"/>
-      </svg>
-    );
-  }
 
-  // ── Шаг верификации ────────────────────────────────────────
   if (step === "verify") {
     return (
       <>
@@ -394,7 +372,6 @@ export default function AuthPage() {
             </div>
           </div>
 
-          {/* 4 поля для цифр */}
           <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 28 }}>
             {code.map((digit, i) => (
               <input
@@ -424,7 +401,6 @@ export default function AuthPage() {
             {loading ? "Проверяем..." : "Подтвердить"}
           </button>
 
-          {/* Повторная отправка с таймером */}
           <div style={{
             textAlign: "center", fontSize: 12, color: "#F8FFEE",
             opacity: 0.55, marginTop: 20,
@@ -441,7 +417,6 @@ export default function AuthPage() {
             )}
           </div>
 
-          {/* Вернуться и изменить email */}
           <div className="back-link"
             onClick={() => { setStep("form"); setCode(["", "", "", ""]); setError(""); }}>
             ← Изменить email
@@ -451,7 +426,11 @@ export default function AuthPage() {
     );
   }
 
-  // ── Основная форма ─────────────────────────────────────────
+  // Высота фиксированной верхней части:
+  // логотип 144 + mb36 + таб 56 + mb12 + email 56 + mb12 + пароль 56 = 372px
+  // Центрируем эту группу: paddingTop = 50vh - 372/2 = 50vh - 186px
+  const topPadding = "calc(50vh - 280px)";
+
   return (
     <>
       <style>{globalStyles}</style>
@@ -459,97 +438,111 @@ export default function AuthPage() {
         maxWidth: 420, margin: "0 auto", minHeight: "100vh",
         background: "#013125",
         display: "flex", flexDirection: "column", alignItems: "center",
-        justifyContent: "center", padding: "0 24px",
+        justifyContent: "flex-start",
+        paddingTop: topPadding,
+        paddingLeft: 24, paddingRight: 24,
       }}>
 
-        {/* Логотип — текст внутри SVG */}
+        {/* Логотип 220×144 — всегда на месте */}
         <div style={{ marginBottom: 36 }}>
-          <img src="/logo_vert.svg" alt="ШЕФ" style={{ height: 120 }} />
+          <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 220, height: 144, objectFit: "contain" }} />
         </div>
 
-        {/* Переключатель Вход / Регистрация */}
-          <div style={{
-            display: "flex", width: "100%",
-            background: "#013125",
-            borderRadius: 100, padding: 4, marginBottom: 28,
-            border: "1.5px solid #A6ED49",
-          }}>
-            {(["login", "register"] as const).map(m => (
-              <button key={m}
-                className={`tab-btn ${mode === m ? "active" : "inactive"}`}
-                onClick={() => { setMode(m); setError(""); }}>
-                {m === "login" ? "вход" : "регистрация"}
-              </button>
-            ))}
-          </div>
+        {/* Таб вход/регистрация — всегда на месте */}
+        <div style={{
+          display: "flex",
+          background: "#013125",
+          borderRadius: 100,
+          padding: 4,
+          marginBottom: 12,
+          border: "2px solid #A6ED49",
+          height: 56,
+          width: 318,
+          flexShrink: 0,
+        }}>
+          {(["login", "register"] as const).map(m => (
+            <button key={m}
+              className={`tab-btn ${mode === m ? "active" : "inactive"}`}
+              onClick={() => { setMode(m); setError(""); }}>
+              {m === "login" ? "вход" : "регистрация"}
+            </button>
+          ))}
+        </div>
 
-        {/* Email */}
+        {/* Email — всегда на месте */}
         <div className="input-wrap">
           <IconEmail />
           <input className="auth-input" type="email" value={email}
             onChange={e => setEmail(e.target.value)} placeholder="e-mail" />
         </div>
 
-        {/* Пароль */}
-      <div className="input-wrap" style={{ marginBottom: mode === "login" ? 8 : 14 }}>
-        <IconLock />
-        <input className="auth-input"
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          placeholder="пароль"
-          onKeyDown={e => e.key === "Enter" && handleSubmit()}
-          style={{ paddingRight: 48 }} // место под глазик справа
-        />
-        {/* Кнопка показать/скрыть пароль */}
-        <div
-          onClick={() => setShowPassword(p => !p)}
-          style={{
-            position: "absolute", right: 16, top: "50%",
-            transform: "translateY(-50%)",
-            cursor: "pointer", opacity: 0.6,
-            transition: "opacity 0.2s",
-            display: "flex", alignItems: "center",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
-        >
-          <IconEye visible={showPassword} />
+        {/* Пароль — всегда на месте */}
+        <div className="input-wrap" style={{ marginBottom: 0 }}>
+          <IconLock />
+          <input className="auth-input"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="пароль"
+            onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            style={{ paddingRight: 48 }}
+          />
+          <div
+            onClick={() => setShowPassword(p => !p)}
+            style={{
+              position: "absolute", right: 16, top: "50%",
+              transform: "translateY(-50%)",
+              cursor: "pointer", opacity: 0.6,
+              transition: "opacity 0.2s",
+              display: "flex", alignItems: "center",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+            onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
+          >
+            <IconEye visible={showPassword} />
+          </div>
         </div>
-      </div>
 
-        {/* Забыли пароль — только при входе */}
-        {mode === "login" && (
-          <div style={{ width: "100%", textAlign: "center", marginBottom: 24 }}>
-            <span className="forgot-link" onClick={() => router.push("/auth/reset")}>
-              забыли пароль →
-            </span>
-          </div>
+        {/*
+          Нижняя часть — position: relative, не влияет на верхние элементы.
+          Login:    забыли пароль (mt 12) → кнопка (mt 35)
+          Register: чекбоксы (mt 12)      → кнопка (mt 12)
+          Всё что ниже пароля — просто добавляется вниз, верх не двигается.
+        */}
+        {mode === "login" ? (
+          <>
+            <div style={{ width: 318, textAlign: "center", marginTop: 12 }}>
+              <span className="forgot-link" onClick={() => router.push("/auth/reset")}>
+                забыли пароль →
+              </span>
+            </div>
+            {error && <div className="error-box" style={{ marginTop: 16 }}>{error}</div>}
+            <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
+              style={{ marginTop: 35 }}>
+              {loading ? "Подождите..." : "вход"}
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ width: 318, marginTop: 12 }}>
+              <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
+                label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
+              <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
+                label="Я согласен(а) на обработку персональных данных в соответствии с"
+                link="/privacy" linkLabel="политикой конфиденциальности" />
+            </div>
+            {error && <div className="error-box">{error}</div>}
+            <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
+              style={{ marginTop: 12 }}>
+              {loading ? "Подождите..." : "зарегистрироваться"}
+            </button>
+          </>
         )}
 
-        {/* Чекбоксы соглашений — только при регистрации */}
-        {mode === "register" && (
-          <div style={{ width: "100%", marginBottom: 20, marginTop: 4 }}>
-            <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
-              label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
-            <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
-              label="Я согласен(а) на обработку персональных данных в соответствии с"
-              link="/privacy" linkLabel="политикой конфиденциальности" />
-          </div>
-        )}
-
-        {error && <div className="error-box">{error}</div>}
-
-        {/* Кнопка отправки */}
-        <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
-          style={{ width: "100%" }}>
-          {loading ? "Подождите..." : mode === "login" ? "вход" : "зарегистрироваться"}
-        </button>
-
-        {/* Вернуться на главную */}
         <div className="back-link" onClick={() => router.push("/")}>
           ← вернуться к рецептам
         </div>
+
       </main>
     </>
   );

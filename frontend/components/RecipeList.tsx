@@ -41,11 +41,11 @@ const DESIGN = {
   // Активная иконка: svgActive, неактивная: svg (они инвертированы в коде)
 
   // Цвета карточки рецепта
-  cardBg: "#fff",                // фон карточки
+  cardBg: "#F8FFEE",                // фон карточки
   cardImageHeight: 180,          // высота картинки в карточке (px)
   cardImagePlaceholderBg: "linear-gradient(135deg, #e8e0d0 0%, #d5cab8 100%)",
   cardCategoryBadgeBg: "#4F7453",
-  cardCategoryBadgeText: "#fff",
+  cardCategoryBadgeText: "#F8FFEE",
   cardTitleColor: "#333",
   cardKbjuBg: "#F5F0E8",        // фон ячеек КБЖУ
   cardKbjuValueColor: "#4F7453",
@@ -55,8 +55,8 @@ const DESIGN = {
   pageBg: "#F8FFEE",
 
   // Кнопка "наверх"
-  scrollBtnBg: "#4F7453",
-  scrollBtnColor: "#fff",
+  scrollBtnBg: "#013125",
+  scrollBtnColor: "#F8FFEE",
   scrollBtnSize: 44,             // размер кнопки (px)
   scrollBtnBottom: 90,           // отступ снизу (px)
   scrollBtnRight: 16,            // ← отступ справа (px)
@@ -100,29 +100,27 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
   return (
     <Link href={`/recipes/${recipe.id}`} onClick={handleClick} style={{ textDecoration: "none" }}>
       <div style={{
-        // ── ОБЁРТКА КАРТОЧКИ ──────────────────────────────────────────
-        // Фон: DESIGN.cardBg | Скругление: 16px | Тень лёгкая
+        /* ── ОБЁРТКА КАРТОЧКИ ──────────────────────────────────────
+           Фон: #fff | Скругление: 16px | Тень лёгкая
+        ────────────────────────────────────────────────────────── */
         background: DESIGN.cardBg,
         borderRadius: 16,
         overflow: "hidden",
         boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
         cursor: "pointer",
-        marginBottom: 0,
       }}>
 
-        {/* ── БЛОК ФОТО ─────────────────────────────────────────────────
-            Высота: DESIGN.cardImageHeight (по умолчанию ~200px)
-            Фото занимает всю ширину, objectFit: cover
-            Поверх фото — левый нижний угол: бейдж категории
-            Поверх фото — правый нижний угол: кнопка избранного
-        ──────────────────────────────────────────────────────────────── */}
+        {/* ── БЛОК ФОТО ────────────────────────────────────────────
+            Высота: DESIGN.cardImageHeight
+            Фото: objectFit cover, вся ширина
+            Заглушка: эмодзи по центру
+        ────────────────────────────────────────────────────────── */}
         <div style={{
           height: DESIGN.cardImageHeight,
           position: "relative",
           overflow: "hidden",
           background: DESIGN.cardImagePlaceholderBg,
         }}>
-          {/* Само фото или эмодзи-заглушка */}
           {recipe.image_url
             ? <img
                 src={recipe.image_url}
@@ -135,54 +133,74 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                 fontSize: 64,
               }}>{emoji}</div>
           }
-
-          {/* Бейдж категории — левый нижний угол
-              Фон: DESIGN.cardCategoryBadgeBg (тёмно-зелёный)
-              Текст: DESIGN.cardCategoryBadgeText (белый)
-          */}
-          <div style={{
-            position: "absolute", bottom: 12, left: 12,
-            background: DESIGN.cardCategoryBadgeBg,
-            color: DESIGN.cardCategoryBadgeText,
-            fontSize: 11, fontWeight: 600,
-            padding: "4px 12px", borderRadius: 20,
-          }}>
-            {label}
-          </div>
-
-          {/* Кнопка «В избранное» — правый нижний угол
-              Компонент FavoriteButton с пропом variant="card"
-          */}
-          <div style={{ position: "absolute", bottom: 10, right: 12 }}>
-            <FavoriteButton recipeId={recipe.id} variant="card" />
-          </div>
         </div>
 
-        {/* ── КОНТЕНТ ПОД ФОТО ─────────────────────────────────────────
-            Два столбца: левый (название + мета) | правый (КБЖУ)
-            Padding: 12px 14px 14px
-        ──────────────────────────────────────────────────────────────── */}
+        {/* ── КОНТЕНТ ПОД ФОТО ─────────────────────────────────────
+            padding: 11px 0 14px 0
+            Два столбца: левый (бейдж+избранное, название, мета)
+                         правый (КБЖУ)
+        ────────────────────────────────────────────────────────── */}
         <div style={{
-          padding: "12px 14px 14px",
+          padding: "11px 0 14px 0",
           display: "flex",
-          gap: 12,
+          gap: 0,
           alignItems: "flex-start",
         }}>
 
-          {/* ── ЛЕВАЯ КОЛОНКА: название + предупреждение + мета ─────────
-              flex: 1 — занимает всё доступное место
-          ──────────────────────────────────────────────────────────────── */}
-          <div style={{ flex: 1, minWidth: 0 }}>
+          {/* ── ЛЕВАЯ КОЛОНКА ────────────────────────────────────────
+              Отступ слева 21px — как у бейджа и текста
+              flex: 1
+          ────────────────────────────────────────────────────────── */}
+          <div style={{ flex: 1, minWidth: 0, paddingLeft: 21 }}>
 
-            {/* Название рецепта
-                Шрифт: Cormorant Garamond, 17px, жирный
-                Цвет: DESIGN.cardTitleColor
+            {/* ── СТРОКА 1: бейдж категории + кнопка «в избранное» ──
+                Оба элемента высотой 25px, в одну строку
+                Расстояние между ними: 4px
+            ────────────────────────────────────────────────────── */}
+            <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 7 }}>
+
+              {/* Бейдж категории
+                  Размер: 52×25px | Скругление: 100px (овал)
+                  Фон: #01311C | Текст: белый, 8px
+              */}
+              <div style={{
+                width: 52, height: 25,
+                borderRadius: 100,
+                background: "#01311C",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <span style={{
+                  fontSize: 8, fontWeight: 600,
+                  color: "#F8FFEE", lineHeight: 1,
+                  whiteSpace: "nowrap",
+                }}>
+                  {label}
+                </span>
+              </div>
+
+              {/* Кнопка «в избранное»
+                  Размер: 98×25px | Скругление: 100px
+                  Фон по умолчанию: как у карточки (#fff)
+                  Обводка сердца: #01311C, 1.1px
+                  Нажата: фон #01311C, текст A6ED49, обводка сердца A6ED49
+                  Сердце: 15×15px
+              */}
+              <FavoriteButton recipeId={recipe.id} variant="card" />
+            </div>
+
+            {/* ── СТРОКА 2: название рецепта ───────────────────────
+                Отступ сверху: 0 (уже задан marginBottom: 7 у строки выше)
+                Отступ снизу: 7px до мета-строки
+                Макс. ширина: 256px
+                Цвет: #01311C | Шрифт: Cormorant Garamond, 17px
                 Ограничение: 2 строки с обрезкой
-            */}
+            ────────────────────────────────────────────────────── */}
             <div style={{
               fontSize: 17, fontWeight: 600, lineHeight: 1.3,
-              color: DESIGN.cardTitleColor,
-              marginBottom: 6,
+              color: "#01311C",
+              marginBottom: 7,
+              maxWidth: 256,
               fontFamily: "'Cormorant Garamond', serif",
               display: "-webkit-box",
               WebkitLineClamp: 2,
@@ -194,7 +212,6 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
 
             {/* Предупреждение о нежелательных ингредиентах
                 Показывается только если hasStopWords === true
-                Фон: полупрозрачный красный
             */}
             {hasStopWords && (
               <div style={{
@@ -208,15 +225,14 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               </div>
             )}
 
-            {/* Мета-строка: время · порции · % нормы
+            {/* ── СТРОКА 3: мета (время, порции, % нормы) ──────────
+                Отступ слева: 0 (уже есть paddingLeft на колонке)
                 Цвет: DESIGN.cardTimeColor (серый)
-                Иконки через символы ⏱ 🍽
-            */}
+            ────────────────────────────────────────────────────── */}
             <div style={{
               display: "flex", alignItems: "center",
               flexWrap: "wrap", gap: "2px 12px",
               fontSize: 12, color: DESIGN.cardTimeColor,
-              marginTop: 4,
             }}>
               {recipe.cook_time_minutes && (
                 <span>⏱ {recipe.cook_time_minutes} мин</span>
@@ -228,47 +244,61 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                 <span>{normPercent}% нормы</span>
               )}
             </div>
+
           </div>
 
-          {/* ── ПРАВАЯ КОЛОНКА: КБЖУ в столбик ──────────────────────────
+          {/* ── ПРАВАЯ КОЛОНКА: КБЖУ ─────────────────────────────────
               4 бейджа вертикально: Ккал / Белки / Жиры / Углеводы
-              Каждый бейдж: значение жирно + подпись мелко
-              Ширина фиксирована ~72px
-              Цвета бейджей — DESIGN.cardKbjuBg (или можно задать индивидуально)
-          ──────────────────────────────────────────────────────────────── */}
+              Каждый бейдж: 83×19px
+              Фон: как у карточки  | Обводка: #A6ED49, 1px
+              Значение: жирное | Подпись: обычная | Всё в одну строку
+              Цвет текста: #01311C
+              Отступ справа от колонки: 20px
+          ────────────────────────────────────────────────────────── */}
           <div style={{
             display: "flex", flexDirection: "column", gap: 4,
-            flexShrink: 0, width: 72,
+            flexShrink: 0, width: 83,
+            paddingRight: 20,
+            boxSizing: "border-box",
           }}>
             {[
-              { label: "ккал",      value: recipe.calories, color: "#4a7c59" }, // зелёный
-              { label: "белки",     value: recipe.protein,  color: "#5b8fa8" }, // голубой
-              { label: "жиры",      value: recipe.fat,      color: "#c09c5a" }, // золотой
-              { label: "углеводы",  value: recipe.carbs,    color: "#7a6fa8" }, // фиолетовый
-              // ↑ цвета бейджей — меняйте под вашу палитру DESIGN.*
-            ].map(({ label, value, color }) => (
+              { label: "ккал",     value: recipe.calories },
+              { label: "белки",    value: recipe.protein  },
+              { label: "жиры",     value: recipe.fat      },
+              { label: "углеводы", value: recipe.carbs    },
+            ].map(({ label, value }) => (
               <div key={label} style={{
-                background: color,
-                borderRadius: 8,
-                padding: "3px 6px",
-                textAlign: "center",
-                minWidth: 0,
+                /* Бейдж КБЖУ
+                   Размер: 83×19px | Скругление: 6px
+                   Фон: (как карточка) | Обводка: #A6ED49, 1px
+                   Значение и подпись в одну строку, не переносятся
+                */
+                width: 83, height: 19,
+                border: "1px solid #A6ED49",
+                borderRadius: 12,
+                background: DESIGN.cardBg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 3,
+                overflow: "hidden",
               }}>
-                {/* Значение: белый, жирный */}
-                <div style={{
-                  fontSize: 13, fontWeight: 700,
-                  color: "#fff", lineHeight: 1.2,
+                {/* Значение: жирное, #01311C */}
+                <span style={{
+                  fontSize: 10, fontWeight: 700,
+                  color: "#01311C", lineHeight: 1,
+                  whiteSpace: "nowrap",
                 }}>
                   {value ? Math.round(value) : "—"}
-                </div>
-                {/* Подпись: белый полупрозрачный */}
-                <div style={{
-                  fontSize: 9, fontWeight: 500,
-                  color: "rgba(255,255,255,0.8)",
-                  textTransform: "lowercase", lineHeight: 1,
+                </span>
+                {/* Подпись: обычная, #01311C */}
+                <span style={{
+                  fontSize: 10, fontWeight: 400,
+                  color: "#01311C", lineHeight: 1,
+                  whiteSpace: "nowrap",
                 }}>
                   {label}
-                </div>
+                </span>
               </div>
             ))}
           </div>
