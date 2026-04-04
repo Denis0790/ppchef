@@ -7,6 +7,8 @@ import CookieBanner from "@/components/CookieBanner";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import IOSInstallBanner from "@/components/IOSInstallBanner";
 import OfflineBanner from "@/components/OfflineBanner";
+import RefCodeSaver from "@/components/RefCodeSaver";
+import { Suspense } from "react";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["cyrillic"],
@@ -87,6 +89,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <AuthProvider>
+          <Suspense fallback={null}>
+            <RefCodeSaver />
+          </Suspense>
           <OfflineBanner />
           <IOSInstallBanner />
           {children}

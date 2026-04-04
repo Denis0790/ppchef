@@ -42,15 +42,6 @@ class UserResponse(BaseModel):
     email_verified: bool
     ref_code: str | None = None
     referral_count: int = 0
-
-    model_config = {"from_attributes": True}
-
-class UserResponse(BaseModel):
-    id: uuid.UUID
-    email: str
-    is_premium: bool
-    is_superuser: bool
-    email_verified: bool
     daily_calories: float | None = None
     daily_protein: float | None = None
     daily_fat: float | None = None
