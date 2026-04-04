@@ -31,31 +31,14 @@ async def register_user(
         )
 
     user = User(
-    email=data.email,
-    hashed_password=hash_password(data.password),
-    ref_code=generate_ref_code(),
-    is_active=False,
-    email_verified=False,
-)
+        email=data.email,
+        hashed_password=hash_password(data.password),
+        ref_code=generate_ref_code(),
+        is_active=False,
+        email_verified=False,
+    )
     db.add(user)
     await db.flush()
-
-    # Реферальная логика
-    if ref_code:
-        result = await db.execute(select(User).where(User.ref_code == ref_code))
-        referrer = result.scalar_one_or_none()
-        if referrer and referrer.id != user.id:
-            user.referred_by = referrer.id
-            referrer.referral_count = (referrer.referral_count or 0) + 1
-
-            # Каждые 3 реферала — +1 месяц Premium
-            if referrer.referral_count % 3 == 0:
-                now = datetime.now(timezone.utc)
-                if referrer.subscription_expires_at and referrer.subscription_expires_at > now:
-                    referrer.subscription_expires_at += timedelta(days=30)
-                else:
-                    referrer.subscription_expires_at = now + timedelta(days=30)
-                referrer.is_premium = True
 
     consent = ConsentLog(
         user_id=user.id,

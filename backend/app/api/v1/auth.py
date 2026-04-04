@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends, Request, Response, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -56,8 +58,7 @@ async def register(
 
     # Создаём юзера неактивным (или обновляем существующего неактивного)
     if not existing:
-        user = await register_user(data, db, request, ref_code=ref)
-        # register_user должен создавать с is_active=False
+        user = await register_user(data, db, request)
     else:
         user = existing
 
@@ -68,6 +69,9 @@ async def register(
     if redis:
         # Ключ: email → код, TTL 10 минут
         await redis.setex(f"verify_code:{data.email}", 600, code)
+        # Сохраняем ref чтобы применить при подтверждении email
+        if ref:
+            await redis.setex(f"verify_ref:{data.email}", 600, ref)
 
     # Отправляем письмо
     from app.tasks.send_email import send_email_task
@@ -90,7 +94,6 @@ async def register(
     )
 
     return {"detail": "Код отправлен на email", "email": data.email}
-
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -329,9 +332,31 @@ async def verify_registration_code(
 
     user.is_active = True
     user.email_verified = True
+
+    # Реферальная логика — применяем только здесь, при реальной активации
+    ref_code = await redis.get(f"verify_ref:{data.email}")
+    if ref_code and not user.referred_by:  # защита от двойного начисления
+        ref_result = await db.execute(select(User).where(User.ref_code == ref_code))
+        referrer = ref_result.scalar_one_or_none()
+        if referrer and referrer.id != user.id:
+            user.referred_by = referrer.id
+            referrer.referral_count = (referrer.referral_count or 0) + 1
+
+            # Каждые 3 реферала — +1 месяц Premium
+            if referrer.referral_count % 3 == 0:
+                now = datetime.now(timezone.utc)
+                if referrer.subscription_expires_at and referrer.subscription_expires_at > now:
+                    referrer.subscription_expires_at += timedelta(days=30)
+                else:
+                    referrer.subscription_expires_at = now + timedelta(days=30)
+                referrer.is_premium = True
+
+            db.add(referrer)
+
     await db.commit()
     await db.refresh(user)
     await redis.delete(f"verify_code:{data.email}")
+    await redis.delete(f"verify_ref:{data.email}")
 
     token_response, refresh_token = await create_tokens_for_user(user, db, request)
     set_refresh_cookie(response, refresh_token)
