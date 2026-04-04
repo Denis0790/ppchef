@@ -7,6 +7,8 @@ import PopularRecipes from "@/components/PopularRecipes";
 import { useAuth } from "@/lib/auth";
 import FavoriteButton from "@/components/FavoriteButton";
 import InstallBanner from "@/components/InstallBanner";
+import Image from "next/image";
+import { Fragment } from "react";
 
 const CATEGORIES = [
   { key: "", label: "все", svg: "/icon_filter/vse.svg", svgActive: "/icon_filter/vse2.svg" },
@@ -31,7 +33,7 @@ const DESIGN = {
 
   // Цвета фильтров
   filterBg: "#F8FFEE",           // фон полосы фильтров
-  filterBorder: "#cfe7b3",       // граница полосы фильтров
+  filterBorder: "#F8FFEE",       // граница полосы фильтров
   filterActiveBg: "#013125",     // фон активной кнопки фильтра
   filterActiveText: "#A6ED49",   // текст активной кнопки фильтра
   filterInactiveText: "#013125", // текст неактивной кнопки фильтра
@@ -171,9 +173,11 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                 flexShrink: 0,
               }}>
                 <span style={{
-                  fontSize: 8, fontWeight: 600,
+                  fontSize: 9,
                   color: "#F8FFEE", lineHeight: 1,
                   whiteSpace: "nowrap",
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontStyle: "italic",
                 }}>
                   {label}
                 </span>
@@ -193,15 +197,15 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                 Отступ сверху: 0 (уже задан marginBottom: 7 у строки выше)
                 Отступ снизу: 7px до мета-строки
                 Макс. ширина: 256px
-                Цвет: #01311C | Шрифт: Cormorant Garamond, 17px
+                Цвет: #133520 | Шрифт: Cormorant Garamond, 17px
                 Ограничение: 2 строки с обрезкой
             ────────────────────────────────────────────────────── */}
             <div style={{
-              fontSize: 17, fontWeight: 600, lineHeight: 1.3,
-              color: "#01311C",
+              fontSize: 16, lineHeight: 1.3,
+              color: "#133520",
               marginBottom: 7,
               maxWidth: 256,
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Montserrat', sans-serif",
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
@@ -232,13 +236,21 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             <div style={{
               display: "flex", alignItems: "center",
               flexWrap: "wrap", gap: "2px 12px",
-              fontSize: 12, color: DESIGN.cardTimeColor,
+              fontSize: 11, color: DESIGN.cardTimeColor,
+              fontFamily: "'Montserrat', sans-serif",
+              fontStyle: "italic",
             }}>
               {recipe.cook_time_minutes && (
-                <span>⏱ {recipe.cook_time_minutes} мин</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <img src="/icons/chasi.svg" alt="" style={{ width: 13.9, height: 13.9, objectFit: "contain" }} />
+                  {recipe.cook_time_minutes} мин
+                </span>
               )}
               {recipe.servings && (
-                <span>🍽 {recipe.servings} порц.</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <img src="/icons/vilki.svg" alt="" style={{ width: 13.9, height: 13.9, objectFit: "contain" }} />
+                  {recipe.servings} порц.
+                </span>
               )}
               {normPercent !== null && (
                 <span>{normPercent}% нормы</span>
@@ -253,12 +265,12 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               Фон: как у карточки  | Обводка: #A6ED49, 1px
               Значение: жирное | Подпись: обычная | Всё в одну строку
               Цвет текста: #01311C
-              Отступ справа от колонки: 20px
+              Отступ справа от колонки: 40px
           ────────────────────────────────────────────────────────── */}
           <div style={{
             display: "flex", flexDirection: "column", gap: 4,
             flexShrink: 0, width: 83,
-            paddingRight: 20,
+            marginRight: 20,
             boxSizing: "border-box",
           }}>
             {[
@@ -269,7 +281,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             ].map(({ label, value }) => (
               <div key={label} style={{
                 /* Бейдж КБЖУ
-                   Размер: 83×19px | Скругление: 6px
+                   Размер: 83×19px | Скругление: 12px
                    Фон: (как карточка) | Обводка: #A6ED49, 1px
                    Значение и подпись в одну строку, не переносятся
                 */
@@ -293,9 +305,10 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                 </span>
                 {/* Подпись: обычная, #01311C */}
                 <span style={{
-                  fontSize: 10, fontWeight: 400,
+                  fontSize: 10,
                   color: "#01311C", lineHeight: 1,
                   whiteSpace: "nowrap",
+                  opacity: 0.75,
                 }}>
                   {label}
                 </span>
@@ -501,6 +514,9 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             position: "sticky",
             top: DESIGN.headerHeight,
             zIndex: 6,
+            fontFamily: "'Montserrat', sans-serif",
+            fontStyle: "italic",
+            
           }}
         >
           {CATEGORIES.map(({ key, label, svg, svgActive }) => {
@@ -544,13 +560,18 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
               <div style={{ fontSize: 48, marginBottom: 12 }}>🥗</div>
               <div>Рецептов пока нет</div>
             </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {recipes.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
-              ))}
-            </div>
-          )}
+              ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {recipes.map((recipe, index) => (
+                  <Fragment key={recipe.id}>
+                    <RecipeCard recipe={recipe} />
+                    {index === 19 && !activeCategory && (
+                      <PopularRecipes recipes={popularRecipes} />
+                    )}
+                  </Fragment>
+                ))}
+              </div>
+            )}
 
           <div ref={loaderRef} style={{ height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {loadingMore && <div style={{ color: "#aaa", fontSize: 13 }}>Загружаем ещё...</div>}
@@ -558,8 +579,6 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
               <div style={{ color: "#ccc", fontSize: 12 }}>Все рецепты загружены 🎉</div>
             )}
           </div>
-
-          {!activeCategory && <PopularRecipes recipes={popularRecipes} />}
         </div>
 
         {/* ── КНОПКА НАВЕРХ ──────────────────────────────────────────────────

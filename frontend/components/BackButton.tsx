@@ -16,15 +16,23 @@ export default function BackButton() {
         router.push(backTo);
       }}
       style={{
-        position: "absolute", top: 16, left: 16,
-        background: "rgba(255,255,255,0.9)",
+        width: 199, height: 38,
+        background: "#013125",
         border: "none",
-        borderRadius: 12, padding: "8px 14px",
-        fontSize: 13, fontWeight: 600,
-        color: "#333", cursor: "pointer",
+        borderRadius: 100,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 8,
+        fontSize: 14, fontWeight: 400,
+        fontFamily: "'Montserrat', sans-serif",
+        fontStyle: "italic",
+        color: "#F8FFEE",
+        cursor: "pointer",
+        flexShrink: 0,
       }}
     >
-      ← Назад
+      <img src="/icon_auth/back.svg" alt="back" style={{ width: 10, height: 14, objectFit: "contain" }} />
+      {/* 🔧 замени /YOUR_BACK_ARROW.svg на свой путь */}
+      вернуться к рецептам
     </button>
   );
 }

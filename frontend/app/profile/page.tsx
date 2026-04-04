@@ -144,6 +144,11 @@ export default function ProfilePage() {
         </div>
 
         <div style={{ background: "linear-gradient(135deg, #4F7453, #7A9E7E)", borderRadius: 16, padding: 20, marginBottom: 16, color: "#fff" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+          <img src="/logo.png" alt="ПП Шеф" style={{ height: 48, objectFit: "contain" }} />
+        </div>
+        <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.8, marginBottom: 4, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>🎁 Пригласите друзей</div>
+          
           <div style={{ fontSize: 12, fontWeight: 600, opacity: 0.8, marginBottom: 4, textTransform: "uppercase" as const, letterSpacing: 0.5 }}>🎁 Пригласите друзей</div>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, marginBottom: 8 }}>Получите Premium бесплатно</div>
           <div style={{ fontSize: 13, opacity: 0.9, marginBottom: 16, lineHeight: 1.6 }}>

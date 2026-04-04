@@ -6,7 +6,7 @@ import { useAuthPrompt } from "@/hooks/useAuthPrompt";
 
 interface Props {
   recipeId: string;
-  variant?: "card" | "inline";
+  variant?: "card" | "inline" | "recipe";
 }
 
 export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
@@ -46,7 +46,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
       } else {
         await addFavorite(token, recipeId);
         setIsFavorite(true);
-        showToast("Добавлено в избранное ❤️");
+        showToast("Добавлено в избранное");
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "";
@@ -54,19 +54,73 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
         requirePremium();
       } else if (!isFavorite) {
         setIsFavorite(true);
-        showToast("Добавлено в избранное ❤️");
+        showToast("Добавлено в избранное");
       }
     } finally {
       setLoading(false);
     }
   }
 
-  /* ── ВАРИАНТ «card» ────────────────────────────────────────────────────────
-     Кнопка: 98×25px | Скругление: 100px | В одну строку: сердце + текст
-     Не нажата: фон #fff, обводка #01311C 1.1px, текст #01311C, сердце #01311C
-     Нажата:    фон #01311C, обводка #01311C, текст #A6ED49, сердце #A6ED49
-     Сердце SVG: 15×15px
-  ──────────────────────────────────────────────────────────────────────────── */
+  const Toast = toast ? (
+    <div style={{
+      position: "fixed", bottom: 100,
+      left: "50%", transform: "translateX(-50%)",
+      background: toastType === "warning" ? "#4F7453" : "rgba(0,0,0,0.75)",
+      color: "#F8FFEE", padding: "10px 20px", borderRadius: 20,
+      fontSize: 14, fontWeight: 500, zIndex: 100, whiteSpace: "nowrap",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+      fontFamily: "'Montserrat', sans-serif",
+    }}>
+      {toast}
+    </div>
+  ) : null;
+
+  if (variant === "recipe") {
+    return (
+      <>
+        {PromptComponent}
+        <button
+          onClick={toggle}
+          disabled={loading}
+          style={{
+            width: 151, height: 38,
+            borderRadius: 100,
+            background: isFavorite ? "#01311C" : "#F8FFEE",
+            border: "1.1px solid #01311C",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            gap: 6,
+            cursor: loading ? "default" : "pointer",
+            opacity: loading ? 0.6 : 1,
+            transition: "all 0.2s",
+            padding: 0,
+            flexShrink: 0,
+          }}
+        >
+          <svg
+            width="15" height="15" viewBox="0 0 24 24"
+            fill="none"
+            stroke={isFavorite ? "#A6ED49" : "#01311C"}
+            strokeWidth="1.1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          <span style={{
+            fontSize: 14, lineHeight: 1,
+            color: isFavorite ? "#A6ED49" : "#01311C",
+            whiteSpace: "nowrap",
+            fontFamily: "'Montserrat', sans-serif",
+            fontStyle: "italic",
+          }}>
+            {isFavorite ? "в избранном" : "в избранное"}
+          </span>
+        </button>
+        {Toast}
+      </>
+    );
+  }
+
   if (variant === "card") {
     return (
       <>
@@ -78,7 +132,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
             width: 98, height: 25,
             borderRadius: 100,
             background: isFavorite ? "#01311C" : "#F8FFEE",
-            border: `1.1px solid #01311C`,
+            border: "1.1px solid #01311C",
             display: "flex", alignItems: "center", justifyContent: "center",
             gap: 4,
             cursor: loading ? "default" : "pointer",
@@ -88,10 +142,6 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
             flexShrink: 0,
           }}
         >
-          {/* Сердце SVG 15×15
-              Не нажато: обводка #01311C, фон прозрачный
-              Нажато:    обводка #A6ED49, фон прозрачный
-          */}
           <svg
             width="15" height="15" viewBox="0 0 24 24"
             fill="none"
@@ -102,39 +152,21 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
-
-          {/* Текст: 8px
-              Не нажато: #01311C «в избранное»
-              Нажато:    #A6ED49 «в избранном»
-          */}
           <span style={{
-            fontSize: 8, fontWeight: 600, lineHeight: 1,
+            fontSize: 9, lineHeight: 1,
             color: isFavorite ? "#A6ED49" : "#01311C",
             whiteSpace: "nowrap",
+            fontFamily: "'Montserrat', sans-serif",
+            fontStyle: "italic",
           }}>
             {isFavorite ? "в избранном" : "в избранное"}
           </span>
         </button>
-
-        {toast && (
-          <div style={{
-            position: "fixed", bottom: 100,
-            left: "50%", transform: "translateX(-50%)",
-            background: toastType === "warning" ? "#4F7453" : "rgba(0,0,0,0.75)",
-            color: "#F8FFEE", padding: "10px 20px", borderRadius: 20,
-            fontSize: 14, fontWeight: 500, zIndex: 100, whiteSpace: "nowrap",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-          }}>
-            {toast}
-          </div>
-        )}
+        {Toast}
       </>
     );
   }
 
-  /* ── ВАРИАНТ «inline» ──────────────────────────────────────────────────────
-     Оригинальный стиль — без изменений
-  ──────────────────────────────────────────────────────────────────────────── */
   return (
     <>
       {PromptComponent}
@@ -150,19 +182,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
       }}>
         {isFavorite ? "❤️" : "🤍"}
       </button>
-
-      {toast && (
-        <div style={{
-          position: "fixed", bottom: 100,
-          left: "50%", transform: "translateX(-50%)",
-          background: toastType === "warning" ? "#4F7453" : "rgba(0,0,0,0.75)",
-          color: "#F8FFEE", padding: "10px 20px", borderRadius: 20,
-          fontSize: 14, fontWeight: 500, zIndex: 100, whiteSpace: "nowrap",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-        }}>
-          {toast}
-        </div>
-      )}
+      {Toast}
     </>
   );
 }

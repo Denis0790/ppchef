@@ -166,7 +166,7 @@ services:
     restart: unless-stopped
     env_file: ./frontend/.env
     #volumes:
-     # - ./frontend:/app
+      #- ./frontend:/app
       #- /app/node_modules
     ports:
       - "3000:3000"

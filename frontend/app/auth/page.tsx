@@ -7,6 +7,13 @@ import { login, register, apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 const globalStyles = `
+  @font-face {
+    font-family: 'Montserrat';
+    src: url('/fonts/Montserrat-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
   @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&display=swap');
 
   * { box-sizing: border-box; }
@@ -31,7 +38,8 @@ const globalStyles = `
     border-radius: 100px;
     padding: 13px 18px 13px 48px;
     color: #F8FFEE;
-    font-family: 'Unbounded', sans-serif;
+    fontFamily: "'Montserrat', sans-serif";
+    fontStyle: "italic";
     font-size: 13px;
     outline: none;
     transition: box-shadow 0.2s;
@@ -50,7 +58,8 @@ const globalStyles = `
     color: #013125;
     border: none;
     border-radius: 100px;
-    font-family: 'Unbounded', sans-serif;
+    fontFamily: "'Montserrat', sans-serif";
+    fontStyle: "italic";
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
@@ -79,7 +88,8 @@ const globalStyles = `
     text-align: center;
     padding: 10px 0;
     border-radius: 100px;
-    font-family: 'Unbounded', sans-serif;
+    fontFamily: "'Montserrat', sans-serif";
+    fontStyle: "italic";
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -129,7 +139,8 @@ const globalStyles = `
     font-size: 11.5px;
     color: #F8FFEE;
     line-height: 1.6;
-    font-family: 'Unbounded', sans-serif;
+    fontFamily: "'Montserrat', sans-serif";
+    fontStyle: "italic";
     opacity: 0.85;
     letter-spacing: 0.01em;
   }
@@ -137,7 +148,8 @@ const globalStyles = `
 
   .forgot-link {
     font-size: 12px; color: #A6ED49; cursor: pointer;
-    font-family: 'Unbounded', sans-serif;
+    fontFamily: "'Montserrat', sans-serif";
+    fontStyle: "italic";
     letter-spacing: 0.02em;
     transition: opacity 0.2s;
   }
@@ -164,7 +176,8 @@ const globalStyles = `
     padding: 10px 14px;
     font-size: 12px;
     margin-bottom: 16px;
-    font-family: 'Unbounded', sans-serif;
+    fontFamily: "'Montserrat', sans-serif";
+    fontStyle: "italic";
   }
 `;
 
@@ -348,7 +361,7 @@ export default function AuthPage() {
     }
   }
 
-  if (step === "verify") {
+if (step === "verify") {
     return (
       <>
         <style>{globalStyles}</style>
@@ -360,11 +373,11 @@ export default function AuthPage() {
         }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <div style={{ fontSize: 48, marginBottom: 12 }}>📨</div>
-            <div style={{ fontFamily: "'Unbounded', sans-serif", fontSize: 20, fontWeight: 700, color: "#A6ED49" }}>
+            <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 20, fontWeight: 700, color: "#A6ED49" }}>
               Проверьте почту
             </div>
             <div style={{
-              fontFamily: "'Unbounded', sans-serif", fontSize: 12,
+              fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14,
               color: "#F8FFEE", opacity: 0.6, marginTop: 10, lineHeight: 1.7,
             }}>
               Мы отправили 4-значный код на<br />
@@ -387,7 +400,8 @@ export default function AuthPage() {
                   borderRadius: 16, outline: "none",
                   background: digit ? "rgba(166,237,73,0.08)" : "rgba(255,255,255,0.03)",
                   transition: "all 0.15s",
-                  fontFamily: "'Unbounded', sans-serif",
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontStyle: "italic",
                   caretColor: "#A6ED49",
                 }}
               />
@@ -397,28 +411,30 @@ export default function AuthPage() {
           {error && <div className="error-box">{error}</div>}
 
           <button className="submit-btn" onClick={handleVerify}
-            disabled={loading || code.join("").length !== 4}>
+            disabled={loading || code.join("").length !== 4}
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
             {loading ? "Проверяем..." : "Подтвердить"}
           </button>
 
           <div style={{
             textAlign: "center", fontSize: 12, color: "#F8FFEE",
             opacity: 0.55, marginTop: 20,
-            fontFamily: "'Unbounded', sans-serif",
+            fontFamily: "'Montserrat', sans-serif", fontStyle: "italic",
           }}>
             Не получили код?{" "}
             {resendTimer > 0 ? (
-              <span style={{ color: "#7aad7a" }}>Повторить через {resendTimer}с</span>
+              <span style={{ color: "#7aad7a", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>Повторить через {resendTimer}с</span>
             ) : (
               <span onClick={handleResend}
-                style={{ color: "#A6ED49", cursor: "pointer", fontWeight: 600 }}>
+                style={{ color: "#A6ED49", cursor: "pointer", fontWeight: 600, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
                 Отправить снова
               </span>
             )}
           </div>
 
           <div className="back-link"
-            onClick={() => { setStep("form"); setCode(["", "", "", ""]); setError(""); }}>
+            onClick={() => { setStep("form"); setCode(["", "", "", ""]); setError(""); }}
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
             ← Изменить email
           </div>
         </main>
@@ -426,9 +442,6 @@ export default function AuthPage() {
     );
   }
 
-  // Высота фиксированной верхней части:
-  // логотип 144 + mb36 + таб 56 + mb12 + email 56 + mb12 + пароль 56 = 372px
-  // Центрируем эту группу: paddingTop = 50vh - 372/2 = 50vh - 186px
   const topPadding = "calc(50vh - 280px)";
 
   return (
@@ -443,12 +456,10 @@ export default function AuthPage() {
         paddingLeft: 24, paddingRight: 24,
       }}>
 
-        {/* Логотип 220×144 — всегда на месте */}
         <div style={{ marginBottom: 36 }}>
           <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 220, height: 144, objectFit: "contain" }} />
         </div>
 
-        {/* Таб вход/регистрация — всегда на месте */}
         <div style={{
           display: "flex",
           background: "#013125",
@@ -463,20 +474,20 @@ export default function AuthPage() {
           {(["login", "register"] as const).map(m => (
             <button key={m}
               className={`tab-btn ${mode === m ? "active" : "inactive"}`}
-              onClick={() => { setMode(m); setError(""); }}>
+              onClick={() => { setMode(m); setError(""); }}
+              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 17 }}>
               {m === "login" ? "вход" : "регистрация"}
             </button>
           ))}
         </div>
 
-        {/* Email — всегда на месте */}
         <div className="input-wrap">
           <IconEmail />
           <input className="auth-input" type="email" value={email}
-            onChange={e => setEmail(e.target.value)} placeholder="e-mail" />
+            onChange={e => setEmail(e.target.value)} placeholder="e-mail"
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }} />
         </div>
 
-        {/* Пароль — всегда на месте */}
         <div className="input-wrap" style={{ marginBottom: 0 }}>
           <IconLock />
           <input className="auth-input"
@@ -485,7 +496,7 @@ export default function AuthPage() {
             onChange={e => setPassword(e.target.value)}
             placeholder="пароль"
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            style={{ paddingRight: 48 }}
+            style={{ paddingRight: 48, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}
           />
           <div
             onClick={() => setShowPassword(p => !p)}
@@ -512,36 +523,38 @@ export default function AuthPage() {
         {mode === "login" ? (
           <>
             <div style={{ width: 318, textAlign: "center", marginTop: 12 }}>
-              <span className="forgot-link" onClick={() => router.push("/auth/reset")}>
-                забыли пароль →
-              </span>
-            </div>
-            {error && <div className="error-box" style={{ marginTop: 16 }}>{error}</div>}
-            <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
-              style={{ marginTop: 35 }}>
-              {loading ? "Подождите..." : "вход"}
-            </button>
+            <span className="forgot-link" onClick={() => router.push("/auth/reset")}
+              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+              забыли пароль →
+            </span>
+          </div>
+          {error && <div className="error-box" style={{ marginTop: 16, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>{error}</div>}
+          <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
+            style={{ marginTop: 35, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 17 }}>
+            {loading ? "Подождите..." : "вход"}
+          </button>
           </>
         ) : (
           <>
             <div style={{ width: 318, marginTop: 12 }}>
-              <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
-                label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
-              <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
-                label="Я согласен(а) на обработку персональных данных в соответствии с"
-                link="/privacy" linkLabel="политикой конфиденциальности" />
-            </div>
-            {error && <div className="error-box">{error}</div>}
-            <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
-              style={{ marginTop: 12 }}>
-              {loading ? "Подождите..." : "зарегистрироваться"}
-            </button>
+            <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
+              label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
+            <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
+              label="Я согласен(а) на обработку персональных данных в соответствии с"
+              link="/privacy" linkLabel="политикой конфиденциальности" />
+          </div>
+          {error && <div className="error-box">{error}</div>}
+          <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
+            style={{ marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 17 }}>
+            {loading ? "Подождите..." : "зарегистрироваться"}
+          </button>
           </>
         )}
 
-        <div className="back-link" onClick={() => router.push("/")}>
-          ← вернуться к рецептам
-        </div>
+       <div className="back-link" onClick={() => router.push("/")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 14 }}>
+        <img src="/icon_auth/back.svg" alt="назад" style={{ width: 10, height: 24, objectFit: "contain" }} />
+        вернуться к рецептам
+      </div>
 
       </main>
     </>
