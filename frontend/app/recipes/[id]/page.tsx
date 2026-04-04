@@ -101,7 +101,7 @@ export default async function RecipePage({
 
       {/* ── КАРТИНКА 429×200, скругление сверху ── */}
       <div style={{
-        width: 429, margin: "17px auto 0",
+        width: "100%", margin: "17px auto 0",
         height: 200,
         borderRadius: "16px 16px 0 0",
         overflow: "hidden",
@@ -157,7 +157,7 @@ export default async function RecipePage({
           display: "flex", alignItems: "center",
           gap: 6,
           marginTop: 12,
-          width: 429, height: 24,
+          width: "100%", height: 24,
         }}>
           {[
             { label: "ккал",     value: recipe.calories },
