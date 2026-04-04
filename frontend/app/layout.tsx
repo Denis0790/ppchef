@@ -1,11 +1,30 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Cormorant_Garamond, DM_Sans, Unbounded } from "next/font/google";
 import { AuthProvider } from "@/lib/auth";
 import BottomNavWrapper from "@/components/BottomNavWrapper";
 import CookieBanner from "@/components/CookieBanner";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import IOSInstallBanner from "@/components/IOSInstallBanner";
 import OfflineBanner from "@/components/OfflineBanner";
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["cyrillic"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+const unbounded = Unbounded({
+  subsets: ["cyrillic"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -57,7 +76,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru">
+    <html lang="ru" className={`${cormorant.className} ${dmSans.className} ${unbounded.className}`}>
       <head>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <link rel="apple-touch-icon" href="/icon-180.png" />

@@ -14,7 +14,6 @@ const globalStyles = `
     font-style: italic;
     font-display: swap;
   }
-  @import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700&display=swap');
 
   * { box-sizing: border-box; }
 
