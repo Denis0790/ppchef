@@ -474,7 +474,7 @@ if (step === "verify") {
             <button key={m}
               className={`tab-btn ${mode === m ? "active" : "inactive"}`}
               onClick={() => { setMode(m); setError(""); }}
-              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 17 }}>
+              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
               {m === "login" ? "вход" : "регистрация"}
             </button>
           ))}
@@ -529,7 +529,7 @@ if (step === "verify") {
           </div>
           {error && <div className="error-box" style={{ marginTop: 16, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>{error}</div>}
           <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
-            style={{ marginTop: 35, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 17 }}>
+            style={{ marginTop: 35, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
             {loading ? "Подождите..." : "вход"}
           </button>
           </>
@@ -544,7 +544,7 @@ if (step === "verify") {
           </div>
           {error && <div className="error-box">{error}</div>}
           <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
-            style={{ marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 17 }}>
+            style={{ marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
             {loading ? "Подождите..." : "зарегистрироваться"}
           </button>
           </>
