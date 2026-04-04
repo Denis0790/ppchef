@@ -10,6 +10,7 @@ import InstallBanner from "@/components/InstallBanner";
 import Image from "next/image";
 import { Fragment } from "react";
 
+
 const CATEGORIES = [
   { key: "", label: "все", svg: "/icon_filter/vse.svg", svgActive: "/icon_filter/vse2.svg" },
   { key: "breakfast", label: "завтрак", svg: "/icon_filter/zavtrak.svg", svgActive: "/icon_filter/zavtrak2.svg" },
@@ -27,9 +28,9 @@ const PAGE_SIZE = 10;
 const DESIGN = {
   // Цвета шапки
   headerBg: "#01311C",           // фон шапки
-  headerHeight: 88,              // высота шапки (px)
-  logoHeight: 54,                // высота логотипа (px)
-  profileIconSize: 44,           // размер иконки профиля (px)
+  headerHeight: 70,              // высота шапки (px)
+  logoHeight: 43,                // высота логотипа (px)
+  profileIconSize: 32,           // размер иконки профиля (px)
 
   // Цвета фильтров
   filterBg: "#F8FFEE",           // фон полосы фильтров
@@ -38,7 +39,7 @@ const DESIGN = {
   filterActiveText: "#A6ED49",   // текст активной кнопки фильтра
   filterInactiveText: "#013125", // текст неактивной кнопки фильтра
   filterBorderColor: "#013125",  // граница кнопок фильтра
-  filterIconSize: 22,            // размер иконки в фильтре (px)
+  filterIconSize: 24,            // размер иконки в фильтре (px)
   // Для замены SVG иконок фильтров — папка /public/icon_filter/
   // Активная иконка: svgActive, неактивная: svg (они инвертированы в коде)
 
@@ -124,10 +125,12 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           background: DESIGN.cardImagePlaceholderBg,
         }}>
           {recipe.image_url
-            ? <img
+            ? <Image
                 src={recipe.image_url}
                 alt={recipe.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                fill
+                sizes="480px"
+                style={{ objectFit: "cover" }}
               />
             : <div style={{
                 width: "100%", height: "100%",
@@ -242,13 +245,13 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             }}>
               {recipe.cook_time_minutes && (
                 <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <img src="/icons/chasi.svg" alt="" style={{ width: 13.9, height: 13.9, objectFit: "contain" }} />
+                  <Image src="/icons/chasi.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
                   {recipe.cook_time_minutes} мин
                 </span>
               )}
               {recipe.servings && (
                 <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <img src="/icons/vilki.svg" alt="" style={{ width: 13.9, height: 13.9, objectFit: "contain" }} />
+                  <Image src="/icons/vilki.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
                   {recipe.servings} порц.
                 </span>
               )}
@@ -269,7 +272,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           ────────────────────────────────────────────────────────── */}
           <div style={{
             display: "flex", flexDirection: "column", gap: 4,
-            flexShrink: 0, width: 83,
+            flexShrink: 0, width: 86,
             marginRight: 20,
             boxSizing: "border-box",
           }}>
@@ -490,9 +493,9 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
           position: "sticky", top: 0, zIndex: 10,
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
-          <img src="/logo.svg" alt="ПП Шеф" style={{ height: DESIGN.logoHeight, width: "auto" }} />
+          <Image src="/logo.svg" alt="ПП Шеф" height={DESIGN.logoHeight} width={200} style={{ width: "auto" }} />
           <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{ cursor: "pointer" }}>
-            <img src="/profile.svg" alt="Профиль" style={{ width: DESIGN.profileIconSize, height: DESIGN.profileIconSize }} />
+            <Image src="/profile.svg" alt="Профиль" width={DESIGN.profileIconSize} height={DESIGN.profileIconSize} />
           </div>
         </div>
 
@@ -528,17 +531,19 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
                 style={{
                   flexShrink: 0,
                   display: "flex", alignItems: "center", gap: 6,
-                  height: 38, padding: "0 14px", borderRadius: 20,
+                  height: 32, padding: "0 14px", borderRadius: 20,
                   background: active ? DESIGN.filterActiveBg : DESIGN.filterBg,
                   border: `1.5px solid ${DESIGN.filterBorderColor}`,
                   cursor: "pointer", whiteSpace: "nowrap",
                   transition: "all 0.2s ease", boxSizing: "border-box",
                 }}
               >
-                <img
+                <Image
                   src={active ? svg : svgActive}
                   alt={label}
-                  style={{ width: DESIGN.filterIconSize, height: DESIGN.filterIconSize, display: "block", flexShrink: 0 }}
+                  width={DESIGN.filterIconSize}
+                  height={DESIGN.filterIconSize}
+                  style={{ display: "block", flexShrink: 0 }}
                 />
                 <span style={{
                   fontSize: 12, fontWeight: active ? 600 : 500, lineHeight: 1,

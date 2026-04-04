@@ -5,6 +5,7 @@ import KbjuBlock from "@/components/KbjuBlock";
 import IngredientsList from "@/components/IngredientsList";
 import PartnerBlock from "@/components/PartnerBlock";
 import { notFound } from "next/navigation";
+import Image from "next/image"
 
 const CATEGORY_LABELS: Record<string, string> = {
   breakfast: "Завтрак",
@@ -102,7 +103,7 @@ export default async function RecipePage({
       {/* ── КАРТИНКА 429×200, скругление сверху ── */}
       <div style={{
         width: "100%", margin: "17px auto 0",
-        height: 200,
+        height: 260,
         borderRadius: "16px 16px 0 0",
         overflow: "hidden",
         background: "#e8e0d0",
@@ -110,8 +111,7 @@ export default async function RecipePage({
         fontSize: 80,
       }}>
         {recipe.image_url
-          ? <img src={recipe.image_url} alt={recipe.title}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ? <Image src={recipe.image_url} alt={recipe.title} width={480} height={200} style={{ objectFit: "cover", width: "100%", height: "100%" }} />
           : "🥗"}
       </div>
 
@@ -129,13 +129,13 @@ export default async function RecipePage({
         }}>
           {recipe.cook_time_minutes && (
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <img src="/icons/chasi.svg" alt="" style={{ width: 13.9, height: 13.9, objectFit: "contain" }} />
+              <Image src="/icons/chasi.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
               {recipe.cook_time_minutes} мин
             </span>
           )}
           {recipe.servings && (
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <img src="/icons/vilki.svg" alt="" style={{ width: 13.9, height: 13.9, objectFit: "contain" }} />
+              <Image src="/icons/vilki.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
               {recipe.servings} порц.
             </span>
           )}
@@ -207,10 +207,9 @@ export default async function RecipePage({
             background: "#F8FFEE",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <img src="/icons/sovet.svg" alt="" style={{ width: 21, height: 16, objectFit: "contain" }} />
-              {/* 🔧 замени /YOUR_BENEFIT_ICON.svg на свой путь */}
+              <Image src="/icons/sovet.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
               <span style={{
-                fontSize: 14, fontWeight: 600,
+                fontSize: 12, fontWeight: 600,
                 color: "#133520",
                 fontFamily: "'Montserrat', sans-serif",
               }}>
@@ -218,135 +217,158 @@ export default async function RecipePage({
               </span>
             </div>
             <div style={{
-              fontSize: 14, color: "#133520", lineHeight: 1.6,
+              fontSize: 11, color: "#133520", lineHeight: 1.6,
               fontFamily: "'Montserrat', sans-serif",
             }}>
               {recipe.benefit}
             </div>
-          </div>
-        )}
-
-        {/* ── ИНГРЕДИЕНТЫ ── */}
-        {recipe.ingredients.length > 0 && (
-          <div style={{ marginTop: 32 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <img src="/icons/ingred.svg" alt="" style={{ width: 21, height: 16, objectFit: "contain" }} />
-              {/* 🔧 замени /YOUR_INGREDIENTS_ICON.svg на свой путь */}
-              <span style={{
-                fontSize: 14, fontWeight: 600,
-                color: "#133520",
-                fontFamily: "'Montserrat', sans-serif",
-              }}>
-                Ингредиенты
-              </span>
             </div>
-            {recipe.ingredients.map((ing, i) => (
-              <div key={i}>
+            )}
+
+            {/* ── ИНГРЕДИЕНТЫ ── */}
+            {recipe.ingredients.length > 0 && (
+              <div style={{ marginTop: 32 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <Image src="/icons/ingred.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <span style={{
+                    fontSize: 12, fontWeight: 600,
+                    color: "#133520",
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}>
+                    Ингредиенты
+                  </span>
+                </div>
+                <IngredientsList ingredients={recipe.ingredients} />
+              </div>
+            )}
+
+            {/* ── РЕФЕРАЛКА ── */}
+            {recipe.ingredients.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <PartnerBlock />
+              </div>
+            )}
+
+            {/* ── ПРИГОТОВЛЕНИЕ ── */}
+            {recipe.steps.length > 0 && (
+              <div style={{ marginTop: 32 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <Image src="/icons/prigotovlenie.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <span style={{
+                    fontSize: 14, fontWeight: 600,
+                    color: "#133520",
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}>
+                    Приготовление
+                  </span>
+                </div>
+
+                {recipe.steps.map((step) => (
+                  <div key={step.id} style={{ display: "flex", gap: 7, marginBottom: 8, alignItems: "flex-start" }}>
+                    {/* Полоска */}
+                    <div style={{
+                      flexShrink: 0,
+                      width: 2,
+                      height: 12,
+                      background: "#A6ED49",
+                      marginTop: 2,
+                    }} />
+                    {/* Номер */}
+                    <span style={{
+                      flexShrink: 0,
+                      fontSize: 11, fontWeight: 400,
+                      color: "#013125",
+                      fontFamily: "'Montserrat', sans-serif",
+                      lineHeight: 1.3,
+                    }}>
+                      {step.step_number}
+                    </span>
+                    {/* Текст */}
+                    <span style={{
+                      fontSize: 11, fontWeight: 400,
+                      color: "#013125",
+                      fontFamily: "'Montserrat', sans-serif",
+                      lineHeight: 1.3,
+                      marginLeft: 7,
+                    }}>
+                      {step.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── СОВЕТ НУТРИЦИОЛОГА ── */}
+            {recipe.nutritionist_tips && (
+              <div style={{
+                background: "#013125",
+                borderRadius: 16, padding: 16,
+                marginTop: 24,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                  <Image src="/icons/nutritionist.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <span style={{
+                    fontSize: 12, fontStyle: "italic",
+                    color: "#A6ED49",
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}>
+                    Совет нутрициолога
+                  </span>
+                </div>
                 <div style={{
-                  display: "flex", justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "10px 0",
-                  fontSize: 14, color: "#133520",
+                  fontSize: 11, fontWeight: 400,
+                  color: "#F8FFEE", lineHeight: 1.6,
                   fontFamily: "'Montserrat', sans-serif",
                 }}>
-                  <span>{ing.name}</span>
-                  <span style={{ opacity: 0.7 }}>{ing.amount}</span>
+                  {recipe.nutritionist_tips}
                 </div>
-                {i < recipe.ingredients.length - 1 && (
-                  <div style={{ height: 1, background: "#A6ED49" }} />
-                )}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* ── РЕФЕРАЛКА ── */}
-        {recipe.ingredients.length > 0 && (
-          <div style={{ marginTop: 16 }}>
-            <PartnerBlock />
-          </div>
-        )}
-
-        {/* ── ПРИГОТОВЛЕНИЕ ── */}
-        {recipe.steps.length > 0 && (
-          <div style={{ marginTop: 32 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <img src="/YOUR_STEPS_ICON.svg" alt="" style={{ width: 21, height: 16, objectFit: "contain" }} />
-              {/* 🔧 замени /YOUR_STEPS_ICON.svg на свой путь */}
-              <span style={{
-                fontSize: 14, fontWeight: 600,
-                color: "#133520",
-                fontFamily: "'Montserrat', sans-serif",
+            {/* ── ВИТАМИНЫ И МИНЕРАЛЫ ── */}
+            {recipe.vitamins && (
+              <div style={{
+                background: "#F8FFEE",
+                borderRadius: 16,
+                border: "1px solid #A6ED49",
+                padding: 16,
+                marginTop: 24,
+                marginBottom: 20
               }}>
-                Приготовление
-              </span>
-            </div>
-            {recipe.steps.map((step) => (
-              <div key={step.id} style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-                <div style={{
-                  flexShrink: 0, width: 28, height: 28,
-                  borderRadius: "50%", background: "#4F7453",
-                  color: "#fff", fontSize: 13, fontWeight: 600,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "'Montserrat', sans-serif",
-                }}>
-                  {step.step_number}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <Image src="/icons/vitamins.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <span style={{
+                    fontSize: 12, fontStyle: "italic",
+                    color: "#013125",
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}>
+                    Витамины и минералы
+                  </span>
                 </div>
                 <div style={{
-                  fontSize: 14, color: "#133520", lineHeight: 1.6, paddingTop: 4,
+                  fontSize: 11, fontWeight: 400,
+                  color: "#013125", lineHeight: 1.6,
                   fontFamily: "'Montserrat', sans-serif",
                 }}>
-                  {step.text}
+                  {recipe.vitamins}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {/* остальные блоки пока как есть */}
-        {recipe.nutritionist_tips && (
-          <div style={{
-            background: "linear-gradient(135deg, #4F7453, #7A9E7E)",
-            borderRadius: 16, padding: 16, marginBottom: 16, color: "#fff",
-            marginTop: 32,
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-              👨‍⚕️ Совет нутрициолога
-            </div>
-            <div style={{ fontSize: 14, lineHeight: 1.6, opacity: 0.9 }}>
-              {recipe.nutritionist_tips}
-            </div>
-          </div>
-        )}
-
-        {recipe.vitamins && (
-          <div style={{
-            background: "#fff", borderRadius: 16,
-            padding: 16, marginBottom: 16,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#C4975A", marginBottom: 6 }}>
-              💊 Витамины и минералы
-            </div>
-            <div style={{ fontSize: 14, color: "#555", lineHeight: 1.6 }}>
-              {recipe.vitamins}
-            </div>
-          </div>
-        )}
-
-        {recipe.tags.length > 0 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
-            {recipe.tags.map((tag) => (
-              <div key={tag.id} style={{
-                background: "#fff", borderRadius: 20,
-                padding: "4px 12px", fontSize: 12,
-                color: "#4F7453", fontWeight: 500,
-              }}>
-                #{tag.name}
+            {recipe.tags.length > 0 && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
+                {recipe.tags.map((tag) => (
+                  <div key={tag.id} style={{
+                    background: "#fff", borderRadius: 20,
+                    padding: "4px 12px", fontSize: 12,
+                    color: "#4F7453", fontWeight: 500,
+                    
+                  }}>
+                    #{tag.name}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+            )}
       </div>
     </main>
   );

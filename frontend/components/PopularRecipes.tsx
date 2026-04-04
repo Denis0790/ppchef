@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { Recipe } from "@/lib/api";
 
 const CATEGORIES: Record<string, { label: string; emoji: string }> = {
@@ -18,14 +19,25 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
 
   return (
     <div style={{ marginBottom: 24 }}>
+      {/* Заголовок */}
       <div style={{
-        fontSize: 18, fontWeight: 700, color: "#333",
-        fontFamily: "'Cormorant Garamond', serif",
-        padding: "0 0 12px 0",
+        display: "flex", alignItems: "center", gap: 6,
+        border: "1px solid #013125",
+        borderRadius: 12,
+        padding: "8px 12px",
+        background: "#F8FFEE",
+        marginBottom: 12,
       }}>
-        🔥 Популярное
+        <Image src="/icon_popular/pop.svg" alt="" width={16} height={16} />
+        <span style={{
+          fontSize: 12, fontStyle: "italic",
+          color: "#013125", fontFamily: "'Montserrat', sans-serif",
+        }}>
+          Популярное
+        </span>
       </div>
 
+      {/* Карусель */}
       <div style={{
         display: "flex",
         gap: 12,
@@ -42,15 +54,19 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
               style={{ textDecoration: "none", flexShrink: 0 }}
             >
               <div style={{
-                width: 160,
-                background: "#fff",
+                width: 150,
+                height: 185,
+                background: "#F8FFEE",
                 borderRadius: 14,
                 overflow: "hidden",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.07)",
+                border: "1px solid #013125",
+                display: "flex",
+                flexDirection: "column",
               }}>
                 {/* Фото */}
                 <div style={{
                   height: 110,
+                  flexShrink: 0,
                   background: "linear-gradient(135deg, #e8e0d0, #d5cab8)",
                   display: "flex",
                   alignItems: "center",
@@ -59,25 +75,20 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                   position: "relative",
                 }}>
                   {recipe.image_url
-                    ? <img src={recipe.image_url} alt={recipe.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ? <Image src={recipe.image_url} alt={recipe.title} fill sizes="150px" style={{ objectFit: "cover" }} />
                     : cat?.emoji || "🥗"}
-                  <div style={{
-                    position: "absolute", top: 8, left: 8,
-                    background: "#4F7453", color: "#fff",
-                    fontSize: 9, fontWeight: 600,
-                    padding: "2px 8px", borderRadius: 20,
-                  }}>
-                    {cat?.label || recipe.category}
-                  </div>
                 </div>
 
                 {/* Контент */}
-                <div style={{ padding: "10px 10px 12px" }}>
+                <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", flex: 1 }}>
+                  {/* Название */}
                   <div style={{
-                    fontSize: 13, fontWeight: 600, color: "#333",
-                    lineHeight: 1.3, marginBottom: 6,
-                    fontFamily: "'Cormorant Garamond', serif",
+                    fontSize: 9,
+                    fontWeight: 400,
+                    color: "#013125",
+                    lineHeight: 1.3,
+                    marginBottom: 4,
+                    fontFamily: "'Montserrat', sans-serif",
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
@@ -85,9 +96,47 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                   }}>
                     {recipe.title}
                   </div>
-                  <div style={{ display: "flex", gap: 8, fontSize: 11, color: "#888" }}>
-                    {recipe.calories && <span>🔥 {Math.round(recipe.calories)}</span>}
-                    {recipe.cook_time_minutes && <span>⏱ {recipe.cook_time_minutes}м</span>}
+
+                  {/* Категория */}
+                  <div style={{
+                    display: "inline-flex", alignItems: "center",
+                    background: "#013125", borderRadius: 20,
+                    padding: "2px 7px", marginBottom: 6,
+                    alignSelf: "flex-start",
+                  }}>
+                    <span style={{
+                      fontSize: 7, fontStyle: "italic",
+                      color: "#FFFFFF",
+                      fontFamily: "'Montserrat', sans-serif",
+                    }}>
+                      {cat?.label || recipe.category}
+                    </span>
+                  </div>
+
+                  {/* Калории и время */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: "auto" }}>
+                    {recipe.calories && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Image src="/icon_popular/kkal.svg" alt="" width={11} height={11} />
+                        <span style={{
+                          fontSize: 11, color: "rgba(1,49,28,0.7)",
+                          fontFamily: "'Montserrat', sans-serif",
+                        }}>
+                          {Math.round(recipe.calories)}
+                        </span>
+                      </div>
+                    )}
+                    {recipe.cook_time_minutes && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Image src="/icon_popular/clock.svg" alt="" width={11} height={11} />
+                        <span style={{
+                          fontSize: 11, color: "rgba(1,49,28,0.7)",
+                          fontFamily: "'Montserrat', sans-serif",
+                        }}>
+                          {recipe.cook_time_minutes}м
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

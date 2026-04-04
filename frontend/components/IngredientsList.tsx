@@ -31,13 +31,17 @@ export default function IngredientsList({ ingredients }: { ingredients: Ingredie
           <div key={ing.id} suppressHydrationWarning style={{
             display: "flex", justifyContent: "space-between",
             padding: "8px 0",
-            borderBottom: i < ingredients.length - 1 ? "1px solid #f0ebe2" : "none",
+            borderBottom: i < ingredients.length - 1 ? "1px solid #A6ED49" : "none",
             background: stop ? "rgba(224,85,85,0.04)" : "transparent",
             borderRadius: stop ? 8 : 0,
             paddingLeft: stop ? 8 : 0,
             paddingRight: stop ? 8 : 0,
           }}>
-            <span suppressHydrationWarning style={{ fontSize: 14, color: stop ? "rgba(224,85,85,0.7)" : "#333" }}>
+            <span suppressHydrationWarning style={{
+              fontSize: 11, fontWeight: 400,
+              fontFamily: "'Montserrat', sans-serif",
+              color: stop ? "rgba(224,85,85,0.7)" : "#013125",
+            }}>
               <span suppressHydrationWarning style={{
                 marginRight: 4,
                 display: stop ? "inline" : "none",
@@ -45,7 +49,12 @@ export default function IngredientsList({ ingredients }: { ingredients: Ingredie
               {ing.name}
             </span>
             {ing.amount && (
-              <span suppressHydrationWarning style={{ fontSize: 14, color: stop ? "rgba(224,85,85,0.5)" : "#888" }}>
+              <span suppressHydrationWarning style={{
+                fontSize: 11, fontWeight: 400,
+                fontFamily: "'Montserrat', sans-serif",
+                color: stop ? "rgba(224,85,85,0.5)" : "#013125",
+                opacity: stop ? 1 : 0.6,
+              }}>
                 {ing.amount}
               </span>
             )}

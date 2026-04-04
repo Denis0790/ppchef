@@ -31,7 +31,7 @@ const globalStyles = `
 
   .auth-input {
     width: 100%;
-    height: 56px;
+    height: 48px;
     background: transparent;
     border: 1.5px solid #A6ED49;
     border-radius: 100px;
@@ -50,8 +50,8 @@ const globalStyles = `
   .auth-input::placeholder { color: #7aad7a; }
 
   .submit-btn {
-    width: 318px;
-    height: 56px;
+    width: 271px;
+    height: 48px;
     padding: 0;
     background: #A6ED49;
     color: #013125;
@@ -103,7 +103,7 @@ const globalStyles = `
 
   .input-wrap {
     position: relative;
-    width: 318px;
+    width: 271;
     margin-bottom: 12px;
   }
   .input-icon {
@@ -137,7 +137,7 @@ const globalStyles = `
   .checkbox-label {
     font-size: 11.5px;
     color: #F8FFEE;
-    line-height: 1.6;
+    line-height: 1;
     fontFamily: "'Montserrat', sans-serif";
     fontStyle: "italic";
     opacity: 0.85;
@@ -186,13 +186,13 @@ function isValidEmail(email: string) {
 
 function IconEmail() {
   return (
-    <img className="input-icon" src="/icon_auth/log.svg" alt="" width={18} height={18} />
+    <img className="input-icon" src="/icon_auth/log.svg" alt="" width={20} height={20} />
   );
 }
 
 function IconLock() {
   return (
-    <img className="input-icon" src="/icon_auth/pas.svg" alt="" width={18} height={18} />
+    <img className="input-icon" src="/icon_auth/pas.svg" alt="" width={20} height={20} />
   );
 }
 
@@ -456,7 +456,7 @@ if (step === "verify") {
       }}>
 
         <div style={{ marginBottom: 36 }}>
-          <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 220, height: 144, objectFit: "contain" }} />
+          <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 178, height: 117, objectFit: "contain" }} />
         </div>
 
         <div style={{
@@ -466,8 +466,8 @@ if (step === "verify") {
           padding: 4,
           marginBottom: 12,
           border: "2px solid #A6ED49",
-          height: 56,
-          width: 318,
+          height: 48,
+          width: 271,
           flexShrink: 0,
         }}>
           {(["login", "register"] as const).map(m => (
@@ -484,7 +484,7 @@ if (step === "verify") {
           <IconEmail />
           <input className="auth-input" type="email" value={email}
             onChange={e => setEmail(e.target.value)} placeholder="e-mail"
-            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }} />
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }} />
         </div>
 
         <div className="input-wrap" style={{ marginBottom: 0 }}>
@@ -495,7 +495,7 @@ if (step === "verify") {
             onChange={e => setPassword(e.target.value)}
             placeholder="пароль"
             onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            style={{ paddingRight: 48, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}
+            style={{ paddingRight: 48, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }}
           />
           <div
             onClick={() => setShowPassword(p => !p)}
@@ -521,9 +521,9 @@ if (step === "verify") {
         */}
         {mode === "login" ? (
           <>
-            <div style={{ width: 318, textAlign: "center", marginTop: 12 }}>
+            <div style={{ width: 271, textAlign: "center", marginTop: 27 }}>
             <span className="forgot-link" onClick={() => router.push("/auth/reset")}
-              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12 }}>
               забыли пароль →
             </span>
           </div>
@@ -535,7 +535,7 @@ if (step === "verify") {
           </>
         ) : (
           <>
-            <div style={{ width: 318, marginTop: 12 }}>
+            <div style={{ width: 280, marginTop: 12,fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 10, color: "#F8FFEE", lineHeight: 1.6 }}>
             <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
               label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
             <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
@@ -550,8 +550,8 @@ if (step === "verify") {
           </>
         )}
 
-       <div className="back-link" onClick={() => router.push("/")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 14 }}>
-        <img src="/icon_auth/back.svg" alt="назад" style={{ width: 10, height: 24, objectFit: "contain" }} />
+       <div className="back-link" onClick={() => router.push("/")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 12 }}>
+        <img src="/icon_auth/back.svg" alt="назад" style={{ width: 8, height: 20, objectFit: "contain" }} />
         вернуться к рецептам
       </div>
 
