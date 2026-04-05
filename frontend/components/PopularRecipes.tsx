@@ -56,7 +56,7 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
               <div style={{
                 width: 150,
                 height: 185,
-                background: "#F8FFEE",
+                background: "#FFFFFF",
                 borderRadius: 14,
                 overflow: "hidden",
                 display: "flex",

@@ -291,6 +291,7 @@ export default async function RecipePage({
                       fontSize: 11, fontWeight: 400,
                       color: "#013125",
                       fontFamily: "'Montserrat', sans-serif",
+                      fontStyle: "normal",
                       lineHeight: 1.3,
                       marginLeft: 7,
                     }}>
@@ -323,6 +324,7 @@ export default async function RecipePage({
                   fontSize: 11, fontWeight: 400,
                   color: "#F8FFEE", lineHeight: 1.6,
                   fontFamily: "'Montserrat', sans-serif",
+                  fontStyle: "normal"
                 }}>
                   {recipe.nutritionist_tips}
                 </div>
