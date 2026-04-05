@@ -220,6 +220,7 @@ export default async function RecipePage({
             <div style={{
               fontSize: 11, color: "#133520", lineHeight: 1.6,
               fontFamily: "'Montserrat', sans-serif",
+              fontStyle: "normal"
             }}>
               {recipe.benefit}
             </div>
@@ -232,7 +233,7 @@ export default async function RecipePage({
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                   <Image src="/icons/ingred.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
                   <span style={{
-                    fontSize: 12, fontWeight: 600,
+                    fontSize: 11, fontWeight: 600,
                     color: "#133520",
                     fontFamily: "'Montserrat', sans-serif",
                     fontStyle: "medium"

@@ -79,7 +79,7 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                 </div>
 
                 {/* Контент */}
-                <div style={{ padding: "6px 8px", display: "flex", flexDirection: "column", flex: 1 }}>
+                <div style={{ padding: "9px 8px 6px", display: "flex", flexDirection: "column", flex: 1 }}>
                   {/* Название */}
                   <div style={{
                     fontSize: 9,
@@ -88,6 +88,7 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                     lineHeight: 1.3,
                     marginBottom: 6,
                     fontFamily: "'Montserrat', sans-serif",
+                    fontStyle: "normal",
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
@@ -105,7 +106,8 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                     <div style={{
                       display: "inline-flex", alignItems: "center",
                       background: "#013125", borderRadius: 20,
-                      padding: "2px 7px", flexShrink: 0,
+                      height: 18,
+                      padding: "5px 8px", flexShrink: 0,
                     }}>
                       <span style={{
                         fontSize: 7, fontStyle: "italic",
@@ -121,8 +123,9 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                       <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
                         <Image src="/icon_popular/kkal.svg" alt="" width={11} height={11} />
                         <span style={{
-                          fontSize: 9, color: "rgba(1,49,28,0.7)",
+                          fontSize: 9, color: "#013125", opacity: 0.7,
                           fontFamily: "'Montserrat', sans-serif",
+                          fontStyle: "normal"
                         }}>
                           {Math.round(recipe.calories)}
                         </span>
@@ -134,8 +137,9 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                       <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
                         <Image src="/icon_popular/clock.svg" alt="" width={11} height={11} />
                         <span style={{
-                          fontSize: 9, color: "rgba(1,49,28,0.7)",
+                          fontSize: 9, color: "#013125", opacity: 0.7,
                           fontFamily: "'Montserrat', sans-serif",
+                          fontStyle: "normal"
                         }}>
                           {recipe.cook_time_minutes}м
                         </span>
