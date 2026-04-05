@@ -59,6 +59,13 @@ button, a, [role="button"] {
   font-style: italic;
   font-display: swap;
 }
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/fonts/Montserrat-MediumItalic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: medium;
+  font-display: swap;
+}
 
 main {
   animation: pageFadeIn 0.2s ease-out;

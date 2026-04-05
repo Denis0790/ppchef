@@ -204,15 +204,11 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                 Ограничение: 2 строки с обрезкой
             ────────────────────────────────────────────────────── */}
             <div style={{
-              fontSize: 16, lineHeight: 1.3,
+              fontSize: 14, lineHeight: 1.3,
               color: "#133520",
               marginBottom: 7,
-              maxWidth: 256,
+              maxWidth: 225,
               fontFamily: "'Montserrat', sans-serif",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
             }}>
               {recipe.title}
             </div>

@@ -59,7 +59,6 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                 background: "#F8FFEE",
                 borderRadius: 14,
                 overflow: "hidden",
-                border: "1px solid #013125",
                 display: "flex",
                 flexDirection: "column",
               }}>
@@ -75,7 +74,7 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                   position: "relative",
                 }}>
                   {recipe.image_url
-                    ? <Image src={recipe.image_url} alt={recipe.title} fill sizes="150px" style={{ objectFit: "cover" }} />
+                    ? <Image src={recipe.image_url} alt={recipe.title} fill sizes="150px" loading="lazy" style={{ objectFit: "cover" }} />
                     : cat?.emoji || "🥗"}
                 </div>
 
@@ -87,7 +86,7 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                     fontWeight: 400,
                     color: "#013125",
                     lineHeight: 1.3,
-                    marginBottom: 4,
+                    marginBottom: 6,
                     fontFamily: "'Montserrat', sans-serif",
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
@@ -97,40 +96,45 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                     {recipe.title}
                   </div>
 
-                  {/* Категория */}
+                  {/* Категория + калории + время в одну строку */}
                   <div style={{
-                    display: "inline-flex", alignItems: "center",
-                    background: "#013125", borderRadius: 20,
-                    padding: "2px 7px", marginBottom: 6,
-                    alignSelf: "flex-start",
+                    display: "flex", alignItems: "center",
+                    gap: 6, marginTop: "auto", flexWrap: "nowrap",
                   }}>
-                    <span style={{
-                      fontSize: 7, fontStyle: "italic",
-                      color: "#FFFFFF",
-                      fontFamily: "'Montserrat', sans-serif",
+                    {/* Категория */}
+                    <div style={{
+                      display: "inline-flex", alignItems: "center",
+                      background: "#013125", borderRadius: 20,
+                      padding: "2px 7px", flexShrink: 0,
                     }}>
-                      {cat?.label || recipe.category}
-                    </span>
-                  </div>
+                      <span style={{
+                        fontSize: 7, fontStyle: "italic",
+                        color: "#FFFFFF",
+                        fontFamily: "'Montserrat', sans-serif",
+                      }}>
+                        {cat?.label || recipe.category}
+                      </span>
+                    </div>
 
-                  {/* Калории и время */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: "auto" }}>
+                    {/* Калории */}
                     {recipe.calories && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
                         <Image src="/icon_popular/kkal.svg" alt="" width={11} height={11} />
                         <span style={{
-                          fontSize: 11, color: "rgba(1,49,28,0.7)",
+                          fontSize: 9, color: "rgba(1,49,28,0.7)",
                           fontFamily: "'Montserrat', sans-serif",
                         }}>
                           {Math.round(recipe.calories)}
                         </span>
                       </div>
                     )}
+
+                    {/* Время */}
                     {recipe.cook_time_minutes && (
-                      <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
                         <Image src="/icon_popular/clock.svg" alt="" width={11} height={11} />
                         <span style={{
-                          fontSize: 11, color: "rgba(1,49,28,0.7)",
+                          fontSize: 9, color: "rgba(1,49,28,0.7)",
                           fontFamily: "'Montserrat', sans-serif",
                         }}>
                           {recipe.cook_time_minutes}м

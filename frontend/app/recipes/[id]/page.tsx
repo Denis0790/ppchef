@@ -207,11 +207,12 @@ export default async function RecipePage({
             background: "#F8FFEE",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-              <Image src="/icons/sovet.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+              <Image src="/icons/sovet.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
               <span style={{
                 fontSize: 12, fontWeight: 600,
                 color: "#133520",
                 fontFamily: "'Montserrat', sans-serif",
+                fontStyle: "medium"
               }}>
                 Польза
               </span>
@@ -229,11 +230,12 @@ export default async function RecipePage({
             {recipe.ingredients.length > 0 && (
               <div style={{ marginTop: 32 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                  <Image src="/icons/ingred.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <Image src="/icons/ingred.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
                   <span style={{
                     fontSize: 12, fontWeight: 600,
                     color: "#133520",
                     fontFamily: "'Montserrat', sans-serif",
+                    fontStyle: "medium"
                   }}>
                     Ингредиенты
                   </span>
@@ -253,11 +255,12 @@ export default async function RecipePage({
             {recipe.steps.length > 0 && (
               <div style={{ marginTop: 32 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                  <Image src="/icons/prigotovlenie.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <Image src="/icons/prigotovlenie.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
                   <span style={{
-                    fontSize: 14, fontWeight: 600,
+                    fontSize: 12, fontWeight: 700,
                     color: "#133520",
                     fontFamily: "'Montserrat', sans-serif",
+                    fontStyle: "medium"
                   }}>
                     Приготовление
                   </span>
@@ -306,11 +309,12 @@ export default async function RecipePage({
                 marginTop: 24,
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                  <Image src="/icons/nutritionist.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <Image src="/icons/nutritionist.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
                   <span style={{
-                    fontSize: 12, fontStyle: "italic",
+                    fontSize: 12,
                     color: "#A6ED49",
                     fontFamily: "'Montserrat', sans-serif",
+                    fontStyle: "medium"
                   }}>
                     Совет нутрициолога
                   </span>
@@ -336,9 +340,9 @@ export default async function RecipePage({
                 marginBottom: 20
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <Image src="/icons/vitamins.svg" alt="" width={21} height={16} style={{ objectFit: "contain" }} />
+                  <Image src="/icons/vitamins.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
                   <span style={{
-                    fontSize: 12, fontStyle: "italic",
+                    fontSize: 12, fontStyle: "medium",
                     color: "#013125",
                     fontFamily: "'Montserrat', sans-serif",
                   }}>
