@@ -21,16 +21,17 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
     <div style={{ marginBottom: 24 }}>
       {/* Заголовок */}
       <div style={{
-        display: "flex", alignItems: "center", gap: 6,
+        display: "inline-flex", alignItems: "center", gap: 6,
         border: "1px solid #013125",
-        borderRadius: 12,
-        padding: "8px 12px",
+        borderRadius: 20,
+        width: 127, height: 32,
+        padding: "0 12px",
         background: "#F8FFEE",
         marginBottom: 12,
       }}>
         <Image src="/icon_popular/pop.svg" alt="" width={16} height={16} />
         <span style={{
-          fontSize: 12, fontStyle: "italic",
+          fontSize: 12, fontStyle: "italic", fontWeight: 400,
           color: "#013125", fontFamily: "'Montserrat', sans-serif",
         }}>
           Популярное
@@ -79,16 +80,16 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                 </div>
 
                 {/* Контент */}
-                <div style={{ padding: "9px 8px 6px", display: "flex", flexDirection: "column", flex: 1 }}>
+                <div style={{ padding: "9px 11px 4px", display: "flex", flexDirection: "column", flex: 1 }}>
                   {/* Название */}
                   <div style={{
                     fontSize: 9,
                     fontWeight: 400,
+                    fontStyle: "normal",
                     color: "#013125",
                     lineHeight: 1.3,
                     marginBottom: 6,
                     fontFamily: "'Montserrat', sans-serif",
-                    fontStyle: "normal",
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
@@ -125,7 +126,7 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                         <span style={{
                           fontSize: 9, color: "#013125", opacity: 0.7,
                           fontFamily: "'Montserrat', sans-serif",
-                          fontStyle: "normal"
+                          fontStyle: "normal",
                         }}>
                           {Math.round(recipe.calories)}
                         </span>
@@ -139,7 +140,7 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                         <span style={{
                           fontSize: 9, color: "#013125", opacity: 0.7,
                           fontFamily: "'Montserrat', sans-serif",
-                          fontStyle: "normal"
+                          fontStyle: "normal",
                         }}>
                           {recipe.cook_time_minutes}м
                         </span>

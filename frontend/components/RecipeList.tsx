@@ -9,6 +9,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import InstallBanner from "@/components/InstallBanner";
 import Image from "next/image";
 import { Fragment } from "react";
+import Header from "@/components/Header";
 
 
 const CATEGORIES = [
@@ -26,11 +27,7 @@ const PAGE_SIZE = 10;
 
 // ─── ДИЗАЙН-ТОКЕНЫ ────────────────────────────────────────────────────────────
 const DESIGN = {
-  // Цвета шапки
-  headerBg: "#01311C",           // фон шапки
-  headerHeight: 70,              // высота шапки (px)
-  logoHeight: 43,                // высота логотипа (px)
-  profileIconSize: 32,           // размер иконки профиля (px)
+           // размер иконки профиля (px)
 
   // Цвета фильтров
   filterBg: "#F8FFEE",           // фон полосы фильтров
@@ -481,19 +478,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             Высота: DESIGN.headerHeight
             Фон: DESIGN.headerBg
         ────────────────────────────────────────────────────────────────────── */}
-        <div style={{
-          height: DESIGN.headerHeight,
-          padding: "0 20px",
-          background: DESIGN.headerBg,
-          borderBottom: "1px solid #ece7de",
-          position: "sticky", top: 0, zIndex: 10,
-          display: "flex", justifyContent: "space-between", alignItems: "center",
-        }}>
-          <Image src="/logo.svg" alt="ПП Шеф" height={DESIGN.logoHeight} width={200} style={{ width: "auto" }} />
-          <div onClick={() => router.push(isLoggedIn ? "/profile" : "/auth")} style={{ cursor: "pointer" }}>
-            <Image src="/profile.svg" alt="Профиль" width={DESIGN.profileIconSize} height={DESIGN.profileIconSize} />
-          </div>
-        </div>
+        <Header />
 
         {/* ── ФИЛЬТРЫ КАТЕГОРИЙ ───────────────────────────────────────────────
             Иконки: /public/icon_filter/*.svg
@@ -511,7 +496,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             borderBottom: `1px solid ${DESIGN.filterBorder}`,
             scrollbarWidth: "none",
             position: "sticky",
-            top: DESIGN.headerHeight,
+
             zIndex: 6,
             fontFamily: "'Montserrat', sans-serif",
             fontStyle: "italic",
