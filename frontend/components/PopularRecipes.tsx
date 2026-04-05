@@ -75,7 +75,15 @@ export default function PopularRecipes({ recipes }: { recipes: Recipe[] }) {
                   position: "relative",
                 }}>
                   {recipe.image_url
-                    ? <Image src={recipe.image_url} alt={recipe.title} fill sizes="150px" loading="lazy" style={{ objectFit: "cover" }} />
+                    ? <Image
+                            src={recipe.image_url}
+                            alt={recipe.title}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 665px"
+                            quality={70}
+                            loading="lazy"
+                            style={{ objectFit: "cover" }}
+                          />
                     : cat?.emoji || "🥗"}
                 </div>
 

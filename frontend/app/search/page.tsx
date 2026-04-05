@@ -5,6 +5,7 @@ import Link from "next/link";
 import { searchRecipes, SearchRecipe } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useAuthPrompt } from "@/hooks/useAuthPrompt";
+import Image from "next/image";
 
 const CATEGORIES: Record<string, string> = {
   breakfast: "Завтрак", lunch: "Обед", dinner: "Ужин",
@@ -210,7 +211,14 @@ export default function SearchPage() {
               <Link key={recipe.id} href={`/recipes/${recipe.id}`} onClick={() => sessionStorage.setItem("backTo", "/search")} style={{ textDecoration: "none" }}>
                 <div style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", display: "flex" }}>
                   <div style={{ width: 110, flexShrink: 0, background: "linear-gradient(135deg, #e8e0d0, #d5cab8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, minHeight: 100 }}>
-                    {recipe.image_url ? <img src={recipe.image_url} alt={recipe.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : "🥗"}
+                    {recipe.image_url ? <Image
+                                                src={recipe.image_url}
+                                                alt={recipe.title}
+                                                fill
+                                                sizes="(max-width: 768px) 100vw, 665px"
+                                                quality={70}
+                                                style={{ objectFit: "cover" }}
+                                              />: "🥗"}
                   </div>
                   <div style={{ padding: "12px 14px", flex: 1 }}>
                     <div style={{ fontSize: 11, color: "#4F7453", fontWeight: 600, marginBottom: 4 }}>{CATEGORIES[recipe.category] || recipe.category}</div>

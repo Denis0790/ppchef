@@ -83,7 +83,14 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         fontSize: 80, position: "relative",
       }}>
         {recipe.image_url
-          ? <Image src={recipe.image_url} alt={recipe.title} fill priority sizes="(max-width: 480px) 100vw, 480px" style={{ objectFit: "cover" }} />
+          ? <Image
+              src={recipe.image_url}
+              alt={recipe.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 665px"
+              quality={70}
+              style={{ objectFit: "cover" }}
+            />
           : "🥗"}
       </div>
 

@@ -112,7 +112,7 @@ export default function BottomNav() {
             {/* Подпись */}
             <div
               style={{
-                fontSize: 14,
+                fontSize: 10,
                 lineHeight: 1.4,
                 color: active ? "#A6ED49" : "#666",
                 fontWeight: 400,

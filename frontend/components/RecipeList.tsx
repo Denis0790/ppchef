@@ -126,7 +126,8 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                 src={recipe.image_url}
                 alt={recipe.title}
                 fill
-                sizes="480px"
+                sizes="(max-width: 768px) 100vw, 665px"
+                quality={70}
                 style={{ objectFit: "cover" }}
               />
             : <div style={{
