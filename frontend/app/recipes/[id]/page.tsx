@@ -1,6 +1,7 @@
 import { getRecipe } from "@/lib/api";
 import BackButton from "@/components/BackButton";
 import FavoriteButton from "@/components/FavoriteButton";
+import ShareButton from "@/components/ShareButton";
 import IngredientsList from "@/components/IngredientsList";
 import PartnerBlock from "@/components/PartnerBlock";
 import { notFound } from "next/navigation";
@@ -47,7 +48,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
     "@type": "Recipe",
     "name": recipe.title,
     "description": recipe.benefit || recipe.title,
-    "image": recipe.image_url ? [recipe.image_url] : [],  // массив, не строка
+    "image": recipe.image_url ? [recipe.image_url] : [],
     "author": { "@type": "Organization", "name": "ПП Шеф" },
     "datePublished": recipe.created_at,
     "prepTime": recipe.cook_time_minutes ? `PT${recipe.cook_time_minutes}M` : undefined,
@@ -60,13 +61,15 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
       "carbohydrateContent": recipe.carbs ? `${Math.round(recipe.carbs)} г` : undefined,
     },
     "recipeIngredient": recipe.ingredients.map(
-        (i) => `${i.name}${i.amount ? ` — ${i.amount}` : ""}`
-      ),
-      "recipeInstructions": recipe.steps.map(
-        (s) => ({ "@type": "HowToStep", "text": s.text })
-      ),
+      (i) => `${i.name}${i.amount ? ` — ${i.amount}` : ""}`
+    ),
+    "recipeInstructions": recipe.steps.map(
+      (s) => ({ "@type": "HowToStep", "text": s.text })
+    ),
     "keywords": "правильное питание, пп рецепт, здоровое питание",
   };
+
+  const recipeUrl = `https://ppchef.ru/recipes/${recipe.id}`;
 
   return (
     <main style={{
@@ -80,13 +83,16 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
       />
       <Header />
 
-      {/* ── КНОПКА НАЗАД + ИЗБРАННОЕ ── */}
+      {/* ── КНОПКА НАЗАД + ПОДЕЛИТЬСЯ + ИЗБРАННОЕ ── */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         paddingLeft: 18, paddingRight: 18, paddingTop: 17,
       }}>
         <BackButton />
-        <FavoriteButton recipeId={recipe.id} variant="recipe" />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <ShareButton title={recipe.title} url={recipeUrl} />
+          <FavoriteButton recipeId={recipe.id} variant="recipe" />
+        </div>
       </div>
 
       {/* ── КАРТИНКА ── */}
