@@ -1,11 +1,11 @@
-
-
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 :root {
@@ -40,10 +40,6 @@ html::-webkit-scrollbar {
   display: none;
 }
 
-button, a, [role="button"] {
-  user-select: none;
-}
-
 @font-face {
   font-family: 'Montserrat';
   src: url('/fonts/Montserrat-Regular.ttf') format('truetype');
@@ -59,6 +55,7 @@ button, a, [role="button"] {
   font-style: italic;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'Montserrat';
   src: url('/fonts/Montserrat-MediumItalic.ttf') format('truetype');
