@@ -17,7 +17,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       openGraph: {
         title: recipe.title,
         description: recipe.benefit || `Рецепт ${recipe.title}`,
-        images: recipe.image_url ? [{ url: recipe.image_url }] : [],
+        images: recipe.image_url
+          ? [{ url: recipe.image_url, width: 1200, height: 630, alt: recipe.title }]
+          : [],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: recipe.title,
+        description: recipe.benefit || `Рецепт ${recipe.title}`,
+        images: recipe.image_url ? [recipe.image_url] : [],
       },
     };
   } catch {
@@ -39,7 +47,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
     "@type": "Recipe",
     "name": recipe.title,
     "description": recipe.benefit || recipe.title,
-    "image": recipe.image_url || "",
+    "image": recipe.image_url ? [recipe.image_url] : [],  // массив, не строка
     "author": { "@type": "Organization", "name": "ПП Шеф" },
     "datePublished": recipe.created_at,
     "prepTime": recipe.cook_time_minutes ? `PT${recipe.cook_time_minutes}M` : undefined,
@@ -51,8 +59,12 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
       "fatContent": recipe.fat ? `${Math.round(recipe.fat)} г` : undefined,
       "carbohydrateContent": recipe.carbs ? `${Math.round(recipe.carbs)} г` : undefined,
     },
-    "recipeIngredient": recipe.ingredients.map(i => `${i.name}${i.amount ? ` — ${i.amount}` : ""}`),
-    "recipeInstructions": recipe.steps.map(s => ({ "@type": "HowToStep", "text": s.text })),
+    "recipeIngredient": recipe.ingredients.map(
+        (i) => `${i.name}${i.amount ? ` — ${i.amount}` : ""}`
+      ),
+      "recipeInstructions": recipe.steps.map(
+        (s) => ({ "@type": "HowToStep", "text": s.text })
+      ),
     "keywords": "правильное питание, пп рецепт, здоровое питание",
   };
 
@@ -62,7 +74,10 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
       minHeight: "100vh", background: "#F8FFEE",
       fontFamily: "'Montserrat', sans-serif",
     }}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Header />
 
       {/* ── КНОПКА НАЗАД + ИЗБРАННОЕ ── */}
@@ -203,7 +218,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
                 приготовление
               </span>
             </div>
-            {recipe.steps.map((step) => (
+            {recipe.steps.map((step: { id: string; step_number: number; text: string }) => (
               <div key={step.id} style={{ display: "flex", gap: 7, marginBottom: 8, alignItems: "flex-start" }}>
                 <div style={{ flexShrink: 0, width: 2, height: 12, background: "#A6ED49", marginTop: 2 }} />
                 <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 400, fontStyle: "normal", color: "#013125", fontFamily: "'Montserrat', sans-serif", lineHeight: 1.3 }}>
@@ -249,7 +264,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
         {recipe.tags.length > 0 && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
-            {recipe.tags.map((tag) => (
+            {recipe.tags.map((tag: { id: string; name: string }) => (
               <div key={tag.id} style={{ background: "#fff", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "#4F7453", fontWeight: 500 }}>
                 #{tag.name}
               </div>
