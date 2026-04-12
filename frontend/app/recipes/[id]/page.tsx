@@ -129,7 +129,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
         {/* ── КАТЕГОРИЯ ── */}
         <div style={{ marginTop: 13, marginBottom: 12 }}>
           <div style={{
-            width: 52, height: 25,
+            width: 61, height: 30,
             borderRadius: 100,
             background: "#01311C",
             display: "inline-flex", alignItems: "center", justifyContent: "center",
@@ -158,7 +158,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
         {/* ── ВРЕМЯ + ПОРЦИИ (слева) | КБЖУ (справа) ── */}
         <div style={{
-          display: "flex", alignItems: "flex-start",
+          display: "flex", alignItems: "flex-end",
           justifyContent: "space-between",
           marginBottom: 24,
         }}>
@@ -168,7 +168,6 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
             flexWrap: "wrap", gap: "2px 12px",
             fontSize: 12, color: "#888", opacity: 0.7,
             fontFamily: "'Montserrat', sans-serif", fontStyle: "normal",
-            paddingTop: 2,
           }}>
             {recipe.cook_time_minutes && (
               <span style={{ display: "flex", alignItems: "center", gap: 4 }}>

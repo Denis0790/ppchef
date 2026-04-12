@@ -13,56 +13,61 @@ export default function PartnerBlock() {
           background: "#01311C",
           borderRadius: 16,
           display: "flex",
-          alignItems: "center",
+          flexDirection: "column",
+          justifyContent: "center",
           padding: "0 16px",
-          gap: 12,
+          gap: 6,
           cursor: "pointer",
         }}
         onClick={() => window.open(KUPER_URL, "_blank")}
       >
-        {/* SVG иконка*/}
-        <div style={{ width: 37, height: 37, flexShrink: 0 }}>
-          <Image src="/kyper/korzina.png" alt="Купер" width={37} height={37} style={{ objectFit: "contain" }} />
-        </div>
+        {/* ВЕРХНЯЯ СТРОКА: иконка + название + кнопка */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+        }}>
+          <div style={{ width: 37, height: 37, flexShrink: 0 }}>
+            <Image src="/kyper/korzina.png" alt="Купер" width={37} height={37} style={{ objectFit: "contain" }} />
+          </div>
 
-        {/* Текст */}
-        <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
             fontSize: 16, fontWeight: 500,
             color: "#A6ED49",
             fontFamily: "'Montserrat', sans-serif",
-            marginBottom: 4,
+            flex: 1,
           }}>
             купер доставка
           </div>
+
           <div style={{
-            fontSize: 12, fontWeight: 400,
-            color: "#F8FFEE",
-            fontFamily: "'Montserrat', sans-serif",
-            lineHeight: 1.4,
+            width: 111, height: 33,
+            flexShrink: 0,
+            background: "#A6ED49",
+            borderRadius: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}>
-            привезем свежие продукты до двери из вашего любимого магазина
+            <span style={{
+              fontSize: 12,
+              fontStyle: "italic",
+              color: "#01311C",
+              fontFamily: "'Montserrat', sans-serif",
+            }}>
+              заказать
+            </span>
           </div>
         </div>
 
-        {/* Кнопка заказать */}
+        {/* НИЖНЯЯ СТРОКА: текст */}
         <div style={{
-          width: 111, height: 33,
-          flexShrink: 0,
-          background: "#A6ED49",
-          borderRadius: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          fontSize: 12, fontWeight: 400,
+          color: "#F8FFEE",
+          fontFamily: "'Montserrat', sans-serif",
+          lineHeight: 1.4,
         }}>
-          <span style={{
-            fontSize: 12,
-            fontStyle: "italic",
-            color: "#01311C",
-            fontFamily: "'Montserrat', sans-serif",
-          }}>
-            заказать
-          </span>
+          привезем свежие продукты до двери из вашего любимого магазина
         </div>
       </div>
 
