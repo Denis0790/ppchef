@@ -43,7 +43,7 @@ export default function ShareButton({ title, url }: ShareButtonProps) {
         поделиться рецептом
       </span>
       {/* SVG стрелка — замени src на свой путь */}
-      <Image src="/icons/strelka2.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
+      <Image src="/icons/strelka2.svg" alt="" width={7} height={7} style={{ objectFit: "contain" }} />
     </button>
   );
 }

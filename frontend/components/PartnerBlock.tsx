@@ -8,7 +8,6 @@ export default function PartnerBlock() {
     <div style={{ marginBottom: 16 }}>
       <div
         style={{
-          width: 345,
           height: 97,
           background: "#01311C",
           borderRadius: 16,
