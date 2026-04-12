@@ -324,7 +324,7 @@ export async function createPayment(token: string, plan: string): Promise<{ paym
   return apiFetch(`/payments/create`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ plan, return_url: `${window.location.origin}/subscription/success` }),
+    body: JSON.stringify({ plan, return_url: `${window.location.origin}/subscription` }),
   });
 }
 

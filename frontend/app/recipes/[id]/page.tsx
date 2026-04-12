@@ -283,7 +283,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
                 ингредиенты
               </span>
             </div>
-            <div style={{ fontSize: 14, lineHeight: "15px",  }}>
+            <div style={{ fontSize: 14, lineHeight: "15px", }}>
               <IngredientsList ingredients={recipe.ingredients} />
             </div>
           </div>
@@ -321,7 +321,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
                   {step.step_number}
                 </span>
                 <span style={{
-                  fontSize: 11, fontWeight: 400, fontStyle: "normal",
+                  fontSize: 14, fontWeight: 400, fontStyle: "normal",
                   fontFamily: "'Montserrat', sans-serif",
                   color: "#013125", lineHeight: "16px", marginLeft: 7,
                 }}>

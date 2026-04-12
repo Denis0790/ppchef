@@ -40,7 +40,7 @@ export default function IngredientsList({ ingredients }: { ingredients: Ingredie
             borderRadius: 0,
           }}>
             <span suppressHydrationWarning style={{
-              fontSize: 11, fontWeight: 400,
+              fontSize: 14, fontWeight: 400,
               fontFamily: "'Montserrat', sans-serif",
               color: stop ? "#F87045" : "#013125",
               display: "flex", alignItems: "center", gap: 4,
@@ -58,10 +58,10 @@ export default function IngredientsList({ ingredients }: { ingredients: Ingredie
             </span>
             {ing.amount && (
               <span suppressHydrationWarning style={{
-                fontSize: 12, fontWeight: 400,
+                fontSize: 14, fontWeight: 400,
                 fontFamily: "'Montserrat', sans-serif",
                 color: stop ? "#F87045" : "#013125",
-                opacity: stop ? 1 : 0.6,
+                opacity: stop ? 1 : 0.9,
               }}>
                 {ing.amount}
               </span>

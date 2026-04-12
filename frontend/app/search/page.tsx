@@ -254,7 +254,7 @@ export default function SearchPage() {
         {mode === "ingredients" && chips.length > 0 && !searched && (
           <button onClick={handleFridgeSearch} style={{
             width: 345, height: 48,
-            background: "#A6ED49", color: "#013125",
+            background: "#013125", color: "#A6ED49",
             border: "none", borderRadius: 24,
             fontSize: 14, fontStyle: "italic",
             fontFamily: "'Montserrat', sans-serif",
