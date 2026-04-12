@@ -158,16 +158,19 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
         {/* ── ВРЕМЯ + ПОРЦИИ (слева) | КБЖУ (справа) ── */}
         <div style={{
-          display: "flex", alignItems: "flex-end",
+          display: "flex",
+          alignItems: "flex-start",
           justifyContent: "space-between",
           marginBottom: 24,
         }}>
-          {/* ЛЕВАЯ: время + порции */}
+          {/* ЛЕВАЯ: время + порции — выровнены по последнему блоку КБЖУ */}
           <div style={{
             display: "flex", alignItems: "center",
             flexWrap: "wrap", gap: "2px 12px",
             fontSize: 12, color: "#888", opacity: 0.7,
             fontFamily: "'Montserrat', sans-serif", fontStyle: "normal",
+            marginTop: 4 * 19 + 3 * 4 - 14, // 4 блока по 19px + 3 отступа по 4px минус высота иконки
+            alignSelf: "flex-end",
           }}>
             {recipe.cook_time_minutes && (
               <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -236,7 +239,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
                 ингредиенты
               </span>
             </div>
-            <div style={{ lineHeight: "20px" }}>
+            <div style={{ lineHeight: "20px", fontSize: 14 }}>
               <IngredientsList ingredients={recipe.ingredients} />
             </div>
           </div>
