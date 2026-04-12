@@ -1,4 +1,6 @@
+
 "use client";
+import Image from "next/image";
 
 interface ShareButtonProps {
   title: string;
@@ -8,34 +10,40 @@ interface ShareButtonProps {
 export default function ShareButton({ title, url }: ShareButtonProps) {
   const handleShare = async () => {
     if (navigator.share) {
-      // нативный шер (мобилки) — откроет стандартное меню "поделиться"
       await navigator.share({
         title: `ПП Шеф — ${title}`,
         text: `Смотри какой рецепт нашёл: ${title}`,
         url,
       });
     } else {
-      // десктоп — просто копируем ссылку
       await navigator.clipboard.writeText(url);
       alert("Ссылка скопирована!");
     }
   };
 
   return (
-    <button onClick={handleShare} style={{
-      background: "none",
-      border: "1px solid #A6ED49",
-      borderRadius: 20,
-      padding: "6px 16px",
-      fontSize: 12,
-      color: "#013125",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-      fontFamily: "'Montserrat', sans-serif",
-    }}>
-      <span>↗</span> поделиться
+    <button
+      onClick={handleShare}
+      style={{
+        width: 345, height: 32,
+        background: "#013125",
+        border: "none",
+        borderRadius: 20,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        gap: 8,
+        cursor: "pointer",
+      }}
+    >
+      <span style={{
+        fontSize: 12,
+        fontStyle: "italic",
+        fontFamily: "'Montserrat', sans-serif",
+        color: "#F8FFEE",
+      }}>
+        поделиться рецептом
+      </span>
+      {/* SVG стрелка — замени src на свой путь */}
+      <Image src="/icons/strelka.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
     </button>
   );
 }

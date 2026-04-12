@@ -1,12 +1,23 @@
 import { getRecipe } from "@/lib/api";
 import BackButton from "@/components/BackButton";
 import FavoriteButton from "@/components/FavoriteButton";
-import ShareButton from "@/components/ShareButton";
 import IngredientsList from "@/components/IngredientsList";
 import PartnerBlock from "@/components/PartnerBlock";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Header from "@/components/Header";
+import ShareButton from "@/components/ShareButton";
+
+const CATEGORIES = [
+  { key: "",          label: "все" },
+  { key: "breakfast", label: "завтрак" },
+  { key: "lunch",     label: "обед" },
+  { key: "dinner",    label: "ужин" },
+  { key: "snack",     label: "перекус" },
+  { key: "dessert",   label: "десерт" },
+  { key: "salad",     label: "салат" },
+  { key: "smoothie",  label: "смузи" },
+];
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -43,6 +54,9 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
     notFound();
   }
 
+  const categoryLabel = CATEGORIES.find(c => c.key === recipe.category)?.label || recipe.category;
+  const recipeUrl = `https://ppchef.ru/recipes/${recipe.id}`;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Recipe",
@@ -69,8 +83,6 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
     "keywords": "правильное питание, пп рецепт, здоровое питание",
   };
 
-  const recipeUrl = `https://ppchef.ru/recipes/${recipe.id}`;
-
   return (
     <main style={{
       maxWidth: 480, margin: "0 auto",
@@ -83,21 +95,73 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
       />
       <Header />
 
-      {/* ── КНОПКА НАЗАД + ПОДЕЛИТЬСЯ + ИЗБРАННОЕ ── */}
+      {/* ── КНОПКА НАЗАД + ИЗБРАННОЕ ── */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         paddingLeft: 18, paddingRight: 18, paddingTop: 17,
       }}>
         <BackButton />
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <ShareButton title={recipe.title} url={recipeUrl} />
-          <FavoriteButton recipeId={recipe.id} variant="recipe" />
+        <FavoriteButton recipeId={recipe.id} variant="recipe" />
+      </div>
+
+      {/* ── КАТЕГОРИЯ + НАЗВАНИЕ ── */}
+      <div style={{ paddingLeft: 18, paddingRight: 18, marginTop: 12 }}>
+
+        {/* Бейдж категории */}
+        <div style={{
+          width: 52, height: 25,
+          borderRadius: 100,
+          background: "#01311C",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          marginBottom: 12,
+        }}>
+          <span style={{
+            fontSize: 9,
+            color: "#F8FFEE", lineHeight: 1,
+            whiteSpace: "nowrap",
+            fontFamily: "'Montserrat', sans-serif",
+            fontStyle: "italic",
+          }}>
+            {categoryLabel}
+          </span>
+        </div>
+
+        {/* Название */}
+        <div style={{
+          fontSize: 16, fontWeight: 500,
+          fontFamily: "'Montserrat', sans-serif",
+          color: "#133520", lineHeight: 1.3,
+          marginBottom: 12,
+        }}>
+          {recipe.title}
+        </div>
+
+        {/* Время + порции */}
+        <div style={{
+          display: "flex", alignItems: "center",
+          flexWrap: "wrap", gap: "2px 12px",
+          fontSize: 12, color: "#888", opacity: 0.7,
+          fontFamily: "'Montserrat', sans-serif", fontStyle: "normal",
+          marginBottom: 17,
+        }}>
+          {recipe.cook_time_minutes && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <Image src="/icons/chasi.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
+              {recipe.cook_time_minutes} мин
+            </span>
+          )}
+          {recipe.servings && (
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <Image src="/icons/vilki.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
+              {recipe.servings} порц.
+            </span>
+          )}
         </div>
       </div>
 
       {/* ── КАРТИНКА ── */}
       <div style={{
-        width: "100%", margin: "17px auto 0",
+        width: "100%",
         height: 260, borderRadius: "16px 16px 0 0",
         overflow: "hidden", background: "#e8e0d0",
         display: "flex", alignItems: "center", justifyContent: "center",
@@ -115,81 +179,46 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           : "🥗"}
       </div>
 
-      <div style={{ padding: "0 18px 120px" }}>
+      <div style={{ padding: "0 18px 40px" }}>
 
-        {/* ── МЕТА + КБЖУ + НАЗВАНИЕ ── */}
-        <div style={{ display: "flex", alignItems: "flex-start", marginTop: 13, gap: 0 }}>
-
-          {/* ЛЕВАЯ: время + порции + название */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{
-              display: "flex", alignItems: "center",
-              flexWrap: "wrap", gap: "2px 12px",
-              fontSize: 12, color: "#888", opacity: 0.7,
-              fontFamily: "'Montserrat', sans-serif", fontStyle: "normal",
+        {/* ── КБЖУ ── */}
+        <div style={{
+          display: "flex", gap: 4, flexWrap: "wrap",
+          marginTop: 13, marginBottom: 24,
+        }}>
+          {[
+            { label: "ккал",     value: recipe.calories },
+            { label: "белки",    value: recipe.protein  },
+            { label: "жиры",     value: recipe.fat      },
+            { label: "углеводы", value: recipe.carbs    },
+          ].map(({ label, value }) => (
+            <div key={label} style={{
+              height: 19,
+              border: "1px solid #A6ED49", borderRadius: 12,
+              background: "#F8FFEE",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              gap: 3, padding: "0 8px",
             }}>
-              {recipe.cook_time_minutes && (
-                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <Image src="/icons/chasi.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
-                  {recipe.cook_time_minutes} мин
-                </span>
-              )}
-              {recipe.servings && (
-                <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <Image src="/icons/vilki.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
-                  {recipe.servings} порц.
-                </span>
-              )}
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#01311C", lineHeight: 1, whiteSpace: "nowrap", fontFamily: "'Montserrat', sans-serif" }}>
+                {value ? Math.round(value) : "—"}
+              </span>
+              <span style={{ fontSize: 10, color: "#01311C", lineHeight: 1, whiteSpace: "nowrap", opacity: 0.75, fontFamily: "'Montserrat', sans-serif" }}>
+                {label}
+              </span>
             </div>
-
-            <div style={{
-              marginTop: 12, fontSize: 16, fontWeight: 400,
-              fontFamily: "'Montserrat', sans-serif",
-              color: "#133520", lineHeight: 1.3, paddingRight: 8,
-            }}>
-              {recipe.title}
-            </div>
-          </div>
-
-          {/* ПРАВАЯ: КБЖУ вертикально */}
-          <div style={{
-            display: "flex", flexDirection: "column", gap: 4,
-            flexShrink: 0, width: 86, marginTop: 9, marginRight: 0,
-          }}>
-            {[
-              { label: "ккал",     value: recipe.calories },
-              { label: "белки",    value: recipe.protein  },
-              { label: "жиры",     value: recipe.fat      },
-              { label: "углеводы", value: recipe.carbs    },
-            ].map(({ label, value }) => (
-              <div key={label} style={{
-                width: 83, height: 19,
-                border: "1px solid #A6ED49", borderRadius: 12,
-                background: "#F8FFEE",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: 3, overflow: "hidden",
-              }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#01311C", lineHeight: 1, whiteSpace: "nowrap", fontFamily: "'Montserrat', sans-serif" }}>
-                  {value ? Math.round(value) : "—"}
-                </span>
-                <span style={{ fontSize: 10, color: "#01311C", lineHeight: 1, whiteSpace: "nowrap", opacity: 0.75, fontFamily: "'Montserrat', sans-serif" }}>
-                  {label}
-                </span>
-              </div>
-            ))}
-          </div>
+          ))}
         </div>
 
         {/* ── ПОЛЬЗА ── */}
         {recipe.benefit && (
-          <div style={{ marginTop: 24, border: "1px solid #A6ED49", borderRadius: 16, padding: "14px 16px", background: "#F8FFEE" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <div style={{ marginTop: 0, border: "1px solid #A6ED49", borderRadius: 16, padding: "14px 16px", background: "#F8FFEE", marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Image src="/icons/sovet1.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-              <span style={{ fontSize: 12, fontWeight: 500, fontStyle: "italic", color: "#133520", fontFamily: "'Montserrat', sans-serif" }}>
+              <span style={{ fontSize: 16, fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: "#133520" }}>
                 польза
               </span>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 400, fontStyle: "normal", color: "#133520", lineHeight: 1.6, fontFamily: "'Montserrat', sans-serif" }}>
+            <div style={{ fontSize: 14, fontWeight: 400, color: "#133520", lineHeight: "18px", fontFamily: "'Montserrat', sans-serif" }}>
               {recipe.benefit}
             </div>
           </div>
@@ -197,18 +226,20 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
         {/* ── ИНГРЕДИЕНТЫ ── */}
         {recipe.ingredients.length > 0 && (
-          <div style={{ marginTop: 32 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Image src="/icons/ingred1.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-              <span style={{ fontSize: 12, fontWeight: 500, fontStyle: "italic", color: "#133520", fontFamily: "'Montserrat', sans-serif" }}>
+              <span style={{ fontSize: 16, fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: "#133520" }}>
                 ингредиенты
               </span>
             </div>
-            <IngredientsList ingredients={recipe.ingredients} />
+            <div style={{ lineHeight: "20px" }}>
+              <IngredientsList ingredients={recipe.ingredients} />
+            </div>
           </div>
         )}
 
-        {/* ── РЕФЕРАЛКА ── */}
+        {/* ── ПАРТНЁРСКИЙ БЛОК ── */}
         {recipe.ingredients.length > 0 && (
           <div style={{ marginTop: 16 }}>
             <PartnerBlock />
@@ -217,20 +248,20 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
         {/* ── ПРИГОТОВЛЕНИЕ ── */}
         {recipe.steps.length > 0 && (
-          <div style={{ marginTop: 32 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Image src="/icons/prigotovlenie.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-              <span style={{ fontSize: 12, fontWeight: 500, fontStyle: "italic", color: "#133520", fontFamily: "'Montserrat', sans-serif" }}>
+              <span style={{ fontSize: 16, fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: "#133520" }}>
                 приготовление
               </span>
             </div>
             {recipe.steps.map((step: { id: string; step_number: number; text: string }) => (
-              <div key={step.id} style={{ display: "flex", gap: 7, marginBottom: 8, alignItems: "flex-start" }}>
+              <div key={step.id} style={{ display: "flex", gap: 7, marginBottom: 8, alignItems: "flex-start", lineHeight: "16px" }}>
                 <div style={{ flexShrink: 0, width: 2, height: 12, background: "#A6ED49", marginTop: 2 }} />
-                <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 400, fontStyle: "normal", color: "#013125", fontFamily: "'Montserrat', sans-serif", lineHeight: 1.3 }}>
+                <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 400, color: "#013125", fontFamily: "'Montserrat', sans-serif", lineHeight: 1.3 }}>
                   {step.step_number}
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 400, fontStyle: "normal", color: "#013125", fontFamily: "'Montserrat', sans-serif", lineHeight: 1.3, marginLeft: 7 }}>
+                <span style={{ fontSize: 11, fontWeight: 400, color: "#013125", fontFamily: "'Montserrat', sans-serif", lineHeight: 1.3, marginLeft: 7 }}>
                   {step.text}
                 </span>
               </div>
@@ -240,14 +271,14 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
         {/* ── СОВЕТ НУТРИЦИОЛОГА ── */}
         {recipe.nutritionist_tips && (
-          <div style={{ background: "#013125", borderRadius: 16, padding: 16, marginTop: 24 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <div style={{ background: "#013125", borderRadius: 16, padding: 16, marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Image src="/icons/nutritionist.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-              <span style={{ fontSize: 12, fontWeight: 500, fontStyle: "italic", color: "#A6ED49", fontFamily: "'Montserrat', sans-serif" }}>
+              <span style={{ fontSize: 16, fontWeight: 500, color: "#A6ED49", fontFamily: "'Montserrat', sans-serif" }}>
                 совет нутрициолога
               </span>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 400, fontStyle: "normal", color: "#F8FFEE", lineHeight: 1.6, fontFamily: "'Montserrat', sans-serif" }}>
+            <div style={{ fontSize: 14, fontWeight: 400, color: "#F8FFEE", lineHeight: "16px", fontFamily: "'Montserrat', sans-serif" }}>
               {recipe.nutritionist_tips}
             </div>
           </div>
@@ -255,21 +286,22 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
 
         {/* ── ВИТАМИНЫ И МИНЕРАЛЫ ── */}
         {recipe.vitamins && (
-          <div style={{ background: "#F8FFEE", borderRadius: 16, border: "1px solid #A6ED49", padding: 16, marginTop: 24, marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <div style={{ background: "#F8FFEE", borderRadius: 16, border: "1px solid #A6ED49", padding: 16, marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <Image src="/icons/vitamins.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-              <span style={{ fontSize: 12, fontWeight: 500, fontStyle: "italic", color: "#013125", fontFamily: "'Montserrat', sans-serif" }}>
+              <span style={{ fontSize: 16, fontWeight: 500, color: "#013125", fontFamily: "'Montserrat', sans-serif" }}>
                 витамины и минералы
               </span>
             </div>
-            <div style={{ fontSize: 11, fontWeight: 400, fontStyle: "normal", color: "#013125", lineHeight: 1.6, fontFamily: "'Montserrat', sans-serif" }}>
+            <div style={{ fontSize: 14, fontWeight: 400, color: "#013125", lineHeight: "12px", fontFamily: "'Montserrat', sans-serif" }}>
               {recipe.vitamins}
             </div>
           </div>
         )}
 
+        {/* ── ТЕГИ ── */}
         {recipe.tags.length > 0 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 16 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
             {recipe.tags.map((tag: { id: string; name: string }) => (
               <div key={tag.id} style={{ background: "#fff", borderRadius: 20, padding: "4px 12px", fontSize: 12, color: "#4F7453", fontWeight: 500 }}>
                 #{tag.name}
@@ -277,6 +309,12 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
             ))}
           </div>
         )}
+
+        {/* ── КНОПКА ПОДЕЛИТЬСЯ ВНИЗУ ── */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 100 }}>
+          <ShareButton title={recipe.title} url={recipeUrl} />
+        </div>
+
       </div>
     </main>
   );
