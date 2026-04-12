@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Image from "next/image";
 
 interface Ingredient {
   id: string;
@@ -30,29 +31,36 @@ export default function IngredientsList({ ingredients }: { ingredients: Ingredie
         return (
           <div key={ing.id} suppressHydrationWarning style={{
             display: "flex", justifyContent: "space-between",
-            padding: "8px 0",
+            paddingTop: 8,
+            paddingBottom: 8,
+            paddingLeft: 0,
+            paddingRight: 0,
             borderBottom: i < ingredients.length - 1 ? "1px solid #A6ED49" : "none",
-            background: stop ? "rgba(224,85,85,0.04)" : "transparent",
-            borderRadius: stop ? 8 : 0,
-            paddingLeft: stop ? 8 : 0,
-            paddingRight: stop ? 8 : 0,
+            background: "transparent",
+            borderRadius: 0,
           }}>
             <span suppressHydrationWarning style={{
               fontSize: 11, fontWeight: 400,
               fontFamily: "'Montserrat', sans-serif",
-              color: stop ? "rgba(224,85,85,0.7)" : "#013125",
+              color: stop ? "#F87045" : "#013125",
+              display: "flex", alignItems: "center", gap: 4,
             }}>
-              <span suppressHydrationWarning style={{
-                marginRight: 4,
-                display: stop ? "inline" : "none",
-              }}>🚫</span>
+              {stop && (
+                <Image
+                  src="/icons/stop.svg"
+                  alt=""
+                  width={16}
+                  height={16}
+                  style={{ objectFit: "contain", flexShrink: 0 }}
+                />
+              )}
               {ing.name}
             </span>
             {ing.amount && (
               <span suppressHydrationWarning style={{
-                fontSize: 11, fontWeight: 400,
+                fontSize: 12, fontWeight: 400,
                 fontFamily: "'Montserrat', sans-serif",
-                color: stop ? "rgba(224,85,85,0.5)" : "#013125",
+                color: stop ? "#F87045" : "#013125",
                 opacity: stop ? 1 : 0.6,
               }}>
                 {ing.amount}

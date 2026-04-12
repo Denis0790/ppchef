@@ -83,7 +83,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
           onClick={toggle}
           disabled={loading}
           style={{
-            width: 115, height: 32,
+            width: 128, height: 32,
             borderRadius: 100,
             background: isFavorite ? "#01311C" : "#F8FFEE",
             border: "1.1px solid #01311C",
@@ -107,7 +107,7 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
           <span style={{
-            fontSize: 10, lineHeight: 1,
+            fontSize: 12, lineHeight: 1,
             color: isFavorite ? "#A6ED49" : "#01311C",
             whiteSpace: "nowrap",
             fontFamily: "'Montserrat', sans-serif",

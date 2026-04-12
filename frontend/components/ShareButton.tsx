@@ -36,6 +36,7 @@ export default function ShareButton({ title, url }: ShareButtonProps) {
     >
       <span style={{
         fontSize: 12,
+        fontWeight: 400,
         fontStyle: "italic",
         fontFamily: "'Montserrat', sans-serif",
         color: "#F8FFEE",

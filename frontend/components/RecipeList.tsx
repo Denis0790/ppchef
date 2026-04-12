@@ -29,7 +29,7 @@ const PAGE_SIZE = 10;
 const DESIGN = {
            // размер иконки профиля (px)
 
-  // Цвета фильтров
+  // Цвета фильтро
   filterBg: "#F8FFEE",           // фон полосы фильтров
   filterBorder: "#F8FFEE",       // граница полосы фильтров
   filterActiveBg: "#013125",     // фон активной кнопки фильтра
@@ -211,20 +211,22 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
               {recipe.title}
             </div>
 
-            {/* Предупреждение о нежелательных ингредиентах
-                Показывается только если hasStopWords === true
-            */}
-            {hasStopWords && (
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                background: "rgba(192,57,43,0.08)",
-                borderRadius: 20, padding: "3px 10px", marginBottom: 8,
+           {hasStopWords && (
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 4,
+              borderRadius: 20, paddingTop: 3, paddingBottom: 3, paddingLeft: 0, paddingRight: 10,
+              marginBottom: 8,
+            }}>
+              <Image src="/icons/stop.svg" alt="" width={16} height={16} style={{ objectFit: "contain" }} />
+              <span style={{
+                fontSize: 11, fontWeight: 400,
+                fontFamily: "'Montserrat', sans-serif",
+                color: "#F87045",
               }}>
-                <span style={{ fontSize: 11, color: "rgba(192,57,43,0.55)", fontWeight: 400 }}>
-                  🚫 нежелательные ингредиенты
-                </span>
-              </div>
-            )}
+                нежелательные ингредиенты
+              </span>
+            </div>
+          )}
 
             {/* ── СТРОКА 3: мета (время, порции, % нормы) ──────────
                 Отступ слева: 0 (уже есть paddingLeft на колонке)
@@ -563,7 +565,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
           <div ref={loaderRef} style={{ height: 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {loadingMore && <div style={{ color: "#aaa", fontSize: 13 }}>Загружаем ещё...</div>}
             {!hasMore && recipes.length > 0 && (
-              <div style={{ color: "#ccc", fontSize: 12 }}>Все рецепты загружены 🎉</div>
+              <div style={{ color: "#ccc", fontSize: 12 }}>Все рецепты загружены </div>
             )}
           </div>
         </div>

@@ -27,7 +27,7 @@ export default function PartnerBlock() {
           gap: 12,
         }}>
           <div style={{ width: 37, height: 37, flexShrink: 0 }}>
-            <Image src="/kyper/korzina.png" alt="Купер" width={37} height={37} style={{ objectFit: "contain" }} />
+            <Image src="/kyper/korzina.svg" alt="Купер" width={37} height={37} style={{ objectFit: "contain" }} />
           </div>
 
           <div style={{
