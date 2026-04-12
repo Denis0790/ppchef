@@ -22,7 +22,7 @@ export default function PartnerBlock() {
       >
         {/* SVG иконка*/}
         <div style={{ width: 37, height: 37, flexShrink: 0 }}>
-          <Image src="/icons/kyper/korzina.png" alt="Купер" width={37} height={37} style={{ objectFit: "contain" }} />
+          <Image src="/kyper/korzina.png" alt="Купер" width={37} height={37} style={{ objectFit: "contain" }} />
         </div>
 
         {/* Текст */}
