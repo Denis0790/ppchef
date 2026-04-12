@@ -9,6 +9,7 @@
 }
 
 :root {
+  color-scheme: light only;
   --bg: #F5F0E8;
   --green: #4F7453;
   --green-light: #7A9E7E;
