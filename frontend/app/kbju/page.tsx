@@ -6,11 +6,11 @@ import { getMe, updateMe, User } from "@/lib/api";
 import AuthPrompt from "@/components/AuthPrompt";
 
 type Goal = "loss" | "maintain" | "gain";
-type Activity = "low" | "medium" | "high" | "very_high";
+type Activity = "low" | "medium" | "high";
 type Gender = "male" | "female";
 
 const ACTIVITY_MAP: Record<Activity, number> = {
-  low: 1.2, medium: 1.375, high: 1.55, very_high: 1.725,
+  low: 1.2, medium: 1.375, high: 1.55,
 };
 
 function calcNorm(gender: Gender, age: number, weight: number, height: number, activity: Activity, goal: Goal) {
@@ -26,6 +26,104 @@ function calcNorm(gender: Gender, age: number, weight: number, height: number, a
   return { calories, protein, fat, carbs };
 }
 
+const pageStyles = `
+  .seg-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 1.4px solid transparent;
+    outline: none;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 14px;
+    color: #013125;
+    padding: 4px 0;
+    transition: border-color 0.2s;
+    white-space: nowrap;
+    line-height: 1;
+  }
+  .seg-btn.active {
+    border-top: 2px solid #A6ED49;
+  }
+
+  .kbju-num-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #013125;
+    font-family: 'Montserrat', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 12px;
+    padding: 0;
+    text-align: center;
+  }
+  .kbju-num-input::placeholder { color: rgba(1,49,37,0.3); }
+  .kbju-num-input::-webkit-outer-spin-button,
+  .kbju-num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .kbju-num-input[type=number] { -moz-appearance: textfield; }
+
+  .stop-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1.4px solid #A6ED49;
+    outline: none;
+    resize: none;
+    color: #F8FFEE;
+    font-family: 'Montserrat', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 0.8;
+    padding: 0;
+    display: block;
+    overflow: hidden;
+  }
+  .stop-textarea::placeholder { color: rgba(248,255,238,0.3); }
+
+  .toggle-track {
+    width: 44px; height: 24px;
+    border-radius: 12px;
+    background: transparent;
+    border: 1.4px solid #A6ED49;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .toggle-track.on { background: #A6ED49; }
+  .toggle-thumb {
+    position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: #A6ED49;
+    border: 1.4px solid #A6ED49;
+    transition: left 0.2s;
+  }
+  .toggle-track.on .toggle-thumb { left: 21px; background: #013125; }
+
+  .calc-btn {
+    width: 100%; height: 36px;
+    background: #A6ED49;
+    color: #013125;
+    border: none;
+    border-radius: 100px;
+    font-family: 'Montserrat', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 12px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .calc-btn:hover { opacity: 0.9; }
+  .calc-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  @keyframes kbju-spin { to { transform: rotate(360deg); } }
+`;
+
 export default function KbjuPage() {
   const router = useRouter();
   const { token, isLoggedIn, isReady, isPremium } = useAuth();
@@ -33,33 +131,23 @@ export default function KbjuPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [savingStop, setSavingStop] = useState(false);
   const [showAuthPrompt, setShowAuthPrompt] = useState(false);
+  const [stopFocused, setStopFocused] = useState(false);
 
-  const [gender, setGender] = useState<Gender>("female");
-  const [age, setAge] = useState("28");
-  const [weight, setWeight] = useState("60");
-  const [height, setHeight] = useState("165");
+  const [gender, setGender]     = useState<Gender>("female");
+  const [age, setAge]           = useState("");
+  const [weight, setWeight]     = useState("");
+  const [height, setHeight]     = useState("");
   const [activity, setActivity] = useState<Activity>("medium");
-  const [goal, setGoal] = useState<Goal>("maintain");
-  const [norm, setNorm] = useState<{ calories: number; protein: number; fat: number; carbs: number } | null>(null);
+  const [goal, setGoal]         = useState<Goal>("maintain");
+  const [norm, setNorm]         = useState<{ calories: number; protein: number; fat: number; carbs: number } | null>(null);
   const [stopWords, setStopWords] = useState("");
   const [showPercent, setShowPercent] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
-
-    if (!isLoggedIn) {
-      setShowAuthPrompt(true);
-      setLoading(false);
-      return;
-    }
-
-    if (!token) {
-      setShowAuthPrompt(true);
-      setLoading(false);
-      return;
-    }
-
+    if (!isLoggedIn || !token) { setShowAuthPrompt(true); setLoading(false); return; }
     let mounted = true;
     (async () => {
       try {
@@ -69,217 +157,309 @@ export default function KbjuPage() {
         setStopWords(u.stop_words || "");
         setShowPercent(Boolean(u.show_daily_percent));
         if (u.daily_calories) {
-          const n = {
-            calories: u.daily_calories,
-            protein: u.daily_protein || 0,
-            fat: u.daily_fat || 0,
-            carbs: u.daily_carbs || 0,
-          };
+          const n = { calories: u.daily_calories, protein: u.daily_protein || 0, fat: u.daily_fat || 0, carbs: u.daily_carbs || 0 };
           setNorm(n);
-          try {
-            if (typeof window !== "undefined") {
-              localStorage.setItem("userNorm", JSON.stringify({
-                ...n, show: Boolean(u.show_daily_percent), stop_words: u.stop_words || "",
-              }));
-            }
-          } catch {}
+          try { localStorage.setItem("userNorm", JSON.stringify({ ...n, show: Boolean(u.show_daily_percent), stop_words: u.stop_words || "" })); } catch {}
         }
-      } catch (err) {
-        console.error("[Kbju] getMe failed", err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      } catch (err) { console.error("[Kbju] getMe failed", err); }
+      finally { if (mounted) setLoading(false); }
     })();
-
     return () => { mounted = false; };
   }, [isReady, isLoggedIn, token, router]);
 
-  function handleCalc() {
+  async function handleCalcAndSave() {
     const a = parseInt(age), w = parseInt(weight), h = parseInt(height);
     if (!a || !w || !h) return;
-    setNorm(calcNorm(gender, a, w, h, activity, goal));
-  }
-
-  async function handleSave() {
-    if (!norm) return;
+    const calculated = calcNorm(gender, a, w, h, activity, goal);
+    setNorm(calculated);
     setSaving(true);
     try {
       await updateMe(token!, {
-        daily_calories: norm.calories,
-        daily_protein: norm.protein,
-        daily_fat: norm.fat,
-        daily_carbs: norm.carbs,
+        daily_calories: calculated.calories,
+        daily_protein:  calculated.protein,
+        daily_fat:      calculated.fat,
+        daily_carbs:    calculated.carbs,
         show_daily_percent: showPercent,
         stop_words: stopWords || null,
       });
       localStorage.setItem("userNorm", JSON.stringify({
-        calories: norm.calories, protein: norm.protein,
-        fat: norm.fat, carbs: norm.carbs,
+        calories: calculated.calories, protein: calculated.protein,
+        fat: calculated.fat, carbs: calculated.carbs,
         show: showPercent, stop_words: stopWords,
       }));
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
+  async function handleSaveStopWords() {
+    setSavingStop(true);
+    try {
+      await updateMe(token!, { stop_words: stopWords || null });
+      try {
+        const raw = localStorage.getItem("userNorm");
+        const existing = raw ? JSON.parse(raw) : {};
+        localStorage.setItem("userNorm", JSON.stringify({ ...existing, stop_words: stopWords }));
+      } catch {}
+      setStopFocused(false);
+    } finally { setSavingStop(false); }
+  }
+
+  /* Шапка — переиспользуется во всех состояниях */
+  const Header = () => (
+    <div style={{
+      height: 71, padding: "0 15px", background: "#013125",
+      position: "sticky", top: 0, zIndex: 10,
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+    }}>
+      {/* Кнопка «вернуться к рецептам» */}
+      <div onClick={() => router.push("/")} style={{ height: 32, border: "1.4px solid #A6ED49", borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px", cursor: "pointer" }}>
+        <img src="/icon_profile/left1.svg" alt="" width={8} height={8} style={{ objectFit: "contain" }} />
+        <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#F8FFEE", whiteSpace: "nowrap" }}>
+          вернуться к рецептам
+        </span>
+    </div>
+      {/* Блок «premium» */}
+      <div style={{ height: 32, border: "1.4px solid #A6ED49", borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px" }}>
+        <img src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} /> 
+        <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#F8FFEE" }}>
+          premium
+        </span>
+      </div>
+    </div>
+  );
+
   if (!isReady || loading) return (
-    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid #ece7de", borderTop: "3px solid #01311C", animation: "spin 0.8s linear infinite" }} />
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F8FFEE", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <style>{pageStyles}</style>
+      <div style={{ width: 40, height: 40, borderRadius: "50%", border: "3px solid rgba(1,49,37,0.1)", borderTop: "3px solid #013125", animation: "kbju-spin 0.8s linear infinite" }} />
     </main>
   );
 
-  // Незалогиненный — показываем страницу с модалом поверх
   if (showAuthPrompt) return (
-    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
-      <div style={{ padding: "16px 20px", background: "#fff", borderBottom: "1px solid #ece7de", display: "flex", alignItems: "center", gap: 12 }}>
-        <div onClick={() => router.push("/")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>←</div>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, color: "#4F7453" }}>📊 Моя норма КБЖУ</div>
-      </div>
+    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F8FFEE" }}>
+      <style>{pageStyles}</style>
+      <Header />
       <AuthPrompt type="auth" onClose={() => router.push("/")} />
     </main>
   );
 
   if (!isPremium) return (
-    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
-      <div style={{ padding: "16px 20px", background: "#fff", borderBottom: "1px solid #ece7de", display: "flex", alignItems: "center", gap: 12 }}>
-        <div onClick={() => router.push("/")} style={{ width: 36, height: 36, borderRadius: "50%", background: "#F5F0E8", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 18 }}>←</div>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 22, fontWeight: 700, color: "#4F7453" }}>📊 Моя норма КБЖУ</div>
-      </div>
-      <div style={{ padding: "32px 24px 100px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ width: "100%", filter: "blur(4px)", pointerEvents: "none", marginBottom: -60, opacity: 0.6 }}>
-          <div style={{ background: "#fff", borderRadius: 16, padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-              {["2100", "140", "70", "220"].map((v, i) => (
-                <div key={i} style={{ background: "#F5F0E8", borderRadius: 12, padding: "10px 6px", textAlign: "center" }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#4F7453" }}>{v}</div>
-                  <div style={{ fontSize: 10, color: "#888" }}>{["Ккал", "Белки", "Жиры", "Углев"][i]}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ height: 120, background: "#F5F0E8", borderRadius: 10 }} />
-          </div>
+    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F8FFEE" }}>
+      <style>{pageStyles}</style>
+      <div style={{
+        height: 71, padding: "0 15px", background: "#013125",
+        position: "sticky", top: 0, zIndex: 10,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+      }}>
+        <div onClick={() => router.push("/")} style={{ height: 32, border: "1.4px solid #A6ED49", borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px", cursor: "pointer" }}>
+          <img src="/icon_profile/left1.svg" alt="" width={8} height={8} style={{ objectFit: "contain" }} />
+          <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#F8FFEE", whiteSpace: "nowrap" }}>
+            вернуться к рецептам
+          </span>
         </div>
-        <div style={{ width: "100%", background: "linear-gradient(135deg, #4F7453, #7A9E7E)", borderRadius: 20, padding: "28px 24px", boxShadow: "0 8px 32px rgba(79,116,83,0.3)", textAlign: "center", color: "#fff", zIndex: 1 }}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>⭐</div>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Premium функция</div>
-          <div style={{ fontSize: 14, opacity: 0.85, lineHeight: 1.6, marginBottom: 20 }}>
-            Расчёт суточной нормы КБЖУ, стоп-слова и процент от нормы в каждом рецепте
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24, textAlign: "left" }}>
-            {["📊 Калькулятор суточной нормы КБЖУ", "🚫 Стоп-слова для нежелательных продуктов", "💯 % от нормы в каждом рецепте", "🔍 Поиск рецептов по холодильнику"].map(item => (
-              <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, opacity: 0.9 }}>
-                <span style={{ flexShrink: 0 }}>✓</span> {item}
-              </div>
-            ))}
-          </div>
-          <button onClick={() => router.push("/subscription")} style={{ width: "100%", height: 50, background: "#fff", color: "#4F7453", border: "none", borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: "pointer" }}>
-            Попробовать за 90 ₽/мес →
-          </button>
-          <div style={{ fontSize: 11, opacity: 0.6, marginTop: 10 }}>Или 790 ₽ за год — выгоднее на 27%</div>
+        <div style={{ height: 32, border: "1.4px solid #A6ED49", borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px" }}>
+          <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#F8FFEE" }}>
+            premium
+          </span>
         </div>
       </div>
+      <AuthPrompt type="premium" onClose={() => router.push("/")} />
     </main>
   );
 
-  const s = (active: boolean) => ({
-    padding: "8px 16px", borderRadius: 20, border: "none",
-    cursor: "pointer", fontSize: 13, fontWeight: 500,
-    background: active ? "#4F7453" : "#fff",
-    color: active ? "#fff" : "#888",
-    boxShadow: active ? "none" : "0 1px 4px rgba(0,0,0,0.08)",
-    transition: "all 0.2s",
-  } as React.CSSProperties);
-
   return (
-    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F5F0E8", fontFamily: "'DM Sans', sans-serif" }}>
-      <div style={{ padding: "20px 20px 16px", background: "#fff", borderBottom: "1px solid #ece7de", position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 700, color: "#4F7453" }}>📊 Моя норма КБЖУ</div>
-        <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>Рассчитайте суточную норму</div>
-      </div>
-      <div style={{ padding: "16px 16px 100px", display: "flex", flexDirection: "column", gap: 14 }}>
-        {norm && (
-          <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: "#4F7453", marginBottom: 12 }}>
-              {user?.daily_calories ? "✅ Ваша норма сохранена" : "📋 Расчётная норма"}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-              {[{ label: "Ккал", value: norm.calories }, { label: "Белки", value: norm.protein }, { label: "Жиры", value: norm.fat }, { label: "Углев", value: norm.carbs }].map(({ label, value }) => (
-                <div key={label} style={{ background: "#F5F0E8", borderRadius: 12, padding: "10px 6px", textAlign: "center" }}>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#4F7453" }}>{value}</div>
-                  <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{label}</div>
+    <main style={{ maxWidth: 480, margin: "0 auto", minHeight: "100vh", background: "#F8FFEE" }}>
+      <style>{pageStyles}</style>
+      <Header />
+
+      <div style={{ padding: "36px 15px 100px", display: "flex", flexDirection: "column", gap: 36 }}>
+
+        {/* ── БЛОК: МОЯ НОРМА ────────────────────────────────────────────────
+            Фон: #013125 | Скругление: 20px
+            Заголовок: SVG + italic medium 16px #A6ED49
+            TODO: <img src="/icon_kbju/norm.svg" alt="" width={16} height={16} />
+            4 бейджа 2×2: бордер 1.4px #F8FFEE, высота 24px, border-radius 100px
+            Значение: 400 12px #F8FFEE | Подпись: 400 12px #F8FFEE opacity 0.7
+            Тоггл отступ сверху 16px
+        ───────────────────────────────────────────────────────────────────── */}
+        <div style={{ background: "#013125", borderRadius: 20, padding: "20px" }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+            <img src="/icon_kbju/norm.svg" alt="" width={19} height={19} />
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 500, fontSize: 16, color: "#A6ED49" }}>
+              моя норма кбжу
+            </span>
+          </div>
+
+          {norm ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+              {[
+                { label: "ккал",     value: norm.calories },
+                { label: "белки",    value: norm.protein  },
+                { label: "жиры",     value: norm.fat      },
+                { label: "углеводы", value: norm.carbs    },
+              ].map(({ label, value }) => (
+                <div key={label} style={{ border: "1.4px solid #F8FFEE", borderRadius: 100, height: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 12, color: "#F8FFEE" }}>{value}</span>
+                  <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 400, fontSize: 12, color: "#F8FFEE", opacity: 0.7 }}>{label}</span>
                 </div>
               ))}
             </div>
-            <div onClick={() => setShowPercent(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 14, cursor: "pointer" }}>
-              <div style={{ width: 44, height: 24, borderRadius: 12, background: showPercent ? "#4F7453" : "#ddd", position: "relative", transition: "background 0.2s" }}>
-                <div style={{ position: "absolute", top: 2, left: showPercent ? 22 : 2, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
-              </div>
-              <span style={{ fontSize: 13, color: "#555" }}>Показывать % от нормы в рецептах</span>
+          ) : (
+            <div style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "rgba(248,255,238,0.35)" }}>
+                заполните калькулятор ниже
+              </span>
             </div>
+          )}
+
+          <div onClick={() => setShowPercent(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginTop: 16 }}>
+            <div className={`toggle-track${showPercent ? " on" : ""}`}>
+              <div className="toggle-thumb" />
+            </div>
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 400, fontSize: 12, color: "#F8FFEE", opacity: 0.7 }}>
+              показывать % от нормы в рецептах
+            </span>
           </div>
-        )}
-        <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#333", marginBottom: 14, fontFamily: "'Cormorant Garamond', serif" }}>Калькулятор</div>
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>Пол</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={s(gender === "female")} onClick={() => setGender("female")}>👩 Женский</button>
-              <button style={s(gender === "male")} onClick={() => setGender("male")}>👨 Мужской</button>
-            </div>
+        </div>
+
+        {/* ── БЛОК: КАЛЬКУЛЯТОР ──────────────────────────────────────────────
+            Фон: #F8FFEE | Бордер: 1.4px #A6ED49 | Скругление: 20px
+            Заголовок: SVG + italic medium 16px #013125
+            TODO: <img src="/icon_kbju/calc.svg" alt="" width={16} height={16} />
+            Метки пол/активность/цель: 12px #013125 opacity 0.7
+            Табы: italic 14px #013125, активный border-bottom 1.4px #A6ED49
+            Инпуты возраст/вес/рост: закруглённые блоки высота 32px (рост чуть шире)
+              бордер 1.4px #A6ED49, border-radius 100px, max 3 символа
+            Кнопка: высота 36px, #A6ED49, italic 12px #013125
+        ───────────────────────────────────────────────────────────────────── */}
+        <div style={{ background: "#F8FFEE", borderRadius: 20, padding: "20px 20px 22px", border: "1.4px solid #A6ED49" }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
+            {/* TODO: <img src="/icon_kbju/calc.svg" alt="" width={16} height={16} /> */}
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 500, fontSize: 16, color: "#013125" }}>
+              калькулятор
+            </span>
           </div>
-          {[
-            { label: "Возраст", value: age, set: setAge, unit: "лет", placeholder: "28" },
-            { label: "Вес", value: weight, set: setWeight, unit: "кг", placeholder: "60" },
-            { label: "Рост", value: height, set: setHeight, unit: "см", placeholder: "165" },
-          ].map(({ label, value, set, unit, placeholder }) => (
-            <div key={label} style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 12, color: "#888", marginBottom: 6 }}>{label}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <input type="number" value={value} onChange={e => set(e.target.value)} placeholder={placeholder}
-                  style={{ width: 100, height: 40, border: "1.5px solid #ece7de", borderRadius: 10, padding: "0 12px", fontSize: 15, fontFamily: "inherit", outline: "none", background: "#F5F0E8" }} />
-                <span style={{ fontSize: 13, color: "#888" }}>{unit}</span>
-              </div>
-            </div>
-          ))}
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>Активность</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {[{ key: "low", label: "Минимум" }, { key: "medium", label: "Умеренная" }, { key: "high", label: "Высокая" }, { key: "very_high", label: "Очень высокая" }].map(({ key, label }) => (
-                <button key={key} style={s(activity === key)} onClick={() => setActivity(key as Activity)}>{label}</button>
+
+          {/* Пол */}
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ display: "flex", gap: 24 }}>
+              {([["female", "женский"], ["male", "мужской"]] as [Gender, string][]).map(([key, label]) => (
+                <button key={key} className={`seg-btn${gender === key ? " active" : ""}`} onClick={() => setGender(key)}>{label}</button>
               ))}
             </div>
           </div>
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, color: "#888", marginBottom: 8 }}>Цель</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              {[{ key: "loss", label: "🔥 Похудение" }, { key: "maintain", label: "⚖️ Поддержание" }, { key: "gain", label: "💪 Набор массы" }].map(({ key, label }) => (
-                <button key={key} style={{ ...s(goal === key), fontSize: 12 }} onClick={() => setGoal(key as Goal)}>{label}</button>
+
+          {/* Возраст / Вес / Рост — закруглённые блоки */}
+          <div style={{ display: "flex", gap: 10, marginBottom: 22, alignItems: "flex-end" }}>
+            {[
+              { value: age,    set: setAge, width: 72, unit: "лет" },
+              { value: weight, set: setWeight, width: 72, unit: "кг"  },
+              { value: height, set: setHeight, width: 88, unit: "см"  },
+            ].map(({ value, set, width, unit }, i) => (
+              <div key={i} style={{
+                width, height: 32,
+                border: "1.4px solid #A6ED49",
+                borderRadius: 100,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                overflow: "hidden",
+                paddingRight: 8,
+                gap: 2,
+              }}>
+                <input
+                  type="number"
+                  value={value}
+                  onChange={e => { if (e.target.value.length <= 3) set(e.target.value); }}
+                  className="kbju-num-input"
+                  maxLength={3}
+                  style={{ width: "100%", textAlign: "center" }}
+                />
+                <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", whiteSpace: "nowrap", flexShrink: 0 }}>
+                  {unit}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Активность */}
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 400, fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 10 }}>активность</div>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              {([
+                ["low",    "минимум"   ],
+                ["medium", "умеренная" ],
+                ["high",   "высокая"   ],
+              ] as [Activity, string][]).map(([key, label]) => (
+                <button key={key} className={`seg-btn${activity === key ? " active" : ""}`} onClick={() => setActivity(key)}>{label}</button>
               ))}
             </div>
           </div>
-          <button onClick={handleCalc} style={{ width: "100%", height: 46, background: "#4F7453", color: "#fff", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: "pointer" }}>
-            Рассчитать
-          </button>
-        </div>
-        <div style={{ background: "#fff", borderRadius: 16, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#333", marginBottom: 6, fontFamily: "'Cormorant Garamond', serif" }}>🚫 Стоп-слова</div>
-          <div style={{ fontSize: 13, color: "#888", marginBottom: 10, lineHeight: 1.5 }}>
-            Укажите продукты которые не едите — рецепты с ними будут помечены. Через запятую: свинина, лактоза, орехи
+
+          {/* Цель */}
+          <div style={{ marginBottom: 22 }}>
+            <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 400, fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 10 }}>цель</div>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              {([
+                ["loss",     "похудение"  ],
+                ["maintain", "поддержание"],
+                ["gain",     "набор массы"],
+              ] as [Goal, string][]).map(([key, label]) => (
+                <button key={key} className={`seg-btn${goal === key ? " active" : ""}`} onClick={() => setGoal(key)}>{label}</button>
+              ))}
+            </div>
           </div>
-          <textarea value={stopWords} onChange={e => setStopWords(e.target.value)}
-            placeholder="свинина, молоко, орехи, глютен..." rows={3}
-            style={{ width: "100%", border: "1.5px solid #ece7de", borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: "inherit", background: "#F5F0E8", outline: "none", resize: "none", color: "#333" }} />
-        </div>
-        {norm && (
-          <button onClick={handleSave} disabled={saving} style={{ width: "100%", height: 50, borderRadius: 14, border: "none", background: saved ? "#7A9E7E" : "#4F7453", color: "#fff", fontSize: 16, fontWeight: 600, cursor: "pointer" }}>
-            {saved ? "✅ Сохранено!" : saving ? "Сохраняем..." : "Сохранить норму"}
+
+          <button className="calc-btn" onClick={handleCalcAndSave} disabled={saving || !age || !weight || !height}>
+            {saving ? "сохраняем..." : saved ? "✓ сохранено" : "рассчитать →"}
           </button>
-        )}
+        </div>
+
+        {/* ── БЛОК: СТОП-СЛОВА ───────────────────────────────────────────────
+            Фон: #013125 | Скругление: 20px
+            Заголовок: SVG + italic medium 16px #A6ED49
+            TODO: <img src="/icon_kbju/stop.svg" alt="" width={16} height={16} />
+            Описание: 12px #F8FFEE opacity 0.7, отступ от заголовка 7px
+            Поле: border-bottom 1.4px #A6ED49, italic 12px #F8FFEE
+            Галочка: появляется при фокусе, сохраняет и скрывается при клике
+            TODO: галочка <img src="/icon_kbju/check.svg" alt="" width={20} height={20} />
+        ───────────────────────────────────────────────────────────────────── */}
+        <div style={{ background: "#013125", borderRadius: 20, padding: "20px 20px 22px" }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+            <img src="/icon_kbju/not.svg" alt="" width={19} height={19} />
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 500, fontSize: 16, color: "#A6ED49" }}>
+              стоп-слова
+            </span>
+          </div>
+
+          <div style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 400, fontSize: 12, color: "#F8FFEE", lineHeight: 1.6, marginBottom: 16 }}>
+            укажите продукты, на которые у вас аллергия — на рецептах с ними будет отметка «нежелательные ингредиенты».
+          </div>
+
+         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <textarea
+            value={stopWords}
+            onChange={e => setStopWords(e.target.value)}
+            onFocus={() => setStopFocused(true)}
+            placeholder="свинина, молоко, орехи, глютен..."
+            rows={2}
+            className="stop-textarea"
+            style={{ marginBottom: -4 }}
+          />
+          {stopFocused && (
+            <div onClick={handleSaveStopWords} style={{ cursor: savingStop ? "default" : "pointer", opacity: savingStop ? 0.4 : 1, flexShrink: 0 }}>
+              {/* TODO: <img src="/icon_kbju/check.svg" alt="" width={20} height={20} /> */}
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="#A6ED49" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+          )}
+        </div>
+        </div>
+
       </div>
     </main>
   );

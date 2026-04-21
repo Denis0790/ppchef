@@ -10,7 +10,6 @@ interface Props {
 export default function AuthPrompt({ type, onClose }: Props) {
   const router = useRouter();
 
-  // Закрываем по Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
@@ -21,12 +20,20 @@ export default function AuthPrompt({ type, onClose }: Props) {
 
   return (
     <>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes slideUp {
+          from { transform: translateX(-50%) translateY(100%) }
+          to   { transform: translateX(-50%) translateY(0) }
+        }
+      `}</style>
+
       {/* Затемнение */}
       <div
         onClick={onClose}
         style={{
           position: "fixed", inset: 0,
-          background: "rgba(0,0,0,0.4)",
+          background: "rgba(0,0,0,0.5)",
           backdropFilter: "blur(4px)",
           zIndex: 100,
           animation: "fadeIn 0.2s ease",
@@ -38,108 +45,128 @@ export default function AuthPrompt({ type, onClose }: Props) {
         position: "fixed", bottom: 0,
         left: "50%", transform: "translateX(-50%)",
         width: "100%", maxWidth: 480,
-        background: "#fff", borderRadius: "24px 24px 0 0",
-        padding: "24px 24px 40px",
+        background: "#013125",
+        borderRadius: "24px 24px 0 0",
+        padding: "20px 20px 40px",
         zIndex: 101,
         animation: "slideUp 0.3s ease",
       }}>
-        <style>{`
-          @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-          @keyframes slideUp { from { transform: translateX(-50%) translateY(100%) } to { transform: translateX(-50%) translateY(0) } }
-        `}</style>
 
         {/* Ручка */}
         <div style={{
           width: 40, height: 4, borderRadius: 2,
-          background: "#e0e0e0", margin: "0 auto 24px",
+          background: "rgba(248,255,238,0.2)",
+          margin: "0 auto 24px",
         }} />
 
-        {/* Иконка */}
-        <div style={{ textAlign: "center", fontSize: 52, marginBottom: 12 }}>
-          {isAuth ? "👤" : "⭐"}
-        </div>
+        {/* ── AUTH вариант ── */}
+        {isAuth && (
+          <>
+            {/* Иконка + заголовок */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 24 }}>
+              {/* TODO: <img src="/icon_auth/log.svg" alt="" width={20} height={20} style={{ objectFit: "contain" }} /> */}
+              <img src="/icon_auth/log.svg" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
+              <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 16, color: "#A6ED49" }}>
+                необходима регистрация
+              </span>
+            </div>
 
-        {/* Заголовок */}
-        <div style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: 24, fontWeight: 700,
-          color: "#333", textAlign: "center", marginBottom: 8,
-        }}>
-          {isAuth ? "Нужна регистрация" : "Только для Premium"}
-        </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                onClick={() => { onClose(); router.push("/auth"); }}
+                style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 13, cursor: "pointer" }}
+              >
+                зарегистрироваться бесплатно →
+              </button>
+              <button
+                onClick={() => { onClose(); router.push("/auth"); }}
+                style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 13, cursor: "pointer" }}
+              >
+                уже есть аккаунт? войти →
+              </button>
+              <button
+                onClick={() => { onClose(); router.push("/"); }}
+                style={{ width: "100%", height: 44, background: "transparent", color: "#F8FFEE", border: "none", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, cursor: "pointer", opacity: 0.6 }}
+              >
+                продолжить без регистрации →
+              </button>
+            </div>
+          </>
+        )}
 
-        {/* Описание */}
-        <div style={{
-          fontSize: 14, color: "#888", textAlign: "center",
-          lineHeight: 1.6, marginBottom: 24, padding: "0 8px",
-        }}>
-          {isAuth
-            ? "Зарегистрируйтесь бесплатно чтобы добавлять рецепты в избранное, сохранять настройки и многое другое"
-            : "Оформите Premium подписку чтобы получить доступ к этой функции"
-          }
-        </div>
+        {/* ── PREMIUM вариант ── */}
+        {!isAuth && (
+          <>
+            {/* Иконка + заголовок */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+              <img src="/icon_profile/diamond.svg" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
+              
+              <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 16, color: "#A6ED49" }}>
+                premium функция
+              </span>
+            </div>
 
-        {/* Фичи */}
-        <div style={{
-          background: "#F5F0E8", borderRadius: 16,
-          padding: "14px 16px", marginBottom: 20,
-        }}>
-          {isAuth ? (
-            <>
-              {["❤️ Сохраняйте любимые рецепты", "📊 Считайте КБЖУ под себя", "🔍 Ищите по холодильнику", "🎁 Приглашайте друзей и получайте Premium"].map(f => (
-                <div key={f} style={{ fontSize: 13, color: "#555", paddingBottom: 6, lineHeight: 1.5 }}>
-                  {f}
+            {/* Список фич
+                TODO: замените SVG заглушки на свои иконки
+            */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
+              {[
+                {
+                  icon: "/icon_premium/stop.svg",       /* TODO: путь к иконке */
+                  title: "стоп-слова",
+                  desc: "скрывай нежелательные ингредиенты",
+                },
+                {
+                  icon: "/icon_premium/norm.svg",        /* TODO: путь к иконке */
+                  title: "расчет нормы в %",
+                  desc: "суточная норма блюда в каждом рецепте",
+                },
+                {
+                  icon: "/icon_premium/fav.svg",         /* TODO: путь к иконке */
+                  title: "неограниченное избранное",
+                  desc: "добавляй в избранное без ограничений",
+                },
+                {
+                  icon: "/icon_premium/fridge.svg",      /* TODO: путь к иконке */
+                  title: "холодильник",
+                  desc: "поиск по имеющимся продуктам",
+                },
+              ].map(({ icon, title, desc }) => (
+                <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  {/* Иконка фичи
+                      TODO: замените на <img src={icon} alt="" width={20} height={20} style={{ objectFit: "contain", flexShrink: 0, marginTop: 2 }} />
+                  */}
+                  <img src={icon} alt="" width={19} height={19} style={{ objectFit: "contain", flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 500, fontSize: 13, color: "#F8FFEE", marginBottom: 2 }}>
+                      {title}
+                    </div>
+                    <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 11, color: "#F8FFEE", opacity: 0.6 }}>
+                      {desc}
+                    </div>
+                  </div>
                 </div>
               ))}
-            </>
-          ) : (
-            <>
-              {["📊 Калькулятор суточной нормы КБЖУ", "🚫 Стоп-слова для нежелательных продуктов", "🔍 Поиск рецептов по холодильнику", "❤️ Безлимитное избранное"].map(f => (
-                <div key={f} style={{ fontSize: 13, color: "#555", paddingBottom: 6, lineHeight: 1.5 }}>
-                  {f}
-                </div>
-              ))}
-            </>
-          )}
-        </div>
+            </div>
 
-        {/* Кнопки */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <button
-            onClick={() => { onClose(); router.push(isAuth ? "/auth" : "/subscription"); }}
-            style={{
-              width: "100%", height: 52,
-              background: "#01311C", color: "#fff",
-              border: "none", borderRadius: 14,
-              fontSize: 16, fontWeight: 600, cursor: "pointer",
-            }}
-          >
-            {isAuth ? "Зарегистрироваться бесплатно →" : "Оформить Premium от 90 ₽/мес →"}
-          </button>
-          {isAuth && (
+            {/* Кнопка попробовать */}
             <button
-              onClick={() => { onClose(); router.push("/auth"); }}
-              style={{
-                width: "100%", height: 44,
-                background: "transparent", color: "#888",
-                border: "1.5px solid #ece7de", borderRadius: 14,
-                fontSize: 14, cursor: "pointer",
-              }}
+              onClick={() => { onClose(); router.push("/subscription"); }}
+              style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 13, cursor: "pointer", marginBottom: 12 }}
             >
-              Уже есть аккаунт? Войти
+              попробовать за 90 Р / мес →
             </button>
-          )}
-          <button
-            onClick={onClose}
-            style={{
-              width: "100%", height: 44,
-              background: "transparent", color: "#aaa",
-              border: "none", fontSize: 13, cursor: "pointer",
-            }}
-          >
-            Продолжить без регистрации
-          </button>
-        </div>
+
+            {/* Ссылка на годовую подписку */}
+            <div
+              onClick={() => { onClose(); router.push("/subscription"); }}
+              style={{ textAlign: "center", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#A6ED49", opacity: 0.7, cursor: "pointer" }}
+            >
+              или 790 Р / год — выгоднее на 27% →
+            </div>
+          </>
+        )}
+
       </div>
     </>
   );

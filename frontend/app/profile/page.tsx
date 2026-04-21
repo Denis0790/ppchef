@@ -203,12 +203,16 @@ export default function ProfilePage() {
                 onFocus={() => setEditingName(true)}
                 placeholder="Напишите своё имя"
                 style={{
-                  border: "none", background: "transparent", outline: "none",
+                  border: "none",
+                  borderBottom: "1px solid #A6ED49",
+                  background: "transparent", outline: "none",
                   fontSize: 14, fontStyle: "italic", fontWeight: 400,
                   fontFamily: "'Montserrat', sans-serif",
                   color: nameInput ? "#013125" : "#013125",
                   opacity: nameInput ? 1 : 0.4,
                   width: "100%",
+                  paddingLeft: 12,
+                  paddingBottom: 4,
                 }}
               />
               {editingName && (
