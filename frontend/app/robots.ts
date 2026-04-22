@@ -8,8 +8,9 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ["/kitchen-secret/", "/profile/", "/favorites/", "/auth/"],
     },
     sitemap: [
-  "https://ppchef.ru/sitemap.xml",
-  "https://ppchef.ru/image-sitemap.xml",
-],
+      "https://ppchef.ru/sitemap.xml",
+      "https://ppchef.ru/image-sitemap",
+      "https://ppchef.ru/yandex-turbo",
+    ],
   };
 }
