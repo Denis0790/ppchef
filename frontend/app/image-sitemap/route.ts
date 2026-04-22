@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
 
-const API_URL = process.env.INTERNAL_API_URL 
-  || process.env.NEXT_PUBLIC_API_URL 
-  || "http://backend:8000/api/v1";
-
-export const dynamic = "force-static";
-export const revalidate = 3600;
+const API_URL = process.env.INTERNAL_API_URL || "http://backend:8000/api/v1";
 
 export async function GET() {
   const baseUrl = "https://ppchef.ru";
 
   try {
-    const res = await fetch(`${API_URL}/recipes?page_size=1000`);
-    if (!res.ok) throw new Error("fetch failed");
+    const res = await fetch(`${API_URL}/recipes?page_size=1000`, {
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
 
     const urls = data.items
@@ -35,7 +32,8 @@ ${urls}
     return new NextResponse(xml, {
       headers: { "Content-Type": "application/xml" },
     });
-  } catch {
+  } catch (e) {
+    console.error("image-sitemap error:", e);
     return new NextResponse(`<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
