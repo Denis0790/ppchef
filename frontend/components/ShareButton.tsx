@@ -25,7 +25,7 @@ export default function ShareButton({ title, url }: ShareButtonProps) {
     <button
       onClick={handleShare}
       style={{
-        width: 345, height: 32,
+        width: 345, height: 36,
         background: "#013125",
         border: "none",
         borderRadius: 20,

@@ -491,6 +491,10 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
         ────────────────────────────────────────────────────────────────────── */}
         <div
           ref={filterRef}
+          onWheel={(e) => {
+            e.preventDefault();
+            filterRef.current!.scrollLeft += e.deltaY;
+          }}
           style={{
             display: "flex", gap: 8,
             padding: "12px 16px",

@@ -139,7 +139,6 @@ export default function ProfilePage() {
         display: "flex", alignItems: "center", justifyContent: "space-between",
         paddingLeft: 18, paddingRight: 18,
       }}>
-        {/* Кнопка назад */}
         <div
           onClick={() => router.push("/")}
           style={{
@@ -159,7 +158,6 @@ export default function ProfilePage() {
           </span>
         </div>
 
-        {/* Кнопка Premium — только если есть */}
         {isPremium && (
           <div style={{
             height: 32, paddingLeft: 16, paddingRight: 16,
@@ -179,11 +177,11 @@ export default function ProfilePage() {
         )}
       </div>
 
-      <div style={{ padding: "24px 18px 100px" }}>
+      {/* ── КОНТЕНТ ── */}
+      <div style={{ padding: "12px 18px 100px" }}>
 
         {/* ── АВАТАР + ИМЯ + EMAIL ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-          {/* Аватар */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
           <div style={{
             width: 56, height: 56, borderRadius: "50%",
             background: "#01311C",
@@ -193,9 +191,8 @@ export default function ProfilePage() {
             <Image src="/icon_profile/avatar.svg" alt="" width={67} height={67} style={{ objectFit: "contain" }} />
           </div>
 
-          {/* Имя + email */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Поле имени */}
+            {/* Поле имени —  paddingLeft 4 чтобы первая буква не перекрывалась */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
               <input
                 value={nameInput}
@@ -208,10 +205,10 @@ export default function ProfilePage() {
                   background: "transparent", outline: "none",
                   fontSize: 14, fontStyle: "italic", fontWeight: 400,
                   fontFamily: "'Montserrat', sans-serif",
-                  color: nameInput ? "#013125" : "#013125",
+                  color: "#013125",
                   opacity: nameInput ? 1 : 0.4,
                   width: "100%",
-                  paddingLeft: 12,
+                  paddingLeft: 4,
                   paddingBottom: 4,
                 }}
               />
@@ -228,7 +225,6 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-            {/* Email */}
             <div style={{
               fontSize: 12, fontWeight: 400, fontStyle: "normal",
               fontFamily: "'Montserrat', sans-serif",
@@ -242,9 +238,8 @@ export default function ProfilePage() {
         {/* ── РЕФЕРАЛЬНЫЙ БЛОК ── */}
         <div style={{
           background: "#01311C", borderRadius: 16,
-          padding: 16, marginBottom: 16,
+          padding: 16, marginBottom: 8,
         }}>
-          {/* Заголовок */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <Image src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} />
             <span style={{
@@ -255,19 +250,20 @@ export default function ProfilePage() {
             </span>
           </div>
 
-          {/* Описание */}
           <div style={{
             fontSize: 14, fontWeight: 400, fontStyle: "normal",
             fontFamily: "'Montserrat', sans-serif",
-            color: "#F8FFEE", lineHeight: 1.6, marginBottom: 12,
+            color: "#F8FFEE", lineHeight: 1.6, marginBottom: 8,
           }}>
-            Приглашайте друзей по своей ссылке — за каждые <span style={{ color: "#A6ED49", fontStyle: "italic" }}>3 друга</span> получаете <span style={{ color: "#A6ED49", fontStyle: "italic" }}>1 месяц premium в подарок</span>
+            Приглашайте друзей по своей ссылке — за каждые{" "}
+            <span style={{ color: "#A6ED49", fontStyle: "italic" }}>3 друга</span>{" "}
+            получаете{" "}
+            <span style={{ color: "#A6ED49", fontStyle: "italic" }}>1 месяц premium в подарок</span>
           </div>
 
-          {/* Прогресс */}
-          <div style={{ marginBottom: 12 }}>
+          <div style={{ marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 12, fontFamily: "'Montserrat', sans-serif",fontStyle: 'italic', color: "#F8FFEE", opacity: 0.7 }}>
+              <span style={{ fontSize: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", color: "#F8FFEE", opacity: 0.7 }}>
                 приглашено {refCount}
               </span>
               <span style={{ fontSize: 12, fontFamily: "'Montserrat', sans-serif", color: "#F8FFEE", opacity: 0.7 }}>
@@ -291,29 +287,22 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* Кнопки */}
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={copyRefLink} style={{
               flex: 1, height: 36,
-              background: "transparent",
-              color: "#F8FFEE",
-              border: "1px solid #A6ED49",
-              borderRadius: 20,
+              background: "transparent", color: "#F8FFEE",
+              border: "1px solid #A6ED49", borderRadius: 20,
               fontSize: 12, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif",
-              cursor: "pointer",
+              fontFamily: "'Montserrat', sans-serif", cursor: "pointer",
             }}>
               {copied ? "скопировано!" : "скопировать"}
             </button>
             <button onClick={shareRefLink} style={{
               flex: 1, height: 36,
-              background: "#A6ED49",
-              color: "#01311C",
-              border: "none",
-              borderRadius: 20,
+              background: "#A6ED49", color: "#01311C",
+              border: "none", borderRadius: 20,
               fontSize: 12, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif",
-              cursor: "pointer",
+              fontFamily: "'Montserrat', sans-serif", cursor: "pointer",
             }}>
               поделиться
             </button>
@@ -321,7 +310,7 @@ export default function ProfilePage() {
         </div>
 
         {/* ── МЕНЮ ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
 
           {/* Предложить рецепт */}
           <div
@@ -348,7 +337,7 @@ export default function ProfilePage() {
               height: 48, border: "1px solid #01311C", borderRadius: 40,
               display: "flex", alignItems: "center",
               paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer",
-              marginTop: 36,
+              marginTop: 18,
             }}
           >
             <Image src="/icon_profile/subscription.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
@@ -379,14 +368,13 @@ export default function ProfilePage() {
 
           {/* О приложении */}
           <div style={{
-
-            paddingTop: 16, paddingBottom: 16, paddingLeft: 18, paddingRight: 18,
+            paddingTop: 8, paddingBottom: 8, paddingLeft: 18, paddingRight: 18,
             marginTop: 4,
           }}>
             <div style={{
               fontSize: 12, fontWeight: 400, fontStyle: "italic",
               fontFamily: "'Montserrat', sans-serif",
-              color: "#013125", opacity: 0.7, marginBottom: 12,
+              color: "#013125", opacity: 0.7, marginBottom: 8,
             }}>
               о приложении
             </div>
@@ -402,7 +390,7 @@ export default function ProfilePage() {
                 onClick={onClick}
                 style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
-                  marginBottom: 10, cursor: onClick ? "pointer" : "default",
+                  marginBottom: 8, cursor: onClick ? "pointer" : "default",
                 }}
               >
                 <span style={{
