@@ -5,12 +5,16 @@ const API_URL = process.env.INTERNAL_API_URL || "http://backend:8000/api/v1";
 export async function GET() {
   const baseUrl = "https://ppchef.ru";
 
+  console.log("image-sitemap: API_URL =", API_URL);
+
   try {
     const res = await fetch(`${API_URL}/recipes?page_size=1000`, {
       cache: "no-store",
     });
+    console.log("image-sitemap: response status =", res.status);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    console.log("image-sitemap: recipes count =", data.items?.length);
 
     const urls = data.items
       .filter((r: { id: string; image_url?: string; title: string }) => r.image_url)
