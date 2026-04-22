@@ -11,7 +11,7 @@ export async function GET() {
   const baseUrl = "https://ppchef.ru";
 
   try {
-    const res = await fetch(`${API_URL}/recipes?page_size=1000`);
+    const res = await fetch(`${API_URL}/recipes?page_size=100`);
     if (!res.ok) throw new Error("fetch failed");
     const data = await res.json();
 

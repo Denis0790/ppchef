@@ -8,7 +8,7 @@ export async function GET() {
   console.log("image-sitemap: API_URL =", API_URL);
 
   try {
-    const res = await fetch(`${API_URL}/recipes?page_size=1000`, {
+    const res = await fetch(`${API_URL}/recipes?page_size=100`, {
       cache: "no-store",
     });
     console.log("image-sitemap: response status =", res.status);
