@@ -177,11 +177,10 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* ── КОНТЕНТ ── */}
-      <div style={{ padding: "12px 18px 100px" }}>
+      <div style={{ padding: "24px 18px 100px" }}>
 
         {/* ── АВАТАР + ИМЯ + EMAIL ── */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
           <div style={{
             width: 56, height: 56, borderRadius: "50%",
             background: "#01311C",
@@ -192,7 +191,6 @@ export default function ProfilePage() {
           </div>
 
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* Поле имени —  paddingLeft 4 чтобы первая буква не перекрывалась */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
               <input
                 value={nameInput}
@@ -238,7 +236,7 @@ export default function ProfilePage() {
         {/* ── РЕФЕРАЛЬНЫЙ БЛОК ── */}
         <div style={{
           background: "#01311C", borderRadius: 16,
-          padding: 16, marginBottom: 8,
+          padding: 16, marginBottom: 16,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <Image src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} />
@@ -253,7 +251,7 @@ export default function ProfilePage() {
           <div style={{
             fontSize: 14, fontWeight: 400, fontStyle: "normal",
             fontFamily: "'Montserrat', sans-serif",
-            color: "#F8FFEE", lineHeight: 1.6, marginBottom: 8,
+            color: "#F8FFEE", lineHeight: 1.6, marginBottom: 12,
           }}>
             Приглашайте друзей по своей ссылке — за каждые{" "}
             <span style={{ color: "#A6ED49", fontStyle: "italic" }}>3 друга</span>{" "}
@@ -261,7 +259,7 @@ export default function ProfilePage() {
             <span style={{ color: "#A6ED49", fontStyle: "italic" }}>1 месяц premium в подарок</span>
           </div>
 
-          <div style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 12 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
               <span style={{ fontSize: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", color: "#F8FFEE", opacity: 0.7 }}>
                 приглашено {refCount}
@@ -310,9 +308,8 @@ export default function ProfilePage() {
         </div>
 
         {/* ── МЕНЮ ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
-          {/* Предложить рецепт */}
           <div
             onClick={() => router.push("/suggest")}
             style={{
@@ -330,14 +327,13 @@ export default function ProfilePage() {
             </span>
           </div>
 
-          {/* Управление подпиской */}
           <div
             onClick={() => router.push("/subscription")}
             style={{
               height: 48, border: "1px solid #01311C", borderRadius: 40,
               display: "flex", alignItems: "center",
               paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer",
-              marginTop: 18,
+              marginTop: 36,
             }}
           >
             <Image src="/icon_profile/subscription.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
@@ -349,7 +345,6 @@ export default function ProfilePage() {
             </span>
           </div>
 
-          {/* Написать в поддержку */}
           <a href="mailto:support@ppchef.ru" style={{ textDecoration: "none" }}>
             <div style={{
               height: 48, border: "1px solid #01311C", borderRadius: 40,
@@ -366,15 +361,14 @@ export default function ProfilePage() {
             </div>
           </a>
 
-          {/* О приложении */}
           <div style={{
-            paddingTop: 8, paddingBottom: 8, paddingLeft: 18, paddingRight: 18,
+            paddingTop: 16, paddingBottom: 16, paddingLeft: 18, paddingRight: 18,
             marginTop: 4,
           }}>
             <div style={{
               fontSize: 12, fontWeight: 400, fontStyle: "italic",
               fontFamily: "'Montserrat', sans-serif",
-              color: "#013125", opacity: 0.7, marginBottom: 8,
+              color: "#013125", opacity: 0.7, marginBottom: 12,
             }}>
               о приложении
             </div>
@@ -390,7 +384,7 @@ export default function ProfilePage() {
                 onClick={onClick}
                 style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
-                  marginBottom: 8, cursor: onClick ? "pointer" : "default",
+                  marginBottom: 10, cursor: onClick ? "pointer" : "default",
                 }}
               >
                 <span style={{
@@ -409,7 +403,6 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          {/* Выйти */}
           <div
             onClick={handleLogout}
             style={{

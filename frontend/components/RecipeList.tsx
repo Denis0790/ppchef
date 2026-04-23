@@ -355,6 +355,17 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+   useEffect(() => {
+    const el = filterRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
+
   useEffect(() => {
     const isBack = isBackRef.current;
     isBackRef.current = false;
@@ -491,10 +502,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
         ────────────────────────────────────────────────────────────────────── */}
         <div
           ref={filterRef}
-          onWheel={(e) => {
-            e.preventDefault();
-            filterRef.current!.scrollLeft += e.deltaY;
-          }}
+
           style={{
             display: "flex", gap: 8,
             padding: "12px 16px",

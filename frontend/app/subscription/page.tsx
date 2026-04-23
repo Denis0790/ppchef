@@ -133,7 +133,7 @@ export default function SubscriptionPage() {
           border: "1px solid #A6ED49",
           borderRadius: 16, padding: 16,
           background: "#F8FFEE",
-          marginTop: 36,
+          marginTop: 18,
         }}>
           <div style={{
             fontSize: 16, fontWeight: 500, fontStyle: "italic",
@@ -180,7 +180,7 @@ export default function SubscriptionPage() {
           background: "#01311C",
           border: "1px solid #A6ED49",
           borderRadius: 16, padding: 16,
-          marginTop: 36,
+          marginTop: 18,
           height: 125
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -227,7 +227,7 @@ export default function SubscriptionPage() {
           background: "#01311C",
           border: "1px solid #A6ED49",
           borderRadius: 16, padding: 16,
-          marginTop: 36,
+          marginTop: 18,
           height: 125
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
