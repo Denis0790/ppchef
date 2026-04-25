@@ -36,8 +36,8 @@ const pageStyles = `
   .search-tab-text {
     font-family: 'Montserrat', sans-serif;
     font-style: italic;
-    font-weight: 400;
-    font-size: 13px;
+    font-weight: 500;
+    font-size: 14px;
     color: #013125;
     transition: opacity 0.2s;
     padding: 10px 0 8px 0;
@@ -418,7 +418,7 @@ export default function SearchPage() {
           <div style={{ padding: "0 15px" }}>
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 4 }}>
-                что есть в холодильнике?
+                поиск по рецептам
               </div>
               <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, lineHeight: 1.5 }}>
                 введите название блюда и ищите рецепт, который хотите приготовить прямо сейчас
@@ -426,7 +426,7 @@ export default function SearchPage() {
             </div>
             <div>
               <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 4 }}>
-                что приготовим?
+                поиск по продуктам
               </div>
               <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.8, lineHeight: 1.5 }}>
                 введите продукты по порядку и ищите рецепты, которые можно приготовить прямо сейчас
