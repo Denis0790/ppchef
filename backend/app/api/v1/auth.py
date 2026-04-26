@@ -369,17 +369,27 @@ async def google_auth(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
+    # Получаем информацию о пользователе через Google userinfo API
+    import httpx
     try:
-        id_info = id_token.verify_oauth2_token(
-            data.token,
-            google_requests.Request(),
-            settings.GOOGLE_CLIENT_ID,
-        )
+        async with httpx.AsyncClient() as client:
+            res = await client.get(
+                "https://www.googleapis.com/oauth2/v3/userinfo",
+                headers={"Authorization": f"Bearer {data.token}"},
+            )
+            if res.status_code != 200:
+                raise HTTPException(status_code=400, detail="Невалидный Google токен")
+            id_info = res.json()
+    except HTTPException:
+        raise
     except Exception:
-        raise HTTPException(status_code=400, detail="Невалидный Google токен")
+        raise HTTPException(status_code=400, detail="Ошибка при проверке Google токена")
 
-    google_id = id_info["sub"]
-    email = id_info["email"]
+    google_id = id_info.get("sub")
+    email = id_info.get("email")
+
+    if not google_id or not email:
+        raise HTTPException(status_code=400, detail="Не удалось получить данные от Google")
 
     # Ищем по google_id
     result = await db.execute(select(User).where(User.google_id == google_id))
@@ -391,13 +401,11 @@ async def google_auth(
         user = result.scalar_one_or_none()
 
     if user:
-        # Привязываем google_id если не привязан
         if not user.google_id:
             user.google_id = google_id
         user.is_active = True
         user.email_verified = True
     else:
-        # Новый пользователь
         import secrets as secrets_module
         user = User(
             email=email,
