@@ -5,6 +5,9 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { login, register, apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 const globalStyles = `
   @font-face {
@@ -37,8 +40,6 @@ const globalStyles = `
     border-radius: 100px;
     padding: 13px 18px 13px 48px;
     color: #F8FFEE;
-    fontFamily: "'Montserrat', sans-serif";
-    fontStyle: "italic";
     font-size: 13px;
     outline: none;
     transition: box-shadow 0.2s;
@@ -57,8 +58,6 @@ const globalStyles = `
     color: #013125;
     border: none;
     border-radius: 100px;
-    fontFamily: "'Montserrat', sans-serif";
-    fontStyle: "italic";
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
@@ -82,13 +81,38 @@ const globalStyles = `
     transform: translateY(0);
   }
 
+  /* Кнопка Google */
+  .google-btn {
+    width: 271px;
+    height: 48px;
+    padding: 0;
+    background: transparent;
+    color: #F8FFEE;
+    border: 1.5px solid rgba(166,237,73,0.4);
+    border-radius: 100px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: border-color 0.2s, opacity 0.2s;
+    margin-top: 12px;
+  }
+  .google-btn:hover {
+    border-color: #A6ED49;
+    opacity: 0.9;
+  }
+  .google-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
   .tab-btn {
     flex: 1;
     text-align: center;
     padding: 10px 0;
     border-radius: 100px;
-    fontFamily: "'Montserrat', sans-serif";
-    fontStyle: "italic";
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -103,7 +127,7 @@ const globalStyles = `
 
   .input-wrap {
     position: relative;
-    width: 271;
+    width: 271px;
     margin-bottom: 12px;
   }
   .input-icon {
@@ -138,8 +162,6 @@ const globalStyles = `
     font-size: 11.5px;
     color: #F8FFEE;
     line-height: 1;
-    fontFamily: "'Montserrat', sans-serif";
-    fontStyle: "italic";
     opacity: 0.85;
     letter-spacing: 0.01em;
   }
@@ -147,8 +169,6 @@ const globalStyles = `
 
   .forgot-link {
     font-size: 12px; color: #A6ED49; cursor: pointer;
-    fontFamily: "'Montserrat', sans-serif";
-    fontStyle: "italic";
     letter-spacing: 0.02em;
     transition: opacity 0.2s;
   }
@@ -160,14 +180,13 @@ const globalStyles = `
     color: #F8FFEE;
     opacity: 0.7;
     cursor: pointer;
-    font-family: 'Unbounded', sans-serif;
     letter-spacing: 0.02em;
     transition: opacity 0.2s;
   }
   .back-link:hover { opacity: 1; }
 
   .error-box {
-    width: 318px;
+    width: 271px;
     background: rgba(224,85,85,0.12);
     color: #ff8585;
     border: 1px solid rgba(224,85,85,0.3);
@@ -175,8 +194,26 @@ const globalStyles = `
     padding: 10px 14px;
     font-size: 12px;
     margin-bottom: 16px;
-    fontFamily: "'Montserrat', sans-serif";
-    fontStyle: "italic";
+  }
+
+  .divider {
+    width: 271px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(166,237,73,0.2);
+  }
+  .divider-text {
+    font-size: 11px;
+    color: #F8FFEE;
+    opacity: 0.4;
+    font-family: 'Montserrat', sans-serif;
+    font-style: italic;
   }
 `;
 
@@ -185,15 +222,11 @@ function isValidEmail(email: string) {
 }
 
 function IconEmail() {
-  return (
-    <img className="input-icon" src="/icon_auth/log.svg" alt="" width={20} height={20} />
-  );
+  return <img className="input-icon" src="/icon_auth/log.svg" alt="" width={20} height={20} />;
 }
 
 function IconLock() {
-  return (
-    <img className="input-icon" src="/icon_auth/pas.svg" alt="" width={20} height={20} />
-  );
+  return <img className="input-icon" src="/icon_auth/pas.svg" alt="" width={20} height={20} />;
 }
 
 function IconEye({ visible }: { visible: boolean }) {
@@ -240,7 +273,50 @@ const Checkbox = ({ checked, onChange, label, link, linkLabel }: {
   );
 };
 
-export default function AuthPage() {
+/* ── Кнопка Google — отдельный компонент внутри провайдера ── */
+function GoogleLoginButton({ onSuccess, onError, loading }: {
+  onSuccess: (token: string) => void;
+  onError: () => void;
+  loading: boolean;
+}) {
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse: { access_token: string }) => {
+      // Получаем ID токен через userinfo
+      try {
+        const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+        if (!res.ok) throw new Error("Ошибка Google");
+        // Передаём access_token на бэкенд — он сам верифицирует
+        onSuccess(tokenResponse.access_token);
+      } catch {
+        onError();
+      }
+    },
+    onError: () => onError(),
+    flow: "implicit",
+  });
+
+  return (
+    <button
+      className="google-btn"
+      onClick={() => googleLogin()}
+      disabled={loading}
+      style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}
+    >
+      {/* Логотип Google */}
+      <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+      </svg>
+      войти через google
+    </button>
+  );
+}
+
+function AuthForm() {
   const router = useRouter();
   const { setToken } = useAuth();
 
@@ -360,182 +436,186 @@ export default function AuthPage() {
     }
   }
 
-if (step === "verify") {
+  /* ── Вход через Google ── */
+  async function handleGoogleSuccess(accessToken: string) {
+    setError("");
+    setLoading(true);
+    try {
+      const data = await apiFetch("/auth/google", {
+        method: "POST",
+        body: JSON.stringify({ token: accessToken }),
+      }) as { access_token: string };
+      setToken(data.access_token);
+      router.push("/");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Ошибка входа через Google");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleGoogleError() {
+    setError("Не удалось войти через Google");
+  }
+
+  if (step === "verify") {
     return (
-      <>
-        <style>{globalStyles}</style>
-        <main style={{
-          maxWidth: 420, margin: "0 auto", minHeight: "100vh",
-          background: "#013125",
-          display: "flex", flexDirection: "column", alignItems: "center",
-          justifyContent: "center", padding: "0 24px",
-        }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>📨</div>
-            <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 20, fontWeight: 700, color: "#A6ED49" }}>
-              Проверьте почту
-            </div>
-            <div style={{
-              fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14,
-              color: "#F8FFEE", opacity: 0.6, marginTop: 10, lineHeight: 1.7,
-            }}>
-              Мы отправили 4-значный код на<br />
-              <strong style={{ color: "#A6ED49", opacity: 1 }}>{email}</strong>
-            </div>
+      <main style={{
+        maxWidth: 420, margin: "0 auto", minHeight: "100vh",
+        background: "#013125",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", padding: "0 24px",
+      }}>
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>📨</div>
+          <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 20, fontWeight: 700, color: "#A6ED49" }}>
+            Проверьте почту
           </div>
-
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 28 }}>
-            {code.map((digit, i) => (
-              <input
-                key={i}
-                ref={el => { inputRefs.current[i] = el; }}
-                type="text" inputMode="numeric" maxLength={1} value={digit}
-                onChange={e => handleCodeInput(i, e.target.value)}
-                onKeyDown={e => handleCodeKeyDown(i, e)}
-                style={{
-                  width: 64, height: 72, textAlign: "center",
-                  fontSize: 30, fontWeight: 700, color: "#F8FFEE",
-                  border: `2px solid ${digit ? "#A6ED49" : "rgba(166,237,73,0.3)"}`,
-                  borderRadius: 16, outline: "none",
-                  background: digit ? "rgba(166,237,73,0.08)" : "rgba(255,255,255,0.03)",
-                  transition: "all 0.15s",
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontStyle: "italic",
-                  caretColor: "#A6ED49",
-                }}
-              />
-            ))}
-          </div>
-
-          {error && <div className="error-box">{error}</div>}
-
-          <button className="submit-btn" onClick={handleVerify}
-            disabled={loading || code.join("").length !== 4}
-            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
-            {loading ? "Проверяем..." : "Подтвердить"}
-          </button>
-
           <div style={{
-            textAlign: "center", fontSize: 12, color: "#F8FFEE",
-            opacity: 0.55, marginTop: 20,
-            fontFamily: "'Montserrat', sans-serif", fontStyle: "italic",
+            fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14,
+            color: "#F8FFEE", opacity: 0.6, marginTop: 10, lineHeight: 1.7,
           }}>
-            Не получили код?{" "}
-            {resendTimer > 0 ? (
-              <span style={{ color: "#7aad7a", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>Повторить через {resendTimer}с</span>
-            ) : (
-              <span onClick={handleResend}
-                style={{ color: "#A6ED49", cursor: "pointer", fontWeight: 600, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
-                Отправить снова
-              </span>
-            )}
+            Мы отправили 4-значный код на<br />
+            <strong style={{ color: "#A6ED49", opacity: 1 }}>{email}</strong>
           </div>
+        </div>
 
-          <div className="back-link"
-            onClick={() => { setStep("form"); setCode(["", "", "", ""]); setError(""); }}
-            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
-            ← Изменить email
-          </div>
-        </main>
-      </>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 28 }}>
+          {code.map((digit, i) => (
+            <input
+              key={i}
+              ref={el => { inputRefs.current[i] = el; }}
+              type="text" inputMode="numeric" maxLength={1} value={digit}
+              onChange={e => handleCodeInput(i, e.target.value)}
+              onKeyDown={e => handleCodeKeyDown(i, e)}
+              style={{
+                width: 64, height: 72, textAlign: "center",
+                fontSize: 30, fontWeight: 700, color: "#F8FFEE",
+                border: `2px solid ${digit ? "#A6ED49" : "rgba(166,237,73,0.3)"}`,
+                borderRadius: 16, outline: "none",
+                background: digit ? "rgba(166,237,73,0.08)" : "rgba(255,255,255,0.03)",
+                transition: "all 0.15s",
+                fontFamily: "'Montserrat', sans-serif",
+                fontStyle: "italic",
+                caretColor: "#A6ED49",
+              }}
+            />
+          ))}
+        </div>
+
+        {error && <div className="error-box">{error}</div>}
+
+        <button className="submit-btn" onClick={handleVerify}
+          disabled={loading || code.join("").length !== 4}
+          style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
+          {loading ? "Проверяем..." : "Подтвердить"}
+        </button>
+
+        <div style={{
+          textAlign: "center", fontSize: 12, color: "#F8FFEE",
+          opacity: 0.55, marginTop: 20,
+          fontFamily: "'Montserrat', sans-serif", fontStyle: "italic",
+        }}>
+          Не получили код?{" "}
+          {resendTimer > 0 ? (
+            <span style={{ color: "#7aad7a" }}>Повторить через {resendTimer}с</span>
+          ) : (
+            <span onClick={handleResend}
+              style={{ color: "#A6ED49", cursor: "pointer", fontWeight: 600 }}>
+              Отправить снова
+            </span>
+          )}
+        </div>
+
+        <div className="back-link"
+          onClick={() => { setStep("form"); setCode(["", "", "", ""]); setError(""); }}
+          style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+          ← Изменить email
+        </div>
+      </main>
     );
   }
 
   const topPadding = "calc(50vh - 280px)";
 
   return (
-    <>
-      <style>{globalStyles}</style>
-      <main style={{
-        maxWidth: 420, margin: "0 auto", minHeight: "100vh",
-        background: "#013125",
-        display: "flex", flexDirection: "column", alignItems: "center",
-        justifyContent: "flex-start",
-        paddingTop: topPadding,
-        paddingLeft: 24, paddingRight: 24,
+    <main style={{
+      maxWidth: 420, margin: "0 auto", minHeight: "100vh",
+      background: "#013125",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      justifyContent: "flex-start",
+      paddingTop: topPadding,
+      paddingLeft: 24, paddingRight: 24,
+    }}>
+
+      <div style={{ marginBottom: 36 }}>
+        <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 178, height: 117, objectFit: "contain" }} />
+      </div>
+
+      <div style={{
+        display: "flex", background: "#013125",
+        borderRadius: 100, padding: 4, marginBottom: 12,
+        border: "2px solid #A6ED49", height: 48, width: 271, flexShrink: 0,
       }}>
+        {(["login", "register"] as const).map(m => (
+          <button key={m}
+            className={`tab-btn ${mode === m ? "active" : "inactive"}`}
+            onClick={() => { setMode(m); setError(""); }}
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+            {m === "login" ? "вход" : "регистрация"}
+          </button>
+        ))}
+      </div>
 
-        <div style={{ marginBottom: 36 }}>
-          <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 178, height: 117, objectFit: "contain" }} />
+      <div className="input-wrap">
+        <IconEmail />
+        <input className="auth-input" type="email" value={email}
+          onChange={e => setEmail(e.target.value)} placeholder="e-mail"
+          style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }} />
+      </div>
+
+      <div className="input-wrap" style={{ marginBottom: 0 }}>
+        <IconLock />
+        <input className="auth-input"
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          placeholder="пароль"
+          onKeyDown={e => e.key === "Enter" && handleSubmit()}
+          style={{ paddingRight: 48, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }}
+        />
+        <div
+          onClick={() => setShowPassword(p => !p)}
+          style={{
+            position: "absolute", right: 16, top: "50%",
+            transform: "translateY(-50%)",
+            cursor: "pointer", opacity: 0.6,
+            transition: "opacity 0.2s", display: "flex", alignItems: "center",
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+          onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
+        >
+          <IconEye visible={showPassword} />
         </div>
+      </div>
 
-        <div style={{
-          display: "flex",
-          background: "#013125",
-          borderRadius: 100,
-          padding: 4,
-          marginBottom: 12,
-          border: "2px solid #A6ED49",
-          height: 48,
-          width: 271,
-          flexShrink: 0,
-        }}>
-          {(["login", "register"] as const).map(m => (
-            <button key={m}
-              className={`tab-btn ${mode === m ? "active" : "inactive"}`}
-              onClick={() => { setMode(m); setError(""); }}
-              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
-              {m === "login" ? "вход" : "регистрация"}
-            </button>
-          ))}
-        </div>
-
-        <div className="input-wrap">
-          <IconEmail />
-          <input className="auth-input" type="email" value={email}
-            onChange={e => setEmail(e.target.value)} placeholder="e-mail"
-            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }} />
-        </div>
-
-        <div className="input-wrap" style={{ marginBottom: 0 }}>
-          <IconLock />
-          <input className="auth-input"
-            type={showPassword ? "text" : "password"}
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            placeholder="пароль"
-            onKeyDown={e => e.key === "Enter" && handleSubmit()}
-            style={{ paddingRight: 48, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }}
-          />
-          <div
-            onClick={() => setShowPassword(p => !p)}
-            style={{
-              position: "absolute", right: 16, top: "50%",
-              transform: "translateY(-50%)",
-              cursor: "pointer", opacity: 0.6,
-              transition: "opacity 0.2s",
-              display: "flex", alignItems: "center",
-            }}
-            onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-            onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
-          >
-            <IconEye visible={showPassword} />
-          </div>
-        </div>
-
-        {/*
-          Нижняя часть — position: relative, не влияет на верхние элементы.
-          Login:    забыли пароль (mt 12) → кнопка (mt 35)
-          Register: чекбоксы (mt 12)      → кнопка (mt 12)
-          Всё что ниже пароля — просто добавляется вниз, верх не двигается.
-        */}
-        {mode === "login" ? (
-          <>
-            <div style={{ width: 271, textAlign: "center", marginTop: 27 }}>
+      {mode === "login" ? (
+        <>
+          <div style={{ width: 271, textAlign: "center", marginTop: 27 }}>
             <span className="forgot-link" onClick={() => router.push("/auth/reset")}
               style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12 }}>
               забыли пароль →
             </span>
           </div>
-          {error && <div className="error-box" style={{ marginTop: 16, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>{error}</div>}
+          {error && <div className="error-box" style={{ marginTop: 16 }}>{error}</div>}
           <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
             style={{ marginTop: 35, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
             {loading ? "Подождите..." : "вход"}
           </button>
-          </>
-        ) : (
-          <>
-            <div style={{ width: 280, marginTop: 12,fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 10, color: "#F8FFEE", lineHeight: 1.6 }}>
+        </>
+      ) : (
+        <>
+          <div style={{ width: 280, marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 10, color: "#F8FFEE", lineHeight: 1.6 }}>
             <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
               label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
             <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
@@ -547,15 +627,41 @@ if (step === "verify") {
             style={{ marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
             {loading ? "Подождите..." : "зарегистрироваться"}
           </button>
-          </>
-        )}
+        </>
+      )}
 
-       <div className="back-link" onClick={() => router.push("/")} style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 12 }}>
+      {/* Разделитель */}
+      <div className="divider">
+        <div className="divider-line" />
+        <span className="divider-text">или</span>
+        <div className="divider-line" />
+      </div>
+
+      {/* Кнопка Google */}
+      <GoogleLoginButton
+        onSuccess={handleGoogleSuccess}
+        onError={handleGoogleError}
+        loading={loading}
+      />
+
+      <div className="back-link" onClick={() => router.push("/")}
+        style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 12, fontFamily: "'Montserrat', sans-serif" }}>
         <img src="/icon_auth/back.svg" alt="назад" style={{ width: 8, height: 20, objectFit: "contain" }} />
         вернуться к рецептам
       </div>
 
-      </main>
+    </main>
+  );
+}
+
+/* ── Оборачиваем в GoogleOAuthProvider ── */
+export default function AuthPage() {
+  return (
+    <>
+      <style>{globalStyles}</style>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <AuthForm />
+      </GoogleOAuthProvider>
     </>
   );
 }

@@ -19,6 +19,9 @@ from sqlalchemy import select
 from typing import Optional
 import random
 from app.services.auth import create_tokens_for_user
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+from app.core.config import settings
 
 class VerifyCodeRequest(BaseModel):
     email: EmailStr
@@ -35,7 +38,7 @@ def set_refresh_cookie(response: Response, token: str) -> None:
         key=COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=True,      # True на продакшне (HTTPS)
+        secure=True,
         samesite="lax",
         max_age=COOKIE_MAX_AGE,
         path="/",
@@ -50,30 +53,24 @@ async def register(
     ref: Optional[str] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    # Проверяем — вдруг уже зарегистрирован
     result = await db.execute(select(User).where(User.email == data.email))
     existing = result.scalar_one_or_none()
     if existing and existing.is_active:
         raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
 
-    # Создаём юзера неактивным (или обновляем существующего неактивного)
     if not existing:
         user = await register_user(data, db, request)
     else:
         user = existing
 
-    # Генерируем 4-значный код
     code = str(random.randint(1000, 9999))
 
     redis = await get_redis()
     if redis:
-        # Ключ: email → код, TTL 10 минут
         await redis.setex(f"verify_code:{data.email}", 600, code)
-        # Сохраняем ref чтобы применить при подтверждении email
         if ref:
             await redis.setex(f"verify_ref:{data.email}", 600, ref)
 
-    # Отправляем письмо
     from app.tasks.send_email import send_email_task
     send_email_task.delay(
         to=data.email,
@@ -184,24 +181,23 @@ async def request_password_reset(
         await redis.setex(f"reset:{token_hash}", 900, str(user.id))
 
     reset_url = f"https://ppchef.ru/auth/reset?token={token}"
-    print(f"[RESET PASSWORD] {user.email}: {reset_url}")
 
     from app.tasks.send_email import send_email_task
     send_email_task.delay(
-         to=user.email,
-         subject="Восстановление пароля — ПП Шеф",
-         html=f"""
-         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-           <h2 style="color:#4F7453;">Восстановление пароля</h2>
-           <p>Нажмите кнопку ниже чтобы сбросить пароль:</p>
-           <a href="{reset_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
-             Сбросить пароль
-           </a>
-           <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 15 минут.</p>
-           <p style="color:#aaa;font-size:12px;">Если вы не запрашивали сброс — просто проигнорируйте письмо.</p>
-         </div>
-         """,
-     )
+        to=user.email,
+        subject="Восстановление пароля — ПП Шеф",
+        html=f"""
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+          <h2 style="color:#4F7453;">Восстановление пароля</h2>
+          <p>Нажмите кнопку ниже чтобы сбросить пароль:</p>
+          <a href="{reset_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
+            Сбросить пароль
+          </a>
+          <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 15 минут.</p>
+          <p style="color:#aaa;font-size:12px;">Если вы не запрашивали сброс — просто проигнорируйте письмо.</p>
+        </div>
+        """,
+    )
 
     return {"detail": "Если email зарегистрирован — письмо отправлено"}
 
@@ -258,24 +254,23 @@ async def send_verification_email(
         await redis.setex(f"verify:{token_hash}", 86400, str(current_user.id))
 
     verify_url = f"https://ppchef.ru/auth/verify?token={token}"
-    print(f"[VERIFY EMAIL] {current_user.email}: {verify_url}")
 
     from app.tasks.send_email import send_email_task
     send_email_task.delay(
         to=current_user.email,
-         subject="Подтвердите email — ПП Шеф",
-         html=f"""
-         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-           <h2 style="color:#4F7453;">Подтвердите ваш email</h2>
-           <p>Нажмите кнопку ниже чтобы подтвердить адрес электронной почты:</p>
-           <a href="{verify_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
-             Подтвердить email
-           </a>
-           <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 24 часа.</p>
-           <p style="color:#aaa;font-size:12px;">Если вы не регистрировались — просто проигнорируйте письмо.</p>
-         </div>
-         """,
-     )
+        subject="Подтвердите email — ПП Шеф",
+        html=f"""
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+          <h2 style="color:#4F7453;">Подтвердите ваш email</h2>
+          <p>Нажмите кнопку ниже чтобы подтвердить адрес электронной почты:</p>
+          <a href="{verify_url}" style="display:inline-block;background:#4F7453;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;">
+            Подтвердить email
+          </a>
+          <p style="color:#aaa;font-size:12px;margin-top:16px;">Ссылка действует 24 часа.</p>
+          <p style="color:#aaa;font-size:12px;">Если вы не регистрировались — просто проигнорируйте письмо.</p>
+        </div>
+        """,
+    )
 
     return {"detail": "Письмо отправлено"}
 
@@ -306,6 +301,7 @@ async def confirm_email(
 
     return {"detail": "Email подтверждён"}
 
+
 @router.post("/verify-code", response_model=TokenResponse)
 async def verify_registration_code(
     data: VerifyCodeRequest,
@@ -324,7 +320,6 @@ async def verify_registration_code(
     if saved_code != data.code:
         raise HTTPException(status_code=400, detail="Неверный код")
 
-    # Активируем юзера
     result = await db.execute(select(User).where(User.email == data.email))
     user = result.scalar_one_or_none()
     if not user:
@@ -333,16 +328,14 @@ async def verify_registration_code(
     user.is_active = True
     user.email_verified = True
 
-    # Реферальная логика — применяем только здесь, при реальной активации
     ref_code = await redis.get(f"verify_ref:{data.email}")
-    if ref_code and not user.referred_by:  # защита от двойного начисления
+    if ref_code and not user.referred_by:
         ref_result = await db.execute(select(User).where(User.ref_code == ref_code))
         referrer = ref_result.scalar_one_or_none()
         if referrer and referrer.id != user.id:
             user.referred_by = referrer.id
             referrer.referral_count = (referrer.referral_count or 0) + 1
 
-            # Каждые 3 реферала — +1 месяц Premium
             if referrer.referral_count % 3 == 0:
                 now = datetime.now(timezone.utc)
                 if referrer.subscription_expires_at and referrer.subscription_expires_at > now:
@@ -357,6 +350,67 @@ async def verify_registration_code(
     await db.refresh(user)
     await redis.delete(f"verify_code:{data.email}")
     await redis.delete(f"verify_ref:{data.email}")
+
+    token_response, refresh_token = await create_tokens_for_user(user, db, request)
+    set_refresh_cookie(response, refresh_token)
+    return token_response
+
+
+# ── Google OAuth ──────────────────────────────────────────────────────────
+
+class GoogleAuthRequest(BaseModel):
+    token: str
+
+
+@router.post("/google", response_model=TokenResponse)
+async def google_auth(
+    data: GoogleAuthRequest,
+    request: Request,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        id_info = id_token.verify_oauth2_token(
+            data.token,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID,
+        )
+    except Exception:
+        raise HTTPException(status_code=400, detail="Невалидный Google токен")
+
+    google_id = id_info["sub"]
+    email = id_info["email"]
+
+    # Ищем по google_id
+    result = await db.execute(select(User).where(User.google_id == google_id))
+    user = result.scalar_one_or_none()
+
+    # Не нашли по google_id — ищем по email
+    if not user:
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+
+    if user:
+        # Привязываем google_id если не привязан
+        if not user.google_id:
+            user.google_id = google_id
+        user.is_active = True
+        user.email_verified = True
+    else:
+        # Новый пользователь
+        import secrets as secrets_module
+        user = User(
+            email=email,
+            hashed_password=None,
+            google_id=google_id,
+            is_active=True,
+            email_verified=True,
+            ref_code=secrets_module.token_urlsafe(8),
+        )
+        db.add(user)
+
+    await db.commit()
+    await db.refresh(user)
 
     token_response, refresh_token = await create_tokens_for_user(user, db, request)
     set_refresh_cookie(response, refresh_token)

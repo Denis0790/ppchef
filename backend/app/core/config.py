@@ -90,6 +90,7 @@ class Settings(BaseSettings):
     SENTRY_DSN: str = ""
 
     OPENROUTER_API_KEY: str = ""
+    GOOGLE_CLIENT_ID: str = ""
 
     class Config:
         env_file = ".env"
