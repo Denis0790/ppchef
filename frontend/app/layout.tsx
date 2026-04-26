@@ -11,6 +11,7 @@ import RefCodeSaver from "@/components/RefCodeSaver";
 import TrialExpiredModal from "@/components/TrialExpiredModal";
 import { Suspense } from "react";
 import Script from "next/script";
+import WelcomePremiumModal from "@/components/WelcomePremiumModal";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["cyrillic"],
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <BottomNavWrapper />
           <CookieBanner />
+          <WelcomePremiumModal />
           <TrialExpiredModal />
         </AuthProvider>
 

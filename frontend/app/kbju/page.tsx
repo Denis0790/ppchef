@@ -192,6 +192,23 @@ export default function KbjuPage() {
     } finally { setSaving(false); }
   }
 
+  // Тоггл сохраняет сразу независимо
+  async function handleTogglePercent() {
+    const newValue = !showPercent;
+    setShowPercent(newValue);
+    try {
+      await updateMe(token!, { show_daily_percent: newValue });
+      try {
+        const raw = localStorage.getItem("userNorm");
+        const existing = raw ? JSON.parse(raw) : {};
+        localStorage.setItem("userNorm", JSON.stringify({ ...existing, show: newValue }));
+      } catch {}
+    } catch (err) {
+      console.error("[Kbju] toggle failed", err);
+      setShowPercent(!newValue); // откатываем если ошибка
+    }
+  }
+
   async function handleSaveStopWords() {
     setSavingStop(true);
     try {
@@ -205,23 +222,20 @@ export default function KbjuPage() {
     } finally { setSavingStop(false); }
   }
 
-  /* Шапка — переиспользуется во всех состояниях */
   const Header = () => (
     <div style={{
       height: 71, padding: "0 15px", background: "#013125",
       position: "sticky", top: 0, zIndex: 10,
       display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
-      {/* Кнопка «вернуться к рецептам» */}
       <div onClick={() => router.push("/")} style={{ height: 32, border: "1.4px solid #A6ED49", borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px", cursor: "pointer" }}>
         <img src="/icon_profile/left1.svg" alt="" width={8} height={8} style={{ objectFit: "contain" }} />
         <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#F8FFEE", whiteSpace: "nowrap" }}>
           вернуться к рецептам
         </span>
-    </div>
-      {/* Блок «premium» */}
+      </div>
       <div style={{ height: 32, border: "1.4px solid #A6ED49", borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px" }}>
-        <img src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} /> 
+        <img src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} />
         <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#F8FFEE" }}>
           premium
         </span>
@@ -275,14 +289,7 @@ export default function KbjuPage() {
 
       <div style={{ padding: "36px 15px 100px", display: "flex", flexDirection: "column", gap: 36 }}>
 
-        {/* ── БЛОК: МОЯ НОРМА ────────────────────────────────────────────────
-            Фон: #013125 | Скругление: 20px
-            Заголовок: SVG + italic medium 16px #A6ED49
-            TODO: <img src="/icon_kbju/norm.svg" alt="" width={16} height={16} />
-            4 бейджа 2×2: бордер 1.4px #F8FFEE, высота 24px, border-radius 100px
-            Значение: 400 12px #F8FFEE | Подпись: 400 12px #F8FFEE opacity 0.7
-            Тоггл отступ сверху 16px
-        ───────────────────────────────────────────────────────────────────── */}
+        {/* ── БЛОК: МОЯ НОРМА ── */}
         <div style={{ background: "#013125", borderRadius: 20, padding: "20px" }}>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
@@ -292,29 +299,27 @@ export default function KbjuPage() {
             </span>
           </div>
 
-          {norm ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
-              {[
-                { label: "ккал",     value: norm.calories },
-                { label: "белки",    value: norm.protein  },
-                { label: "жиры",     value: norm.fat      },
-                { label: "углеводы", value: norm.carbs    },
-              ].map(({ label, value }) => (
-                <div key={label} style={{ border: "1.4px solid #F8FFEE", borderRadius: 100, height: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-                  <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 12, color: "#F8FFEE" }}>{value}</span>
-                  <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 400, fontSize: 12, color: "#F8FFEE", opacity: 0.7 }}>{label}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ height: 64, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-              <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "rgba(248,255,238,0.35)" }}>
-                заполните калькулятор ниже
-              </span>
-            </div>
-          )}
+          {/* Всегда показываем 4 бейджа — пустые если нормы нет */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+            {[
+              { label: "ккал",     value: norm?.calories },
+              { label: "белки",    value: norm?.protein  },
+              { label: "жиры",     value: norm?.fat      },
+              { label: "углеводы", value: norm?.carbs    },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ border: "1.4px solid #F8FFEE", borderRadius: 100, height: 24, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: 12, color: "#F8FFEE" }}>
+                  {value ?? "—"}
+                </span>
+                <span style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 400, fontSize: 12, color: "#F8FFEE", opacity: 0.7 }}>
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
 
-          <div onClick={() => setShowPercent(p => !p)} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginTop: 16 }}>
+          {/* Тоггл — сохраняет сразу */}
+          <div onClick={handleTogglePercent} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginTop: 16 }}>
             <div className={`toggle-track${showPercent ? " on" : ""}`}>
               <div className="toggle-thumb" />
             </div>
@@ -324,20 +329,10 @@ export default function KbjuPage() {
           </div>
         </div>
 
-        {/* ── БЛОК: КАЛЬКУЛЯТОР ──────────────────────────────────────────────
-            Фон: #F8FFEE | Бордер: 1.4px #A6ED49 | Скругление: 20px
-            Заголовок: SVG + italic medium 16px #013125
-            TODO: <img src="/icon_kbju/calc.svg" alt="" width={16} height={16} />
-            Метки пол/активность/цель: 12px #013125 opacity 0.7
-            Табы: italic 14px #013125, активный border-bottom 1.4px #A6ED49
-            Инпуты возраст/вес/рост: закруглённые блоки высота 32px (рост чуть шире)
-              бордер 1.4px #A6ED49, border-radius 100px, max 3 символа
-            Кнопка: высота 36px, #A6ED49, italic 12px #013125
-        ───────────────────────────────────────────────────────────────────── */}
+        {/* ── БЛОК: КАЛЬКУЛЯТОР ── */}
         <div style={{ background: "#F8FFEE", borderRadius: 20, padding: "20px 20px 22px", border: "1.4px solid #A6ED49" }}>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
-            {/* TODO: <img src="/icon_kbju/calc.svg" alt="" width={16} height={16} /> */}
             <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 500, fontSize: 16, color: "#013125" }}>
               калькулятор
             </span>
@@ -352,28 +347,23 @@ export default function KbjuPage() {
             </div>
           </div>
 
-          {/* Возраст / Вес / Рост — закруглённые блоки */}
+          {/* Возраст / Вес / Рост */}
           <div style={{ display: "flex", gap: 10, marginBottom: 22, alignItems: "flex-end" }}>
             {[
-              { value: age,    set: setAge, width: 72, unit: "лет" },
+              { value: age,    set: setAge,    width: 72, unit: "лет" },
               { value: weight, set: setWeight, width: 72, unit: "кг"  },
               { value: height, set: setHeight, width: 88, unit: "см"  },
             ].map(({ value, set, width, unit }, i) => (
               <div key={i} style={{
                 width, height: 32,
-                border: "1.4px solid #A6ED49",
-                borderRadius: 100,
+                border: "1.4px solid #A6ED49", borderRadius: 100,
                 display: "flex", alignItems: "center", justifyContent: "center",
-                overflow: "hidden",
-                paddingRight: 8,
-                gap: 2,
+                overflow: "hidden", paddingRight: 8, gap: 2,
               }}>
                 <input
-                  type="number"
-                  value={value}
+                  type="number" value={value}
                   onChange={e => { if (e.target.value.length <= 3) set(e.target.value); }}
-                  className="kbju-num-input"
-                  maxLength={3}
+                  className="kbju-num-input" maxLength={3}
                   style={{ width: "100%", textAlign: "center" }}
                 />
                 <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", whiteSpace: "nowrap", flexShrink: 0 }}>
@@ -416,15 +406,7 @@ export default function KbjuPage() {
           </button>
         </div>
 
-        {/* ── БЛОК: СТОП-СЛОВА ───────────────────────────────────────────────
-            Фон: #013125 | Скругление: 20px
-            Заголовок: SVG + italic medium 16px #A6ED49
-            TODO: <img src="/icon_kbju/stop.svg" alt="" width={16} height={16} />
-            Описание: 12px #F8FFEE opacity 0.7, отступ от заголовка 7px
-            Поле: border-bottom 1.4px #A6ED49, italic 12px #F8FFEE
-            Галочка: появляется при фокусе, сохраняет и скрывается при клике
-            TODO: галочка <img src="/icon_kbju/check.svg" alt="" width={20} height={20} />
-        ───────────────────────────────────────────────────────────────────── */}
+        {/* ── БЛОК: СТОП-СЛОВА ── */}
         <div style={{ background: "#013125", borderRadius: 20, padding: "20px 20px 22px" }}>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
@@ -438,26 +420,25 @@ export default function KbjuPage() {
             укажите продукты, на которые у вас аллергия — на рецептах с ними будет отметка «нежелательные ингредиенты».
           </div>
 
-         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <textarea
-            value={stopWords}
-            onChange={e => setStopWords(e.target.value)}
-            onFocus={() => setStopFocused(true)}
-            placeholder="свинина, молоко, орехи, глютен..."
-            rows={2}
-            className="stop-textarea"
-            style={{ marginBottom: -4 }}
-          />
-          {stopFocused && (
-            <div onClick={handleSaveStopWords} style={{ cursor: savingStop ? "default" : "pointer", opacity: savingStop ? 0.4 : 1, flexShrink: 0 }}>
-              {/* TODO: <img src="/icon_kbju/check.svg" alt="" width={20} height={20} /> */}
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="#A6ED49" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-            </div>
-          )}
-        </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <textarea
+              value={stopWords}
+              onChange={e => setStopWords(e.target.value)}
+              onFocus={() => setStopFocused(true)}
+              placeholder="свинина, молоко, орехи, глютен..."
+              rows={2}
+              className="stop-textarea"
+              style={{ marginBottom: -4 }}
+            />
+            {stopFocused && (
+              <div onClick={handleSaveStopWords} style={{ cursor: savingStop ? "default" : "pointer", opacity: savingStop ? 0.4 : 1, flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="#A6ED49" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+            )}
+          </div>
         </div>
 
       </div>

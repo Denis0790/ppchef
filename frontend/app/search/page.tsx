@@ -414,24 +414,28 @@ export default function SearchPage() {
         )}
 
         {/* ── ПОДСКАЗКИ ────────────────────────────────────────────────────── */}
+        {/* ── ПОДСКАЗКИ ── */}
         {showHint && !loading && (
           <div style={{ padding: "0 15px" }}>
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 4 }}>
-                поиск по рецептам
+            {mode === "title" ? (
+              <div>
+                <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 4 }}>
+                  поиск по рецептам
+                </div>
+                <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, lineHeight: 1.5 }}>
+                  введите название блюда и ищите рецепт, который хотите приготовить прямо сейчас
+                </div>
               </div>
-              <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, lineHeight: 1.5 }}>
-                введите название блюда и ищите рецепт, который хотите приготовить прямо сейчас
+            ) : (
+              <div>
+                <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 4 }}>
+                  поиск по продуктам
+                </div>
+                <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.8, lineHeight: 1.5 }}>
+                  введите продукты по порядку и ищите рецепты, которые можно приготовить прямо сейчас
+                </div>
               </div>
-            </div>
-            <div>
-              <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.7, marginBottom: 4 }}>
-                поиск по продуктам
-              </div>
-              <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#013125", opacity: 0.8, lineHeight: 1.5 }}>
-                введите продукты по порядку и ищите рецепты, которые можно приготовить прямо сейчас
-              </div>
-            </div>
+            )}
           </div>
         )}
 
