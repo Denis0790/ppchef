@@ -8,6 +8,7 @@ import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import IOSInstallBanner from "@/components/IOSInstallBanner";
 import OfflineBanner from "@/components/OfflineBanner";
 import RefCodeSaver from "@/components/RefCodeSaver";
+import TrialExpiredModal from "@/components/TrialExpiredModal";
 import { Suspense } from "react";
 import Script from "next/script";
 
@@ -98,6 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
           <BottomNavWrapper />
           <CookieBanner />
+          <TrialExpiredModal />
         </AuthProvider>
 
         {/* ── ЯНДЕКС МЕТРИКА ── */}

@@ -36,6 +36,10 @@ async def register_user(
         ref_code=generate_ref_code(),
         is_active=False,
         email_verified=False,
+        # Бесплатный пробный премиум на 30 дней
+        is_premium=True,
+        subscription_plan="trial",
+        subscription_expires_at=datetime.now(timezone.utc) + timedelta(days=30),
     )
     db.add(user)
     await db.flush()

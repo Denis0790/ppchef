@@ -81,7 +81,6 @@ const globalStyles = `
     transform: translateY(0);
   }
 
-  /* Кнопка Google */
   .google-btn {
     width: 271px;
     height: 48px;
@@ -97,7 +96,6 @@ const globalStyles = `
     justify-content: center;
     gap: 10px;
     transition: border-color 0.2s, opacity 0.2s;
-    margin-top: 12px;
   }
   .google-btn:hover {
     border-color: #A6ED49;
@@ -202,6 +200,7 @@ const globalStyles = `
     align-items: center;
     gap: 10px;
     margin-top: 16px;
+    margin-bottom: 16px;
   }
   .divider-line {
     flex: 1;
@@ -273,7 +272,6 @@ const Checkbox = ({ checked, onChange, label, link, linkLabel }: {
   );
 };
 
-/* ── Кнопка Google — отдельный компонент внутри провайдера ── */
 function GoogleLoginButton({ onSuccess, onError, loading }: {
   onSuccess: (token: string) => void;
   onError: () => void;
@@ -281,13 +279,11 @@ function GoogleLoginButton({ onSuccess, onError, loading }: {
 }) {
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse: { access_token: string }) => {
-      // Получаем ID токен через userinfo
       try {
         const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
         if (!res.ok) throw new Error("Ошибка Google");
-        // Передаём access_token на бэкенд — он сам верифицирует
         onSuccess(tokenResponse.access_token);
       } catch {
         onError();
@@ -304,7 +300,6 @@ function GoogleLoginButton({ onSuccess, onError, loading }: {
       disabled={loading}
       style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}
     >
-      {/* Логотип Google */}
       <svg width="18" height="18" viewBox="0 0 24 24">
         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -436,7 +431,6 @@ function AuthForm() {
     }
   }
 
-  /* ── Вход через Google ── */
   async function handleGoogleSuccess(accessToken: string) {
     setError("");
     setLoading(true);
@@ -536,7 +530,7 @@ function AuthForm() {
     );
   }
 
-  const topPadding = "calc(50vh - 280px)";
+  const topPadding = "calc(50vh - 300px)";
 
   return (
     <main style={{
@@ -548,10 +542,26 @@ function AuthForm() {
       paddingLeft: 24, paddingRight: 24,
     }}>
 
-      <div style={{ marginBottom: 36 }}>
+      {/* Логотип */}
+      <div style={{ marginBottom: 24 }}>
         <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 178, height: 117, objectFit: "contain" }} />
       </div>
 
+      {/* Кнопка Google */}
+      <GoogleLoginButton
+        onSuccess={handleGoogleSuccess}
+        onError={handleGoogleError}
+        loading={loading}
+      />
+
+      {/* Разделитель */}
+      <div className="divider">
+        <div className="divider-line" />
+        <span className="divider-text">или</span>
+        <div className="divider-line" />
+      </div>
+
+      {/* Табы */}
       <div style={{
         display: "flex", background: "#013125",
         borderRadius: 100, padding: 4, marginBottom: 12,
@@ -630,20 +640,6 @@ function AuthForm() {
         </>
       )}
 
-      {/* Разделитель */}
-      <div className="divider">
-        <div className="divider-line" />
-        <span className="divider-text">или</span>
-        <div className="divider-line" />
-      </div>
-
-      {/* Кнопка Google */}
-      <GoogleLoginButton
-        onSuccess={handleGoogleSuccess}
-        onError={handleGoogleError}
-        loading={loading}
-      />
-
       <div className="back-link" onClick={() => router.push("/")}
         style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 12, fontFamily: "'Montserrat', sans-serif" }}>
         <img src="/icon_auth/back.svg" alt="назад" style={{ width: 8, height: 20, objectFit: "contain" }} />
@@ -654,7 +650,6 @@ function AuthForm() {
   );
 }
 
-/* ── Оборачиваем в GoogleOAuthProvider ── */
 export default function AuthPage() {
   return (
     <>

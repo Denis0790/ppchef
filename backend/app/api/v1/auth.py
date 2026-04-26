@@ -369,8 +369,8 @@ async def google_auth(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
-    # Получаем информацию о пользователе через Google userinfo API
     import httpx
+    import secrets as secrets_module
     try:
         async with httpx.AsyncClient() as client:
             res = await client.get(
@@ -406,7 +406,7 @@ async def google_auth(
         user.is_active = True
         user.email_verified = True
     else:
-        import secrets as secrets_module
+        # Новый пользователь — выдаём пробный премиум на 30 дней
         user = User(
             email=email,
             hashed_password=None,
@@ -414,6 +414,9 @@ async def google_auth(
             is_active=True,
             email_verified=True,
             ref_code=secrets_module.token_urlsafe(8),
+            is_premium=True,
+            subscription_plan="trial",
+            subscription_expires_at=datetime.now(timezone.utc) + timedelta(days=30),
         )
         db.add(user)
 

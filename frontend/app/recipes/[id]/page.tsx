@@ -183,7 +183,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           {/* ПРАВАЯ: КБЖУ столбиком */}
           <div style={{
             display: "flex", flexDirection: "column", gap: 4,
-            flexShrink: 0, alignSelf: "flex-start", marginTop: -28,
+            flexShrink: 0, alignSelf: "flex-start", marginTop: -34,
           }}>
             {/* Пометка над блоком */}
             <div style={{
