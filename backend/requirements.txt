@@ -59,3 +59,5 @@ httpx==0.27.2            # тест-клиент FastAPI
 
 beautifulsoup4==4.12.3
 lxml==5.3.0
+
+google-auth==2.29.0

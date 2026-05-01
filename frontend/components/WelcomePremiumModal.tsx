@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import Image from "next/image";
 
 export default function WelcomePremiumModal() {
   const { isLoggedIn, isReady, isPremium, subscriptionPlan, token } = useAuth();
@@ -32,7 +33,7 @@ export default function WelcomePremiumModal() {
       padding: 24,
     }}>
       <div style={{
-        background: "#013125",
+        background: "#F8FFEE",
         border: "1px solid #A6ED49",
         borderRadius: 20,
         padding: 24,
@@ -40,41 +41,53 @@ export default function WelcomePremiumModal() {
         width: "100%",
         fontFamily: "'Montserrat', sans-serif",
       }}>
+        {/* Заголовок */}
         <div style={{
           fontSize: 18, fontWeight: 500, fontStyle: "italic",
-          color: "#A6ED49", marginBottom: 12, textAlign: "center",
+          color: "#013125", marginBottom: 16,
         }}>
-          🎁 premium в подарок
+          premium в подарок
         </div>
 
-        <div style={{
-          fontSize: 14, fontWeight: 400,
-          color: "#F8FFEE", lineHeight: 1.6,
-          marginBottom: 24, textAlign: "center", opacity: 0.85,
-        }}>
-          Мы дарим вам <span style={{ color: "#A6ED49", fontStyle: "italic" }}>1 месяц premium</span> бесплатно. Пользуйтесь всеми функциями без ограничений!
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {[
-            "стоп-слова — скрывайте нежелательные ингредиенты",
-            "расчёт % суточной нормы в каждом рецепте",
-            "неограниченное избранное",
-            "поиск по продуктам из холодильника",
-          ].map((item, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-              <span style={{ color: "#A6ED49", flexShrink: 0 }}>✓</span>
-              <span style={{ fontSize: 12, color: "#F8FFEE", opacity: 0.8, lineHeight: 1.4 }}>{item}</span>
+        {/* Список фич — как на странице подписки */}
+        {[
+          { icon: "/icon_profile/stop2.svg", title: "стоп-слова", desc: "скрывай нежелательные ингредиенты" },
+          { icon: "/icon_profile/kbju2.svg", title: "расчет нормы в %", desc: "суточная норма блюда в каждом рецепте" },
+          { icon: "/icon_profile/like2.svg", title: "неограниченное избранное", desc: "добавляй в избранное без ограничений" },
+          { icon: "/icon_profile/search2.svg", title: "холодильник", desc: "поиск по имеющимся продуктам" },
+        ].map(({ icon, title, desc }) => (
+          <div key={title} style={{
+            display: "flex", alignItems: "flex-start", gap: 12,
+            marginBottom: 14,
+          }}>
+            <div style={{ flexShrink: 0, marginTop: 2 }}>
+              <Image src={icon} alt="" width={20} height={20} style={{ objectFit: "contain" }} />
             </div>
-          ))}
-        </div>
+            <div>
+              <div style={{
+                fontSize: 14, fontWeight: 400, fontStyle: "italic",
+                fontFamily: "'Montserrat', sans-serif", color: "#013125",
+                marginBottom: 2,
+              }}>
+                {title}
+              </div>
+              <div style={{
+                fontSize: 12, fontWeight: 400, fontStyle: "normal",
+                fontFamily: "'Montserrat', sans-serif", color: "#013125", opacity: 0.7,
+              }}>
+                {desc}
+              </div>
+            </div>
+          </div>
+        ))}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 24 }}>
+        {/* Кнопки */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
           <button
             onClick={() => { setShow(false); router.push("/kbju"); }}
             style={{
               width: "100%", height: 48,
-              background: "#A6ED49", color: "#013125",
+              background: "#013125", color: "#A6ED49",
               border: "none", borderRadius: 100,
               fontSize: 14, fontStyle: "italic",
               fontFamily: "'Montserrat', sans-serif",
@@ -87,8 +100,8 @@ export default function WelcomePremiumModal() {
             onClick={() => setShow(false)}
             style={{
               width: "100%", height: 48,
-              background: "transparent", color: "#F8FFEE",
-              border: "1px solid rgba(166,237,73,0.3)",
+              background: "transparent", color: "#013125",
+              border: "1px solid rgba(1,49,37,0.3)",
               borderRadius: 100,
               fontSize: 14, fontStyle: "italic",
               fontFamily: "'Montserrat', sans-serif",

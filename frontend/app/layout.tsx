@@ -12,6 +12,7 @@ import TrialExpiredModal from "@/components/TrialExpiredModal";
 import { Suspense } from "react";
 import Script from "next/script";
 import WelcomePremiumModal from "@/components/WelcomePremiumModal";
+import { SearchProvider } from "@/lib/searchContext";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["cyrillic"],
@@ -91,20 +92,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body>
-        <AuthProvider>
-          <Suspense fallback={null}>
-            <RefCodeSaver />
-          </Suspense>
-          <OfflineBanner />
-          <IOSInstallBanner />
-          {children}
-          <BottomNavWrapper />
-          <CookieBanner />
-          <WelcomePremiumModal />
-          <TrialExpiredModal />
-        </AuthProvider>
+        <SearchProvider>
+          <AuthProvider>
+            <Suspense fallback={null}>
+              <RefCodeSaver />
+            </Suspense>
+            <OfflineBanner />
+            <IOSInstallBanner />
+            {children}
+            <BottomNavWrapper />
+            <CookieBanner />
+            <WelcomePremiumModal />
+            <TrialExpiredModal />
+          </AuthProvider>
+        </SearchProvider>
 
-        {/* ── ЯНДЕКС МЕТРИКА ── */}
         <Script id="yandex-metrika" strategy="afterInteractive">
           {`
             (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
@@ -124,14 +126,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
         <noscript>
           <div>
-            <img
-              src="https://mc.yandex.ru/watch/108497387"
-              style={{ position: "absolute", left: "-9999px" }}
-              alt=""
-            />
+            <img src="https://mc.yandex.ru/watch/108497387" style={{ position: "absolute", left: "-9999px" }} alt="" />
           </div>
         </noscript>
-
       </body>
     </html>
   );

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getMe, User } from "@/lib/api";
 import Image from "next/image";
+import Header from "@/components/Header";
 
 function hasShareApi(): boolean {
   return typeof navigator !== "undefined" && "share" in navigator &&
@@ -107,7 +108,7 @@ export default function ProfilePage() {
   }
 
   if (!isReady || loading) return (
-    <main style={{
+    <main className="profile-main" style={{
       maxWidth: 480, margin: "0 auto", minHeight: "100vh",
       background: "#F8FFEE", display: "flex",
       alignItems: "center", justifyContent: "center",
@@ -128,13 +129,18 @@ export default function ProfilePage() {
   const totalMonths = Math.floor(refCount / 3);
 
   return (
-    <main style={{
+    <main className="profile-main" style={{
       maxWidth: 480, margin: "0 auto", minHeight: "100vh",
       background: "#F8FFEE", fontFamily: "'Montserrat', sans-serif",
     }}>
 
-      {/* ── ШАПКА ── */}
-      <div style={{
+      {/* Десктоп хедер */}
+      <div className="profile-desktop-header" style={{ display: "none" }}>
+        <Header />
+      </div>
+
+      {/* Мобильная шапка */}
+      <div className="profile-mobile-header" style={{
         height: 70, background: "#01311C",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         paddingLeft: 18, paddingRight: 18,
@@ -142,18 +148,13 @@ export default function ProfilePage() {
         <div
           onClick={() => router.push("/")}
           style={{
-            width: 175, height: 32,
-            border: "1px solid #A6ED49",
-            borderRadius: 20,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 8, cursor: "pointer",
+            width: 175, height: 32, border: "1px solid #A6ED49",
+            borderRadius: 20, display: "flex", alignItems: "center",
+            justifyContent: "center", gap: 8, cursor: "pointer",
           }}
         >
           <Image src="/icon_profile/left1.svg" alt="" width={8} height={8} style={{ objectFit: "contain", flexShrink: 0 }} />
-          <span style={{
-            fontSize: 12, fontStyle: "italic", fontWeight: 400,
-            fontFamily: "'Montserrat', sans-serif", color: "#F8FFEE",
-          }}>
+          <span style={{ fontSize: 12, fontStyle: "italic", fontWeight: 400, fontFamily: "'Montserrat', sans-serif", color: "#F8FFEE" }}>
             вернуться к рецептам
           </span>
         </div>
@@ -161,31 +162,25 @@ export default function ProfilePage() {
         {isPremium && (
           <div style={{
             height: 32, paddingLeft: 16, paddingRight: 16,
-            border: "1px solid #A6ED49",
-            borderRadius: 20,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 6,
+            border: "1px solid #A6ED49", borderRadius: 20,
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             <Image src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} />
-            <span style={{
-              fontSize: 12, fontStyle: "italic", fontWeight: 400,
-              fontFamily: "'Montserrat', sans-serif", color: "#F8FFEE",
-            }}>
+            <span style={{ fontSize: 12, fontStyle: "italic", fontWeight: 400, fontFamily: "'Montserrat', sans-serif", color: "#F8FFEE" }}>
               premium
             </span>
           </div>
         )}
       </div>
 
-      <div style={{ padding: "24px 18px 100px" }}>
+      <div className="profile-content" style={{ padding: "24px 18px 100px" }}>
 
         {/* ── АВАТАР + ИМЯ + EMAIL ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
           <div style={{
             width: 56, height: 56, borderRadius: "50%",
-            background: "#01311C",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            flexShrink: 0,
+            background: "#01311C", display: "flex", alignItems: "center",
+            justifyContent: "center", flexShrink: 0,
           }}>
             <Image src="/icon_profile/avatar.svg" alt="" width={67} height={67} style={{ objectFit: "contain" }} />
           </div>
@@ -198,61 +193,36 @@ export default function ProfilePage() {
                 onFocus={() => setEditingName(true)}
                 placeholder="Напишите своё имя"
                 style={{
-                  border: "none",
-                  borderBottom: "1px solid #A6ED49",
+                  border: "none", borderBottom: "1px solid #A6ED49",
                   background: "transparent", outline: "none",
                   fontSize: 14, fontStyle: "italic", fontWeight: 400,
-                  fontFamily: "'Montserrat', sans-serif",
-                  color: "#013125",
-                  opacity: nameInput ? 1 : 0.4,
-                  width: "100%",
-                  paddingLeft: 4,
-                  paddingBottom: 4,
+                  fontFamily: "'Montserrat', sans-serif", color: "#013125",
+                  opacity: nameInput ? 1 : 0.4, width: "100%",
+                  paddingLeft: 4, paddingBottom: 4,
                 }}
               />
               {editingName && (
-                <div
-                  onClick={saveName}
-                  style={{
-                    width: 24, height: 24, flexShrink: 0,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer",
-                  }}
-                >
+                <div onClick={saveName} style={{ width: 24, height: 24, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                   <Image src="/icon_profile/check.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
                 </div>
               )}
             </div>
-            <div style={{
-              fontSize: 12, fontWeight: 400, fontStyle: "normal",
-              fontFamily: "'Montserrat', sans-serif",
-              color: "#013125", opacity: 0.5,
-            }}>
+            <div style={{ fontSize: 12, fontWeight: 400, fontStyle: "normal", fontFamily: "'Montserrat', sans-serif", color: "#013125", opacity: 0.5 }}>
               {user?.email}
             </div>
           </div>
         </div>
 
         {/* ── РЕФЕРАЛЬНЫЙ БЛОК ── */}
-        <div style={{
-          background: "#01311C", borderRadius: 16,
-          padding: 16, marginBottom: 16,
-        }}>
+        <div style={{ background: "#01311C", borderRadius: 16, padding: 16, marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
             <Image src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} />
-            <span style={{
-              fontSize: 16, fontWeight: 500, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif", color: "#A6ED49",
-            }}>
+            <span style={{ fontSize: 16, fontWeight: 500, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#A6ED49" }}>
               premium бесплатно
             </span>
           </div>
 
-          <div style={{
-            fontSize: 14, fontWeight: 400, fontStyle: "normal",
-            fontFamily: "'Montserrat', sans-serif",
-            color: "#F8FFEE", lineHeight: 1.6, marginBottom: 12,
-          }}>
+          <div style={{ fontSize: 14, fontWeight: 400, fontStyle: "normal", fontFamily: "'Montserrat', sans-serif", color: "#F8FFEE", lineHeight: 1.6, marginBottom: 12 }}>
             Приглашайте друзей по своей ссылке — за каждые{" "}
             <span style={{ color: "#A6ED49", fontStyle: "italic" }}>3 друга</span>{" "}
             получаете{" "}
@@ -269,17 +239,10 @@ export default function ProfilePage() {
               </span>
             </div>
             <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 10, height: 6, overflow: "hidden" }}>
-              <div style={{
-                background: "#A6ED49", borderRadius: 10, height: 6,
-                width: `${progress / 3 * 100}%`,
-                transition: "width 0.5s ease",
-              }} />
+              <div style={{ background: "#A6ED49", borderRadius: 10, height: 6, width: `${progress / 3 * 100}%`, transition: "width 0.5s ease" }} />
             </div>
             {totalMonths > 0 && (
-              <div style={{
-                fontSize: 12, fontFamily: "'Montserrat', sans-serif",
-                color: "#A6ED49", marginTop: 6, textAlign: "center",
-              }}>
+              <div style={{ fontSize: 12, fontFamily: "'Montserrat', sans-serif", color: "#A6ED49", marginTop: 6, textAlign: "center" }}>
                 получено: {totalMonths} мес. premium
               </div>
             )}
@@ -287,20 +250,16 @@ export default function ProfilePage() {
 
           <div style={{ display: "flex", gap: 8 }}>
             <button onClick={copyRefLink} style={{
-              flex: 1, height: 36,
-              background: "transparent", color: "#F8FFEE",
+              flex: 1, height: 36, background: "transparent", color: "#F8FFEE",
               border: "1px solid #A6ED49", borderRadius: 20,
-              fontSize: 12, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif", cursor: "pointer",
+              fontSize: 12, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", cursor: "pointer",
             }}>
               {copied ? "скопировано!" : "скопировать"}
             </button>
             <button onClick={shareRefLink} style={{
-              flex: 1, height: 36,
-              background: "#A6ED49", color: "#01311C",
+              flex: 1, height: 36, background: "#A6ED49", color: "#01311C",
               border: "none", borderRadius: 20,
-              fontSize: 12, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif", cursor: "pointer",
+              fontSize: 12, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", cursor: "pointer",
             }}>
               поделиться
             </button>
@@ -310,66 +269,31 @@ export default function ProfilePage() {
         {/* ── МЕНЮ ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
-          <div
-            onClick={() => router.push("/suggest")}
-            style={{
-              height: 48, border: "1px solid #01311C", borderRadius: 40,
-              display: "flex", alignItems: "center",
-              paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer",
-            }}
-          >
+          <div onClick={() => router.push("/suggest")} style={{ height: 48, border: "1px solid #01311C", borderRadius: 40, display: "flex", alignItems: "center", paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer" }}>
             <Image src="/icon_profile/suggest.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-            <span style={{
-              fontSize: 14, fontWeight: 400, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif", color: "#013125",
-            }}>
+            <span style={{ fontSize: 14, fontWeight: 400, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#013125" }}>
               предложить рецепт
             </span>
           </div>
 
-          <div
-            onClick={() => router.push("/subscription")}
-            style={{
-              height: 48, border: "1px solid #01311C", borderRadius: 40,
-              display: "flex", alignItems: "center",
-              paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer",
-              marginTop: 36,
-            }}
-          >
+          <div onClick={() => router.push("/subscription")} style={{ height: 48, border: "1px solid #01311C", borderRadius: 40, display: "flex", alignItems: "center", paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer", marginTop: 36 }}>
             <Image src="/icon_profile/subscription.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-            <span style={{
-              fontSize: 14, fontWeight: 400, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif", color: "#013125",
-            }}>
+            <span style={{ fontSize: 14, fontWeight: 400, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#013125" }}>
               управление подпиской
             </span>
           </div>
 
           <a href="mailto:support@ppchef.ru" style={{ textDecoration: "none" }}>
-            <div style={{
-              height: 48, border: "1px solid #01311C", borderRadius: 40,
-              display: "flex", alignItems: "center",
-              paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer",
-            }}>
+            <div style={{ height: 48, border: "1px solid #01311C", borderRadius: 40, display: "flex", alignItems: "center", paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer" }}>
               <Image src="/icon_profile/support.svg" alt="" width={24} height={18} style={{ objectFit: "contain" }} />
-              <span style={{
-                fontSize: 14, fontWeight: 400, fontStyle: "italic",
-                fontFamily: "'Montserrat', sans-serif", color: "#013125",
-              }}>
+              <span style={{ fontSize: 14, fontWeight: 400, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#013125" }}>
                 написать в поддержку
               </span>
             </div>
           </a>
 
-          <div style={{
-            paddingTop: 16, paddingBottom: 16, paddingLeft: 18, paddingRight: 18,
-            marginTop: 4,
-          }}>
-            <div style={{
-              fontSize: 12, fontWeight: 400, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif",
-              color: "#013125", opacity: 0.7, marginBottom: 12,
-            }}>
+          <div style={{ paddingTop: 16, paddingBottom: 16, paddingLeft: 18, paddingRight: 18, marginTop: 4 }}>
+            <div style={{ fontSize: 12, fontWeight: 400, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#013125", opacity: 0.7, marginBottom: 12 }}>
               о приложении
             </div>
             {[
@@ -379,48 +303,19 @@ export default function ProfilePage() {
               { label: "политика конфиденциальности", value: "→", onClick: () => router.push("/privacy") },
               { label: "публичная оферта", value: "→", onClick: () => router.push("/offer") },
             ].map(({ label, value, onClick }) => (
-              <div
-                key={label}
-                onClick={onClick}
-                style={{
-                  display: "flex", justifyContent: "space-between", alignItems: "center",
-                  marginBottom: 10, cursor: onClick ? "pointer" : "default",
-                }}
-              >
-                <span style={{
-                  fontSize: 12, fontWeight: 400, fontStyle: "italic",
-                  fontFamily: "'Montserrat', sans-serif", color: "#013125", opacity: 0.7,
-                }}>
-                  {label}
-                </span>
-                <span style={{
-                  fontSize: 12, fontWeight: 400, fontStyle: "italic",
-                  fontFamily: "'Montserrat', sans-serif", color: "#013125", opacity: 0.7,
-                }}>
-                  {value}
-                </span>
+              <div key={label} onClick={onClick} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, cursor: onClick ? "pointer" : "default" }}>
+                <span style={{ fontSize: 12, fontWeight: 400, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#013125", opacity: 0.7 }}>{label}</span>
+                <span style={{ fontSize: 12, fontWeight: 400, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#013125", opacity: 0.7 }}>{value}</span>
               </div>
             ))}
           </div>
 
-          <div
-            onClick={handleLogout}
-            style={{
-              height: 48, border: "1px solid #01311C", borderRadius: 40,
-              display: "flex", alignItems: "center",
-              paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer",
-              marginTop: 4,
-            }}
-          >
+          <div onClick={handleLogout} style={{ height: 48, border: "1px solid #01311C", borderRadius: 40, display: "flex", alignItems: "center", paddingLeft: 18, paddingRight: 18, gap: 12, cursor: "pointer", marginTop: 4 }}>
             <Image src="/icon_profile/logout.svg" alt="" width={12} height={12} style={{ objectFit: "contain" }} />
-            <span style={{
-              fontSize: 14, fontWeight: 400, fontStyle: "italic",
-              fontFamily: "'Montserrat', sans-serif", color: "#013125",
-            }}>
+            <span style={{ fontSize: 14, fontWeight: 400, fontStyle: "italic", fontFamily: "'Montserrat', sans-serif", color: "#013125" }}>
               выйти
             </span>
           </div>
-
         </div>
       </div>
     </main>

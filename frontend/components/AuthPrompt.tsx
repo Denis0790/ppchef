@@ -5,9 +5,10 @@ import { useEffect } from "react";
 interface Props {
   type: "auth" | "premium";
   onClose: () => void;
+  desktop?: boolean;
 }
 
-export default function AuthPrompt({ type, onClose }: Props) {
+export default function AuthPrompt({ type, onClose, desktop }: Props) {
   const router = useRouter();
 
   useEffect(() => {
@@ -26,6 +27,10 @@ export default function AuthPrompt({ type, onClose }: Props) {
           from { transform: translateX(-50%) translateY(100%) }
           to   { transform: translateX(-50%) translateY(0) }
         }
+        @keyframes scaleIn {
+          from { opacity: 0; transform: translate(-50%, -50%) scale(0.95) }
+          to   { opacity: 1; transform: translate(-50%, -50%) scale(1) }
+        }
       `}</style>
 
       {/* Затемнение */}
@@ -33,38 +38,60 @@ export default function AuthPrompt({ type, onClose }: Props) {
         onClick={onClose}
         style={{
           position: "fixed", inset: 0,
-          background: "rgba(0,0,0,0.5)",
+          background: "rgba(0,0,0,0.4)",
           backdropFilter: "blur(4px)",
           zIndex: 100,
           animation: "fadeIn 0.2s ease",
         }}
       />
 
-      {/* Шторка снизу */}
+      {/* Шторка / модалка */}
       <div style={{
-        position: "fixed", bottom: 0,
-        left: "50%", transform: "translateX(-50%)",
-        width: "100%", maxWidth: 480,
-        background: "#013125",
-        borderRadius: "24px 24px 0 0",
-        padding: "20px 20px 40px",
+        position: "fixed",
         zIndex: 101,
-        animation: "slideUp 0.3s ease",
+        background: "#013125",
+        padding: "20px 20px 40px",
+        ...(desktop ? {
+          top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "90%", maxWidth: 480,
+          borderRadius: 24,
+          border: "1.5px solid rgba(166,237,73,0.3)",
+          boxShadow: "0 0 60px rgba(0,0,0,0.3)",
+          animation: "scaleIn 0.25s ease",
+        } : {
+          bottom: 0,
+          left: "50%", transform: "translateX(-50%)",
+          width: "100%", maxWidth: 480,
+          borderRadius: "24px 24px 0 0",
+          animation: "slideUp 0.3s ease",
+        }),
       }}>
 
-        {/* Ручка */}
-        <div style={{
-          width: 40, height: 4, borderRadius: 2,
-          background: "rgba(248,255,238,0.2)",
-          margin: "0 auto 24px",
-        }} />
+        {/* Ручка — только мобилка */}
+        {!desktop && (
+          <div style={{
+            width: 40, height: 4, borderRadius: 2,
+            background: "rgba(248,255,238,0.2)",
+            margin: "0 auto 24px",
+          }} />
+        )}
+
+        {/* Крестик — только десктоп */}
+        {desktop && (
+          <div onClick={onClose} style={{
+            position: "absolute", top: 16, right: 16,
+            width: 28, height: 28, borderRadius: "50%",
+            border: "1px solid rgba(166,237,73,0.3)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", fontSize: 16, color: "#F8FFEE", opacity: 0.6,
+          }}>×</div>
+        )}
 
         {/* ── AUTH вариант ── */}
         {isAuth && (
           <>
-            {/* Иконка + заголовок */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 24 }}>
-              {/* TODO: <img src="/icon_auth/log.svg" alt="" width={20} height={20} style={{ objectFit: "contain" }} /> */}
               <img src="/icon_auth/log.svg" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
               <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 16, color: "#A6ED49" }}>
                 необходима регистрация
@@ -74,19 +101,19 @@ export default function AuthPrompt({ type, onClose }: Props) {
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <button
                 onClick={() => { onClose(); router.push("/auth"); }}
-                style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 13, cursor: "pointer" }}
+                style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 13, cursor: "pointer" }}
               >
                 зарегистрироваться бесплатно →
               </button>
               <button
                 onClick={() => { onClose(); router.push("/auth"); }}
-                style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 13, cursor: "pointer" }}
+                style={{ width: "100%", height: 48, background: "transparent", color: "#F8FFEE", border: "1px solid rgba(166,237,73,0.3)", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 13, cursor: "pointer" }}
               >
                 уже есть аккаунт? войти →
               </button>
               <button
-                onClick={() => { onClose(); router.push("/"); }}
-                style={{ width: "100%", height: 44, background: "transparent", color: "#F8FFEE", border: "none", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, cursor: "pointer", opacity: 0.6 }}
+                onClick={onClose}
+                style={{ width: "100%", height: 44, background: "transparent", color: "#F8FFEE", border: "none", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, cursor: "pointer", opacity: 0.5 }}
               >
                 продолжить без регистрации →
               </button>
@@ -97,45 +124,21 @@ export default function AuthPrompt({ type, onClose }: Props) {
         {/* ── PREMIUM вариант ── */}
         {!isAuth && (
           <>
-            {/* Иконка + заголовок */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
               <img src="/icon_profile/diamond.svg" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
-              
               <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 16, color: "#A6ED49" }}>
                 premium функция
               </span>
             </div>
 
-            {/* Список фич
-                TODO: замените SVG заглушки на свои иконки
-            */}
             <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
               {[
-                {
-                  icon: "/icon_premium/stop.svg",       /* TODO: путь к иконке */
-                  title: "стоп-слова",
-                  desc: "скрывай нежелательные ингредиенты",
-                },
-                {
-                  icon: "/icon_premium/norm.svg",        /* TODO: путь к иконке */
-                  title: "расчет нормы в %",
-                  desc: "суточная норма блюда в каждом рецепте",
-                },
-                {
-                  icon: "/icon_premium/fav.svg",         /* TODO: путь к иконке */
-                  title: "неограниченное избранное",
-                  desc: "добавляй в избранное без ограничений",
-                },
-                {
-                  icon: "/icon_premium/fridge.svg",      /* TODO: путь к иконке */
-                  title: "холодильник",
-                  desc: "поиск по имеющимся продуктам",
-                },
+                { icon: "/icon_profile/stop2.svg", title: "стоп-слова", desc: "скрывай нежелательные ингредиенты" },
+                { icon: "/icon_profile/kbju2.svg", title: "расчет нормы в %", desc: "суточная норма блюда в каждом рецепте" },
+                { icon: "/icon_profile/like2.svg", title: "неограниченное избранное", desc: "добавляй в избранное без ограничений" },
+                { icon: "/icon_profile/search2.svg", title: "холодильник", desc: "поиск по имеющимся продуктам" },
               ].map(({ icon, title, desc }) => (
                 <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                  {/* Иконка фичи
-                      TODO: замените на <img src={icon} alt="" width={20} height={20} style={{ objectFit: "contain", flexShrink: 0, marginTop: 2 }} />
-                  */}
                   <img src={icon} alt="" width={19} height={19} style={{ objectFit: "contain", flexShrink: 0, marginTop: 2 }} />
                   <div>
                     <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 500, fontSize: 13, color: "#F8FFEE", marginBottom: 2 }}>
@@ -149,24 +152,21 @@ export default function AuthPrompt({ type, onClose }: Props) {
               ))}
             </div>
 
-            {/* Кнопка попробовать */}
             <button
               onClick={() => { onClose(); router.push("/subscription"); }}
-              style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 13, cursor: "pointer", marginBottom: 12 }}
+              style={{ width: "100%", height: 48, background: "#A6ED49", color: "#013125", border: "none", borderRadius: 100, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 13, cursor: "pointer", marginBottom: 12 }}
             >
               попробовать за 90 Р / мес →
             </button>
 
-            {/* Ссылка на годовую подписку */}
             <div
               onClick={() => { onClose(); router.push("/subscription"); }}
-              style={{ textAlign: "center", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#A6ED49", opacity: 0.7, cursor: "pointer" }}
+              style={{ textAlign: "center", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, color: "#A6ED49", opacity: 0.7, cursor: "pointer" }}
             >
               или 790 Р / год — выгоднее на 27% →
             </div>
           </>
         )}
-
       </div>
     </>
   );

@@ -68,18 +68,9 @@ const globalStyles = `
     align-items: center;
     justify-content: center;
   }
-  .submit-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-  .submit-btn:not(:disabled):hover {
-    opacity: 0.92;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 24px rgba(166,237,73,0.4);
-  }
-  .submit-btn:not(:disabled):active {
-    transform: translateY(0);
-  }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .submit-btn:not(:disabled):hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(166,237,73,0.4); }
+  .submit-btn:not(:disabled):active { transform: translateY(0); }
 
   .google-btn {
     width: 271px;
@@ -97,14 +88,8 @@ const globalStyles = `
     gap: 10px;
     transition: border-color 0.2s, opacity 0.2s;
   }
-  .google-btn:hover {
-    border-color: #A6ED49;
-    opacity: 0.9;
-  }
-  .google-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
+  .google-btn:hover { border-color: #A6ED49; opacity: 0.9; }
+  .google-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .tab-btn {
     flex: 1;
@@ -120,7 +105,7 @@ const globalStyles = `
     outline: none;
     background: transparent;
   }
-  .tab-btn.active   { background: #A6ED49; color: #013125; box-shadow: 0 2px 12px rgba(166,237,73,0.25); }
+  .tab-btn.active { background: #A6ED49; color: #013125; box-shadow: 0 2px 12px rgba(166,237,73,0.25); }
   .tab-btn.inactive { color: #A6ED49; opacity: 0.7; }
 
   .input-wrap {
@@ -173,7 +158,7 @@ const globalStyles = `
   .forgot-link:hover { opacity: 0.75; }
 
   .back-link {
-    margin-top: 62px;
+    margin-top: 32px;
     font-size: 12px;
     color: #F8FFEE;
     opacity: 0.7;
@@ -213,6 +198,61 @@ const globalStyles = `
     opacity: 0.4;
     font-family: 'Montserrat', sans-serif;
     font-style: italic;
+  }
+
+  /* ── ДЕСКТОП ── */
+  .auth-page-wrapper {
+    min-height: 100vh;
+    background: radial-gradient(ellipse at center, #01311C 0%, #011a10 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: #013125;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 24px;
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding-top: calc(50vh - 300px);
+  }
+
+  @media (min-width: 768px) {
+    .auth-page-wrapper {
+      padding: 40px 20px;
+    }
+    .auth-tabs {
+      width: 300px !important;
+    }
+    .auth-card {
+      min-height: unset;
+      max-width: 460px;
+      border: 1.5px solid #A6ED49;
+      border-radius: 24px;
+      padding: 48px 40px;
+      padding-top: 48px;
+      box-shadow: 0 0 60px rgba(166,237,73,0.08);
+    }
+    .submit-btn {
+      width: 300px;
+    }
+    .google-btn {
+      width: 300px;
+    }
+    .divider {
+      width: 300px;
+    }
+    .input-wrap {
+      width: 300px;
+    }
+    .error-box {
+      width: 300px;
+    }
   }
 `;
 
@@ -454,199 +494,164 @@ function AuthForm() {
 
   if (step === "verify") {
     return (
-      <main style={{
-        maxWidth: 420, margin: "0 auto", minHeight: "100vh",
-        background: "#013125",
-        display: "flex", flexDirection: "column", alignItems: "center",
-        justifyContent: "center", padding: "0 24px",
-      }}>
-        <div style={{ textAlign: "center", marginBottom: 40 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📨</div>
-          <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 20, fontWeight: 700, color: "#A6ED49" }}>
-            Проверьте почту
+      <div className="auth-page-wrapper">
+        <div className="auth-card" style={{ justifyContent: "center", paddingTop: 48 }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📨</div>
+            <div style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 20, fontWeight: 700, color: "#A6ED49" }}>
+              Проверьте почту
+            </div>
+            <div style={{
+              fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14,
+              color: "#F8FFEE", opacity: 0.6, marginTop: 10, lineHeight: 1.7,
+            }}>
+              Мы отправили 4-значный код на<br />
+              <strong style={{ color: "#A6ED49", opacity: 1 }}>{email}</strong>
+            </div>
           </div>
-          <div style={{
-            fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14,
-            color: "#F8FFEE", opacity: 0.6, marginTop: 10, lineHeight: 1.7,
-          }}>
-            Мы отправили 4-значный код на<br />
-            <strong style={{ color: "#A6ED49", opacity: 1 }}>{email}</strong>
+
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 28 }}>
+            {code.map((digit, i) => (
+              <input key={i} ref={el => { inputRefs.current[i] = el; }}
+                type="text" inputMode="numeric" maxLength={1} value={digit}
+                onChange={e => handleCodeInput(i, e.target.value)}
+                onKeyDown={e => handleCodeKeyDown(i, e)}
+                style={{
+                  width: 64, height: 72, textAlign: "center",
+                  fontSize: 30, fontWeight: 700, color: "#F8FFEE",
+                  border: `2px solid ${digit ? "#A6ED49" : "rgba(166,237,73,0.3)"}`,
+                  borderRadius: 16, outline: "none",
+                  background: digit ? "rgba(166,237,73,0.08)" : "rgba(255,255,255,0.03)",
+                  transition: "all 0.15s", fontFamily: "'Montserrat', sans-serif",
+                  fontStyle: "italic", caretColor: "#A6ED49",
+                }}
+              />
+            ))}
+          </div>
+
+          {error && <div className="error-box">{error}</div>}
+
+          <button className="submit-btn" onClick={handleVerify}
+            disabled={loading || code.join("").length !== 4}
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
+            {loading ? "Проверяем..." : "Подтвердить"}
+          </button>
+
+          <div style={{ textAlign: "center", fontSize: 12, color: "#F8FFEE", opacity: 0.55, marginTop: 20, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
+            Не получили код?{" "}
+            {resendTimer > 0
+              ? <span style={{ color: "#7aad7a" }}>Повторить через {resendTimer}с</span>
+              : <span onClick={handleResend} style={{ color: "#A6ED49", cursor: "pointer", fontWeight: 600 }}>Отправить снова</span>
+            }
+          </div>
+
+          <div className="back-link"
+            onClick={() => { setStep("form"); setCode(["", "", "", ""]); setError(""); }}
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+            ← Изменить email
           </div>
         </div>
-
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", marginBottom: 28 }}>
-          {code.map((digit, i) => (
-            <input
-              key={i}
-              ref={el => { inputRefs.current[i] = el; }}
-              type="text" inputMode="numeric" maxLength={1} value={digit}
-              onChange={e => handleCodeInput(i, e.target.value)}
-              onKeyDown={e => handleCodeKeyDown(i, e)}
-              style={{
-                width: 64, height: 72, textAlign: "center",
-                fontSize: 30, fontWeight: 700, color: "#F8FFEE",
-                border: `2px solid ${digit ? "#A6ED49" : "rgba(166,237,73,0.3)"}`,
-                borderRadius: 16, outline: "none",
-                background: digit ? "rgba(166,237,73,0.08)" : "rgba(255,255,255,0.03)",
-                transition: "all 0.15s",
-                fontFamily: "'Montserrat', sans-serif",
-                fontStyle: "italic",
-                caretColor: "#A6ED49",
-              }}
-            />
-          ))}
-        </div>
-
-        {error && <div className="error-box">{error}</div>}
-
-        <button className="submit-btn" onClick={handleVerify}
-          disabled={loading || code.join("").length !== 4}
-          style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}>
-          {loading ? "Проверяем..." : "Подтвердить"}
-        </button>
-
-        <div style={{
-          textAlign: "center", fontSize: 12, color: "#F8FFEE",
-          opacity: 0.55, marginTop: 20,
-          fontFamily: "'Montserrat', sans-serif", fontStyle: "italic",
-        }}>
-          Не получили код?{" "}
-          {resendTimer > 0 ? (
-            <span style={{ color: "#7aad7a" }}>Повторить через {resendTimer}с</span>
-          ) : (
-            <span onClick={handleResend}
-              style={{ color: "#A6ED49", cursor: "pointer", fontWeight: 600 }}>
-              Отправить снова
-            </span>
-          )}
-        </div>
-
-        <div className="back-link"
-          onClick={() => { setStep("form"); setCode(["", "", "", ""]); setError(""); }}
-          style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
-          ← Изменить email
-        </div>
-      </main>
+      </div>
     );
   }
 
-  const topPadding = "calc(50vh - 300px)";
-
   return (
-    <main style={{
-      maxWidth: 420, margin: "0 auto", minHeight: "100vh",
-      background: "#013125",
-      display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "flex-start",
-      paddingTop: topPadding,
-      paddingLeft: 24, paddingRight: 24,
-    }}>
+    <div className="auth-page-wrapper">
+      <div className="auth-card">
 
-      {/* Логотип */}
-      <div style={{ marginBottom: 24 }}>
-        <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 178, height: 117, objectFit: "contain" }} />
-      </div>
-
-      {/* Кнопка Google */}
-      <GoogleLoginButton
-        onSuccess={handleGoogleSuccess}
-        onError={handleGoogleError}
-        loading={loading}
-      />
-
-      {/* Разделитель */}
-      <div className="divider">
-        <div className="divider-line" />
-        <span className="divider-text">или</span>
-        <div className="divider-line" />
-      </div>
-
-      {/* Табы */}
-      <div style={{
-        display: "flex", background: "#013125",
-        borderRadius: 100, padding: 4, marginBottom: 12,
-        border: "2px solid #A6ED49", height: 48, width: 271, flexShrink: 0,
-      }}>
-        {(["login", "register"] as const).map(m => (
-          <button key={m}
-            className={`tab-btn ${mode === m ? "active" : "inactive"}`}
-            onClick={() => { setMode(m); setError(""); }}
-            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
-            {m === "login" ? "вход" : "регистрация"}
-          </button>
-        ))}
-      </div>
-
-      <div className="input-wrap">
-        <IconEmail />
-        <input className="auth-input" type="email" value={email}
-          onChange={e => setEmail(e.target.value)} placeholder="e-mail"
-          style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }} />
-      </div>
-
-      <div className="input-wrap" style={{ marginBottom: 0 }}>
-        <IconLock />
-        <input className="auth-input"
-          type={showPassword ? "text" : "password"}
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          placeholder="пароль"
-          onKeyDown={e => e.key === "Enter" && handleSubmit()}
-          style={{ paddingRight: 48, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: 271, height: 48 }}
-        />
-        <div
-          onClick={() => setShowPassword(p => !p)}
-          style={{
-            position: "absolute", right: 16, top: "50%",
-            transform: "translateY(-50%)",
-            cursor: "pointer", opacity: 0.6,
-            transition: "opacity 0.2s", display: "flex", alignItems: "center",
-          }}
-          onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
-          onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}
-        >
-          <IconEye visible={showPassword} />
+        {/* Логотип */}
+        <div style={{ marginBottom: 24 }}>
+          <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 178, height: 117, objectFit: "contain" }} />
         </div>
-      </div>
 
-      {mode === "login" ? (
-        <>
-          <div style={{ width: 271, textAlign: "center", marginTop: 27 }}>
-            <span className="forgot-link" onClick={() => router.push("/auth/reset")}
-              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12 }}>
-              забыли пароль →
-            </span>
+        {/* Кнопка Google */}
+        <GoogleLoginButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} loading={loading} />
+
+        {/* Разделитель */}
+        <div className="divider">
+          <div className="divider-line" />
+          <span className="divider-text">или</span>
+          <div className="divider-line" />
+        </div>
+
+        {/* Табы */}
+        <div className="auth-tabs" style={{
+          display: "flex", background: "#013125",
+          borderRadius: 100, padding: 4, marginBottom: 12,
+          border: "2px solid #A6ED49", height: 48, width: 271, flexShrink: 0,
+        }}>
+          {(["login", "register"] as const).map(m => (
+            <button key={m}
+              className={`tab-btn ${mode === m ? "active" : "inactive"}`}
+              onClick={() => { setMode(m); setError(""); }}
+              style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+              {m === "login" ? "вход" : "регистрация"}
+            </button>
+          ))}
+        </div>
+
+        <div className="input-wrap">
+          <IconEmail />
+          <input className="auth-input" type="email" value={email}
+            onChange={e => setEmail(e.target.value)} placeholder="e-mail"
+            style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: "100%", height: 48 }} />
+        </div>
+
+        <div className="input-wrap" style={{ marginBottom: 0 }}>
+          <IconLock />
+          <input className="auth-input"
+            type={showPassword ? "text" : "password"}
+            value={password} onChange={e => setPassword(e.target.value)}
+            placeholder="пароль" onKeyDown={e => e.key === "Enter" && handleSubmit()}
+            style={{ paddingRight: 48, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12, width: "100%", height: 48 }}
+          />
+          <div onClick={() => setShowPassword(p => !p)}
+            style={{ position: "absolute", right: 16, top: "50%", transform: "translateY(-50%)", cursor: "pointer", opacity: 0.6, transition: "opacity 0.2s", display: "flex", alignItems: "center" }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+            onMouseLeave={e => (e.currentTarget.style.opacity = "0.6")}>
+            <IconEye visible={showPassword} />
           </div>
-          {error && <div className="error-box" style={{ marginTop: 16 }}>{error}</div>}
-          <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
-            style={{ marginTop: 35, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
-            {loading ? "Подождите..." : "вход"}
-          </button>
-        </>
-      ) : (
-        <>
-          <div style={{ width: 280, marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 10, color: "#F8FFEE", lineHeight: 1.6 }}>
-            <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
-              label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
-            <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
-              label="Я согласен(а) на обработку персональных данных в соответствии с"
-              link="/privacy" linkLabel="политикой конфиденциальности" />
-          </div>
-          {error && <div className="error-box">{error}</div>}
-          <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
-            style={{ marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
-            {loading ? "Подождите..." : "зарегистрироваться"}
-          </button>
-        </>
-      )}
+        </div>
 
-      <div className="back-link" onClick={() => router.push("/")}
-        style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 12, fontFamily: "'Montserrat', sans-serif" }}>
-        <img src="/icon_auth/back.svg" alt="назад" style={{ width: 8, height: 20, objectFit: "contain" }} />
-        вернуться к рецептам
+        {mode === "login" ? (
+          <>
+            <div style={{ width: "100%", textAlign: "center", marginTop: 27 }}>
+              <span className="forgot-link" onClick={() => router.push("/auth/reset")}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 12 }}>
+                забыли пароль →
+              </span>
+            </div>
+            {error && <div className="error-box" style={{ marginTop: 16 }}>{error}</div>}
+            <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
+              style={{ marginTop: 35, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+              {loading ? "Подождите..." : "вход"}
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ width: 280, marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 10, color: "#F8FFEE", lineHeight: 1.6 }}>
+              <Checkbox checked={agreeTerms} onChange={() => setAgreeTerms(p => !p)}
+                label="Я принимаю" link="/terms" linkLabel="условия использования сервиса" />
+              <Checkbox checked={agreeData} onChange={() => setAgreeData(p => !p)}
+                label="Я согласен(а) на обработку персональных данных в соответствии с"
+                link="/privacy" linkLabel="политикой конфиденциальности" />
+            </div>
+            {error && <div className="error-box">{error}</div>}
+            <button className="submit-btn" onClick={handleSubmit} disabled={!canSubmit}
+              style={{ marginTop: 12, fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontSize: 14 }}>
+              {loading ? "Подождите..." : "зарегистрироваться"}
+            </button>
+          </>
+        )}
+
+        <div className="back-link" onClick={() => router.push("/")}
+          style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontStyle: "italic", fontSize: 12, fontFamily: "'Montserrat', sans-serif" }}>
+          <img src="/icon_auth/back.svg" alt="назад" style={{ width: 8, height: 20, objectFit: "contain" }} />
+          вернуться к рецептам
+        </div>
+
       </div>
-
-    </main>
+    </div>
   );
 }
 

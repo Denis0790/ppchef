@@ -34,7 +34,6 @@ const NAV_ITEMS = [
   },
 ];
 
-// Переключи на true когда придёт нужный шрифт от дизайнера
 const CUSTOM_FONT_READY = false;
 
 export default function BottomNav() {
@@ -48,6 +47,7 @@ export default function BottomNav() {
 
   return (
     <div
+      className="bottom-nav"
       style={{
         position: "fixed",
         bottom: 0,
@@ -84,7 +84,6 @@ export default function BottomNav() {
               WebkitTapHighlightColor: "transparent",
             }}
           >
-            {/* Индикатор сверху */}
             <div
               style={{
                 position: "absolute",
@@ -97,7 +96,6 @@ export default function BottomNav() {
               }}
             />
 
-            {/* Иконка */}
             <Image
               src={active ? svgActive : svg}
               alt={label}
@@ -109,7 +107,6 @@ export default function BottomNav() {
               }}
             />
 
-            {/* Подпись */}
             <div
               style={{
                 fontSize: 10,

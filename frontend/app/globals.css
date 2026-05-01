@@ -4,8 +4,6 @@
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
   tap-highlight-color: transparent;
-  /* -webkit-user-select: none; */
-  /* user-select: none; */
 }
 
 :root {
@@ -77,5 +75,149 @@ main {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (min-width: 768px) {
+  .bottom-nav { display: none !important; }
+  .desktop-nav { display: flex !important; }
+  .desktop-search { display: flex !important; }
+  .filter-bar-mobile { display: none !important; }
+  .desktop-banner-wrapper { display: block !important; }
+
+  /* ── ГЛАВНАЯ ── */
+  .recipe-main { max-width: 100% !important; }
+
+  .desktop-wrapper {
+    display: flex !important;
+    max-width: 900px;
+    margin: 0 auto;
+    gap: 80px;
+    padding: 0 20px;
+    align-items: flex-start;
+  }
+
+  .filter-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 180px !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    top: 90px !important;
+    height: fit-content !important;
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 12px !important;
+    border: 1px solid rgba(1,49,37,0.08) !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+    margin-top: 16px !important;
+  }
+
+  .filter-btn:hover { background: rgba(1,49,37,0.08) !important; }
+  .filter-btn.active:hover { background: #013125 !important; }
+
+  .recipe-content {
+    flex: 1;
+    min-width: 0;
+    max-width: 500px;
+    padding: 16px 0 80px !important;
+  }
+
+  .recipe-card-image {
+    height: 240px !important;
+    max-width: 100% !important;
+  }
+
+  /* Шрифты +2px */
+  .card-text-xs { font-size: 11px !important; }
+  .card-text-sm { font-size: 13px !important; }
+  .card-text-title { font-size: 16px !important; }
+  .card-text-meta { font-size: 13px !important; }
+  .card-text-kbju-val { font-size: 12px !important; }
+  .card-text-kbju-label { font-size: 12px !important; }
+
+  .recipe-grid {
+    transition: opacity 0.25s ease;
+    gap: 16px !important;
+  }
+  .recipe-grid-full { width: 100%; }
+
+  .desktop-search-results { display: block !important; }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── ИЗБРАННОЕ ── */
+  .favorites-main { max-width: 100% !important; }
+
+  .favorites-desktop-header { display: block !important; }
+  .favorites-mobile-header { display: none !important; }
+
+  .favorites-wrapper {
+    display: flex !important;
+    max-width: 900px;
+    margin: 0 auto;
+    gap: 80px;
+    padding: 0 20px;
+    align-items: flex-start;
+  }
+
+  .favorites-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    width: 180px !important;
+    flex-shrink: 0 !important;
+    position: sticky !important;
+    top: 90px !important;
+    height: fit-content !important;
+    background: white !important;
+    border-radius: 16px !important;
+    padding: 12px !important;
+    border: 1px solid rgba(1,49,37,0.08) !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05) !important;
+    margin-top: 16px !important;
+  }
+
+  .favorites-content {
+    flex: 1;
+    min-width: 0;
+    max-width: 500px;
+    padding: 16px 0 80px !important;
+  }
+
+  .favorites-card-image { height: 240px !important; }
+  .desktop-searchbar {
+    display: block !important;
+  }
+  .profile-main {
+    max-width: 100% !important;
+  }
+  .profile-desktop-header {
+    display: block !important;
+  }
+  .profile-mobile-header {
+    display: none !important;
+  }
+  .profile-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 18px 100px !important;
+  }
+  .subscription-main { max-width: 100% !important; }
+  .subscription-desktop-header { display: block !important; }
+  .subscription-mobile-header { display: none !important; }
+  .subscription-content {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .profile-main { max-width: 100% !important; }
+  .profile-desktop-header { display: block !important; }
+  .profile-mobile-header { display: none !important; }
+  .profile-content {
+    max-width: 600px;
+    margin: 0 auto;
   }
 }
