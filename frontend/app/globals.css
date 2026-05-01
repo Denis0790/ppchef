@@ -92,7 +92,7 @@ main {
     display: flex !important;
     max-width: 900px;
     margin: 0 auto;
-    gap: 81px;
+    gap: 80px;
     padding: 0 20px;
     align-items: flex-start;
   }
