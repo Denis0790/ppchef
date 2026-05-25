@@ -13,6 +13,7 @@ import { Suspense } from "react";
 import Script from "next/script";
 import WelcomePremiumModal from "@/components/WelcomePremiumModal";
 import { SearchProvider } from "@/lib/searchContext";
+import RecipePromoModal from "@/components/RecipePromoModal";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["cyrillic"],
@@ -104,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CookieBanner />
             <WelcomePremiumModal />
             <TrialExpiredModal />
+            <RecipePromoModal />
           </AuthProvider>
         </SearchProvider>
 
