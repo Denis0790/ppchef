@@ -10,11 +10,7 @@ const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 function GoogleButton({ onSuccess, onError }: { onSuccess: (token: string) => void; onError: () => void }) {
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse: { access_token: string }) => {
-      try {
-        onSuccess(tokenResponse.access_token);
-      } catch {
-        onError();
-      }
+      onSuccess(tokenResponse.access_token);
     },
     onError: () => onError(),
     flow: "implicit",
@@ -25,7 +21,7 @@ function GoogleButton({ onSuccess, onError }: { onSuccess: (token: string) => vo
       onClick={() => googleLogin()}
       style={{
         width: "100%", height: 48,
-        background: "white", color: "#013125",
+        background: "#A6ED49", color: "#013125",
         border: "none", borderRadius: 100,
         fontSize: 14, fontStyle: "italic",
         fontFamily: "'Montserrat', sans-serif",
@@ -103,45 +99,45 @@ function PromoModalInner() {
         width: "100%", maxWidth: 480,
         background: "#013125",
         borderRadius: "24px 24px 0 0",
-        padding: "24px 24px 48px",
+        padding: "20px 24px 48px",
         fontFamily: "'Montserrat', sans-serif",
       }}>
+        {/* Ручка */}
         <div style={{
           width: 40, height: 4, borderRadius: 2,
           background: "rgba(248,255,238,0.2)",
           margin: "0 auto 24px",
         }} />
 
-        <div style={{ fontSize: 36, textAlign: "center", marginBottom: 12 }}>🥗</div>
-
-        <div style={{
-          fontSize: 18, fontWeight: 500, fontStyle: "italic",
-          color: "#A6ED49", textAlign: "center", marginBottom: 12,
-        }}>
-          хочешь больше таких рецептов?
-        </div>
-
-        <div style={{
-          fontSize: 12, fontStyle: "italic",
-          color: "#F8FFEE", opacity: 0.7,
-          textAlign: "center", lineHeight: 1.6, marginBottom: 20,
-        }}>
-          войди и получи доступ ко всем возможностям
+        {/* Заголовок */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+          <img src="/icon_profile/diamond.svg" alt="" width={20} height={20} style={{ objectFit: "contain" }} />
+          <span style={{
+            fontSize: 16, fontWeight: 500, fontStyle: "italic",
+            color: "#A6ED49",
+          }}>
+            хочешь больше таких рецептов?
+          </span>
         </div>
 
         {/* Фичи */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 24 }}>
           {[
-            { emoji: "📊", text: "расчёт КБЖУ под твои цели" },
-            { emoji: "❤️", text: "избранное — сохраняй что понравилось" },
-            { emoji: "🛒", text: "поиск рецептов по продуктам из холодильника" },
-            { emoji: "✨", text: "новые рецепты каждый день" },
-          ].map(({ emoji, text }, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 16, flexShrink: 0 }}>{emoji}</span>
-              <span style={{ fontSize: 12, fontStyle: "italic", color: "#F8FFEE", opacity: 0.8 }}>
-                {text}
-              </span>
+            { icon: "/icon_profile/kbju2.svg", title: "расчёт КБЖУ под твои цели", desc: "считай калории, белки, жиры и углеводы" },
+            { icon: "/icon_profile/like2.svg", title: "избранное", desc: "сохраняй рецепты которые понравились" },
+            { icon: "/icon_profile/search2.svg", title: "поиск по продуктам", desc: "найди рецепт из того что есть в холодильнике" },
+            { icon: "/icon_profile/stop2.svg", title: "стоп-слова", desc: "скрывай нежелательные ингредиенты" },
+          ].map(({ icon, title, desc }) => (
+            <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <img src={icon} alt="" width={19} height={19} style={{ objectFit: "contain", flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 500, fontStyle: "italic", color: "#F8FFEE", marginBottom: 2 }}>
+                  {title}
+                </div>
+                <div style={{ fontSize: 11, fontStyle: "italic", color: "#F8FFEE", opacity: 0.6 }}>
+                  {desc}
+                </div>
+              </div>
             </div>
           ))}
         </div>
