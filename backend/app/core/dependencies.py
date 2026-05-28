@@ -33,6 +33,15 @@ async def get_current_user(
     user = result.scalar_one_or_none()
     if not user or not user.is_active:
         raise exc
+
+    # Проверяем не истёк ли премиум
+    if user.is_premium and user.subscription_expires_at:
+        from datetime import datetime, timezone
+        if user.subscription_expires_at < datetime.now(timezone.utc):
+            user.is_premium = False
+            user.subscription_plan = None
+            await db.commit()
+
     return user
 
 
