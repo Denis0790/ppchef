@@ -91,6 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="ПП Шеф" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="p:domain_verify" content="19d80224667e03d5ae46891632e22428"/>
       </head>
       <body>
         <SearchProvider>
