@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 
-const KUPER_URL = "https://trk.ppdu.ru/click?uid=327418&oid=2363&erid=2SDnjd8jdBo";
+const SPORTMASTER_URL = "https://trk.ppdu.ru/click?uid=327418&oid=1240&erid=2SDnjcchrbW";
 
 export default function PartnerBlock() {
   return (
@@ -18,16 +18,11 @@ export default function PartnerBlock() {
           gap: 6,
           cursor: "pointer",
         }}
-        onClick={() => window.open(KUPER_URL, "_blank")}
+        onClick={() => window.open(SPORTMASTER_URL, "_blank")}
       >
-        {/* ВЕРХНЯЯ СТРОКА: иконка + название + кнопка */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-        }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 37, height: 37, flexShrink: 0 }}>
-            <Image src="/kyper/korzina.svg" alt="Купер" width={37} height={37} style={{ objectFit: "contain" }} />
+            <Image src="/sportmaster/sport-logo.jpg" alt="Спортмастер" width={37} height={37} style={{ objectFit: "contain" }} />
           </div>
 
           <div style={{
@@ -36,7 +31,7 @@ export default function PartnerBlock() {
             fontFamily: "'Montserrat', sans-serif",
             flex: 1,
           }}>
-            купер доставка
+            спортмастер
           </div>
 
           <div style={{
@@ -54,25 +49,23 @@ export default function PartnerBlock() {
               color: "#01311C",
               fontFamily: "'Montserrat', sans-serif",
             }}>
-              заказать
+              перейти →
             </span>
           </div>
         </div>
 
-        {/* НИЖНЯЯ СТРОКА: текст */}
         <div style={{
           fontSize: 12, fontWeight: 400,
           color: "#F8FFEE",
           fontFamily: "'Montserrat', sans-serif",
           lineHeight: 1.4,
         }}>
-          привезем свежие продукты до двери из вашего любимого магазина
+          товары для спорта и активного образа жизни
         </div>
       </div>
 
-      {/* Маркировка рекламы */}
       <div style={{ fontSize: 9, color: "#bbbbbb", marginTop: 4, textAlign: "right" }}>
-        Реклама · ООО «Инстамарт Сервис» · erid: 2SDnjd8jdBo
+        Реклама · ООО «Спортмастер» · erid: 2SDnjcchrbW
       </div>
     </div>
   );
