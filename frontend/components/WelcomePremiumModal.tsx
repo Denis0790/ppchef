@@ -51,10 +51,10 @@ export default function WelcomePremiumModal() {
 
         {/* Список фич — как на странице подписки */}
         {[
-          { icon: "/icon_profile/stop2.svg", title: "стоп-слова", desc: "скрывай нежелательные ингредиенты" },
-          { icon: "/icon_profile/kbju2.svg", title: "расчет нормы в %", desc: "суточная норма блюда в каждом рецепте" },
-          { icon: "/icon_profile/like2.svg", title: "неограниченное избранное", desc: "добавляй в избранное без ограничений" },
-          { icon: "/icon_profile/search2.svg", title: "холодильник", desc: "поиск по имеющимся продуктам" },
+          { icon: "/icon_modal_premium/stop2.svg", title: "стоп-слова", desc: "скрывай нежелательные ингредиенты" },
+          { icon: "/icon_modal_premium/kbju2.svg", title: "расчет нормы в %", desc: "суточная норма блюда в каждом рецепте" },
+          { icon: "/icon_modal_premium/like2.svg", title: "неограниченное избранное", desc: "добавляй в избранное без ограничений" },
+          { icon: "/icon_modal_premium/search2.svg", title: "холодильник", desc: "поиск по имеющимся продуктам" },
         ].map(({ icon, title, desc }) => (
           <div key={title} style={{
             display: "flex", alignItems: "flex-start", gap: 12,
