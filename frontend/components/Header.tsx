@@ -62,7 +62,7 @@ export default function Header() {
             <Image
               src="/logo2.svg" alt="ПП Шеф"
               height={DESIGN.logoHeight} width={200}
-              style={{ width: "auto", cursor: "pointer", flexShrink: 0, marginLeft: 180 }}
+              style={{ width: "auto", cursor: "pointer", flexShrink: 0 }}
               onClick={() => router.push("/")}
             />
 
