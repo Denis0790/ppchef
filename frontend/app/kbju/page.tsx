@@ -234,7 +234,7 @@ export default function KbjuPage() {
           вернуться к рецептам
         </span>
       </div>
-      <div style={{ height: 32, border: "1.4px solid #A6ED49", borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px" }}>
+      <div style={{ height: 32, borderRadius: 100, display: "flex", alignItems: "center", gap: 6, padding: "0 14px" }}>
         <img src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} />
         <span style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic", fontWeight: 400, fontSize: 12, color: "#F8FFEE" }}>
           premium

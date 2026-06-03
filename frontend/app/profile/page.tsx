@@ -162,7 +162,6 @@ export default function ProfilePage() {
         {isPremium && (
           <div style={{
             height: 32, paddingLeft: 16, paddingRight: 16,
-            border: "1px solid #A6ED49", borderRadius: 20,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
           }}>
             <Image src="/icon_profile/diamond.svg" alt="" width={19} height={19} style={{ objectFit: "contain" }} />

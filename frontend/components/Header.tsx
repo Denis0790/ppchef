@@ -60,9 +60,9 @@ export default function Header() {
             justifyContent: "space-between", alignItems: "center", gap: 24,
           }}>
             <Image
-              src="/logo.svg" alt="ПП Шеф"
+              src="/logo2.svg" alt="ПП Шеф"
               height={DESIGN.logoHeight} width={200}
-              style={{ width: "auto", cursor: "pointer", flexShrink: 0 }}
+              style={{ width: "auto", cursor: "pointer", flexShrink: 0, marginLeft: 180 }}
               onClick={() => router.push("/")}
             />
 

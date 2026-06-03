@@ -50,30 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {}
   }
 
-  async function doRefresh(): Promise<string | null> {
-    try {
-      const res = await fetch(`${API_URL}/auth/refresh`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setTokenState(data.access_token);
-        scheduleRefresh(data.access_token);
-        fetchProfile(data.access_token);
-        return data.access_token;
-      } else {
-        setTokenState(null);
-        setIsPremium(false);
-        return null;
-      }
-    } catch {
-      setTokenState(null);
-      return null;
-    }
-  }
-
-  async function fetchProfile(t: string) {
+  async function fetchProfile(t: string): Promise<void> {
     try {
       const res = await fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${t}` },
@@ -85,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSubscriptionExpiresAt(user.subscription_expires_at || null);
         setSubscriptionPlan(user.subscription_plan || null);
 
-        // Проверяем истёк ли пробный период
         if (
           user.subscription_plan === "trial" &&
           !user.is_premium &&
@@ -102,6 +78,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch {}
+  }
+
+  async function doRefresh(): Promise<string | null> {
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTokenState(data.access_token);
+        scheduleRefresh(data.access_token);
+        await fetchProfile(data.access_token); // ← await
+        return data.access_token;
+      } else {
+        setTokenState(null);
+        setIsPremium(false);
+        return null;
+      }
+    } catch {
+      setTokenState(null);
+      return null;
+    }
   }
 
   function setToken(t: string | null) {
@@ -133,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     doRefresh().finally(() => {
-      setTimeout(() => setIsReady(true), 100);
+      setIsReady(true); // ← убран setTimeout, ждём реального завершения
     });
     return () => {
       if (refreshTimer.current) clearTimeout(refreshTimer.current);
