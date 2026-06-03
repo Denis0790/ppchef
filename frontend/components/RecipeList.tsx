@@ -494,7 +494,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
         <div className="desktop-banner-wrapper" style={{ display: "none" }}>
           <div style={{ maxWidth: 900, margin: "0 auto", padding: "16px 20px 0" }}>
             <div style={{ borderRadius: 16, overflow: "hidden", background: "#013125", height: 240, position: "relative" }}>
-              <Image src="https://media.ppchef.ru/other/banner1.png" alt="баннер" fill style={{ objectFit: "cover" }} />
+              <Image src="https://media.ppchef.ru/other/banner3.jpg" alt="баннер" fill style={{ objectFit: "cover" }} />
             </div>
           </div>
         </div>
