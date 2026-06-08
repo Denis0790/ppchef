@@ -5,7 +5,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.session import Base
 from app.models.base import TimestampMixin
 
-
 class User(Base, TimestampMixin):
     __tablename__ = "users"
 
@@ -33,6 +32,7 @@ class User(Base, TimestampMixin):
     # Подписка
     subscription_plan: Mapped[str | None] = mapped_column(String(50))
     subscription_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    payment_method_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     # Рефералы
     ref_code: Mapped[str | None] = mapped_column(String(20), unique=True, index=True)
@@ -62,7 +62,6 @@ class RefreshToken(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-
     user: Mapped["User"] = relationship(back_populates="refresh_tokens")
 
 

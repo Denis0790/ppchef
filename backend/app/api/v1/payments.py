@@ -1,6 +1,4 @@
 import uuid
-import hashlib
-import hmac
 import json
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -37,9 +35,6 @@ async def create_payment(
     if data.plan not in PLANS:
         raise HTTPException(status_code=400, detail="Неверный тариф")
 
-    print("Shop ID:", settings.YUKASSA_SHOP_ID)
-    print("Key prefix:", settings.YUKASSA_SECRET_KEY[:10])
-
     plan = PLANS[data.plan]
     idempotence_key = str(uuid.uuid4())
 
@@ -53,13 +48,13 @@ async def create_payment(
                 "confirmation": {"type": "redirect", "return_url": data.return_url},
                 "capture": True,
                 "description": plan["description"],
+                "save_payment_method": True,
                 "metadata": {"user_id": str(current_user.id), "plan": data.plan},
             }
         )
 
     if resp.status_code not in (200, 201):
         print("YooKassa error:", resp.status_code, resp.text)
-        print("Request body:", resp.request.content)
         raise HTTPException(status_code=500, detail="Ошибка создания платежа")
 
     payment = resp.json()
@@ -93,6 +88,11 @@ async def payment_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     if not user:
         return {"status": "ok"}
 
+    # Сохраняем метод оплаты для автоплатежей
+    payment_method = event.get("payment_method", {})
+    if payment_method.get("saved") and payment_method.get("id"):
+        user.payment_method_id = payment_method["id"]
+
     days = PLANS[plan]["days"]
     now = datetime.now(timezone.utc)
     if user.subscription_expires_at and user.subscription_expires_at > now:
@@ -105,3 +105,14 @@ async def payment_webhook(request: Request, db: AsyncSession = Depends(get_db)):
     await db.commit()
 
     return {"status": "ok"}
+
+
+@router.post("/cancel-recurring")
+async def cancel_recurring(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Отключить автопродление."""
+    current_user.payment_method_id = None
+    await db.commit()
+    return {"status": "ok", "detail": "Автопродление отключено"}
