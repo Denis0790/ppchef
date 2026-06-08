@@ -116,7 +116,7 @@ services:
       dockerfile: Dockerfile
     container_name: ppchef_celery_beat
     restart: unless-stopped
-    command: celery -A app.tasks.celery_app beat --loglevel=warning
+    command: celery -A app.tasks.celery_app beat --loglevel=warning --schedule=/tmp/celerybeat-schedule
     env_file: .env
     volumes:
       - ./backend:/app
