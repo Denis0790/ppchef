@@ -48,7 +48,7 @@ async def create_payment(
                 "confirmation": {"type": "redirect", "return_url": data.return_url},
                 "capture": True,
                 "description": plan["description"],
-                "save_payment_method": True,
+                #"save_payment_method": True,
                 "metadata": {"user_id": str(current_user.id), "plan": data.plan},
             }
         )
