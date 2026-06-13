@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { addFavorite, removeFavorite, getFavorites } from "@/lib/api";
+import { useFavorites } from "@/lib/favoritesContext";
 import { useAuthPrompt } from "@/hooks/useAuthPrompt";
 
 interface Props {
@@ -10,19 +10,14 @@ interface Props {
 }
 
 export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
-  const { token, isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
+  const { favoriteIds, toggle } = useFavorites();
   const { requireAuth, requirePremium, PromptComponent } = useAuthPrompt();
-  const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [toastType, setToastType] = useState<"normal" | "warning">("normal");
 
-  useEffect(() => {
-    if (!isLoggedIn || !token) return;
-    getFavorites(token).then(favorites => {
-      setIsFavorite(favorites.some(r => r.id === recipeId));
-    }).catch(() => {});
-  }, [isLoggedIn, token, recipeId]);
+  const isFavorite = favoriteIds.has(recipeId);
 
   function showToast(msg: string, type: "normal" | "warning" = "normal") {
     setToast(msg);
@@ -30,31 +25,20 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
     setTimeout(() => setToast(null), 3000);
   }
 
-  async function toggle(e: React.MouseEvent) {
+  async function handleToggle(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!isLoggedIn || !token) {
+    if (!isLoggedIn) {
       requireAuth();
       return;
     }
     setLoading(true);
     try {
-      if (isFavorite) {
-        await removeFavorite(token, recipeId);
-        setIsFavorite(false);
-        showToast("Удалено из избранного");
-      } else {
-        await addFavorite(token, recipeId);
-        setIsFavorite(true);
-        showToast("Добавлено в избранное");
-      }
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "";
-      if (msg.includes("Premium") || msg.includes("Лимит") || msg.includes("10")) {
+      const result = await toggle(recipeId);
+      if (result.isPremium) {
         requirePremium();
-      } else if (!isFavorite) {
-        setIsFavorite(true);
-        showToast("Добавлено в избранное");
+      } else if (result.success) {
+        showToast(isFavorite ? "Удалено из избранного" : "Добавлено в избранное");
       }
     } finally {
       setLoading(false);
@@ -79,39 +63,22 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
     return (
       <>
         {PromptComponent}
-        <button
-          onClick={toggle}
-          disabled={loading}
-          style={{
-            width: 128, height: 32,
-            borderRadius: 100,
-            background: isFavorite ? "#01311C" : "#F8FFEE",
-            border: "1.1px solid #01311C",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 6,
-            cursor: loading ? "default" : "pointer",
-            opacity: loading ? 0.6 : 1,
-            transition: "all 0.2s",
-            padding: 0,
-            flexShrink: 0,
-          }}
-        >
-          <svg
-            width="19" height="19" viewBox="0 0 24 24"
-            fill="none"
-            stroke={isFavorite ? "#A6ED49" : "#01311C"}
-            strokeWidth="1.1"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+        <button onClick={handleToggle} disabled={loading} style={{
+          width: 128, height: 32, borderRadius: 100,
+          background: isFavorite ? "#01311C" : "#F8FFEE",
+          border: "1.1px solid #01311C",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          gap: 6, cursor: loading ? "default" : "pointer",
+          opacity: loading ? 0.6 : 1, transition: "all 0.2s", padding: 0, flexShrink: 0,
+        }}>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+            stroke={isFavorite ? "#A6ED49" : "#01311C"} strokeWidth="1.1"
+            strokeLinecap="round" strokeLinejoin="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
           <span style={{
-            fontSize: 12, lineHeight: 1,
-            color: isFavorite ? "#A6ED49" : "#01311C",
-            whiteSpace: "nowrap",
-            fontFamily: "'Montserrat', sans-serif",
-            fontStyle: "italic",
+            fontSize: 12, lineHeight: 1, color: isFavorite ? "#A6ED49" : "#01311C",
+            whiteSpace: "nowrap", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic",
           }}>
             {isFavorite ? "в избранном" : "в избранное"}
           </span>
@@ -125,39 +92,22 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
     return (
       <>
         {PromptComponent}
-        <button
-          onClick={toggle}
-          disabled={loading}
-          style={{
-            width: 98, height: 25,
-            borderRadius: 100,
-            background: isFavorite ? "#01311C" : "#F8FFEE",
-            border: "1.1px solid #01311C",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            gap: 4,
-            cursor: loading ? "default" : "pointer",
-            opacity: loading ? 0.6 : 1,
-            transition: "all 0.2s",
-            padding: 0,
-            flexShrink: 0,
-          }}
-        >
-          <svg
-            width="15" height="15" viewBox="0 0 24 24"
-            fill="none"
-            stroke={isFavorite ? "#A6ED49" : "#01311C"}
-            strokeWidth="1.1"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+        <button onClick={handleToggle} disabled={loading} style={{
+          width: 98, height: 25, borderRadius: 100,
+          background: isFavorite ? "#01311C" : "#F8FFEE",
+          border: "1.1px solid #01311C",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          gap: 4, cursor: loading ? "default" : "pointer",
+          opacity: loading ? 0.6 : 1, transition: "all 0.2s", padding: 0, flexShrink: 0,
+        }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+            stroke={isFavorite ? "#A6ED49" : "#01311C"} strokeWidth="1.1"
+            strokeLinecap="round" strokeLinejoin="round">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
           <span style={{
-            fontSize: 9, lineHeight: 1,
-            color: isFavorite ? "#A6ED49" : "#01311C",
-            whiteSpace: "nowrap",
-            fontFamily: "'Montserrat', sans-serif",
-            fontStyle: "italic",
+            fontSize: 9, lineHeight: 1, color: isFavorite ? "#A6ED49" : "#01311C",
+            whiteSpace: "nowrap", fontFamily: "'Montserrat', sans-serif", fontStyle: "italic",
           }}>
             {isFavorite ? "в избранном" : "в избранное"}
           </span>
@@ -170,14 +120,12 @@ export default function FavoriteButton({ recipeId, variant = "card" }: Props) {
   return (
     <>
       {PromptComponent}
-      <button onClick={toggle} disabled={loading} style={{
+      <button onClick={handleToggle} disabled={loading} style={{
         background: isFavorite ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.92)",
         border: isFavorite ? "1.5px solid rgba(224,85,85,0.3)" : "1.5px solid rgba(0,0,0,0.08)",
         borderRadius: 12, padding: "7px 11px", fontSize: 18,
-        cursor: loading ? "default" : "pointer",
-        opacity: loading ? 0.6 : 1,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-        transition: "all 0.2s",
+        cursor: loading ? "default" : "pointer", opacity: loading ? 0.6 : 1,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.12)", transition: "all 0.2s",
         display: "flex", alignItems: "center", justifyContent: "center",
       }}>
         {isFavorite ? "❤️" : "🤍"}

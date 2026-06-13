@@ -14,6 +14,7 @@ import Script from "next/script";
 import WelcomePremiumModal from "@/components/WelcomePremiumModal";
 import { SearchProvider } from "@/lib/searchContext";
 import RecipePromoModal from "@/components/RecipePromoModal";
+import { FavoritesProvider } from "@/lib/favoritesContext";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["cyrillic"],
@@ -101,12 +102,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Suspense>
             <OfflineBanner />
             <IOSInstallBanner />
+            <FavoritesProvider>
             {children}
             <BottomNavWrapper />
             <CookieBanner />
             <WelcomePremiumModal />
             <TrialExpiredModal />
             <RecipePromoModal />
+            </FavoritesProvider>
           </AuthProvider>
         </SearchProvider>
 
