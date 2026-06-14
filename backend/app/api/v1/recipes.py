@@ -1,8 +1,8 @@
 import uuid
-import hashlib
-import json
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 
 from app.db.session import get_db
 from app.schemas.recipe import (
@@ -10,7 +10,7 @@ from app.schemas.recipe import (
     RecipeFilterParams, RecipeCategory, RecipeCreate
 )
 from app.services.recipe import get_recipes, get_recipe_by_id, get_popular_recipes, create_recipe
-from app.models.recipe import Recipe
+from app.models.recipe import Recipe, RecipeStatus
 from app.models.user import User
 from app.core.dependencies import get_current_user
 from app.core.cache import cache_get, cache_set, cache_invalidate
@@ -36,7 +36,6 @@ async def list_recipes(
     page_size: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
-    # ── Ключ кеша на основе параметров запроса ─────────────────
     cache_key = f"recipes:list:{category}:{calories_min}:{calories_max}:{protein_min}:{cook_time_max}:{search}:{page}:{page_size}"
 
     cached = await cache_get(cache_key)
@@ -63,9 +62,7 @@ async def list_recipes(
         "pages": (total + page_size - 1) // page_size,
     }
 
-    # ── Кешируем на 5 минут ────────────────────────────────────
     await cache_set(cache_key, result, ttl=300)
-
     return result
 
 
@@ -82,24 +79,19 @@ async def popular_recipes(
     recipes = await get_popular_recipes(limit, db)
     result = [recipe_to_card(r) for r in recipes]
 
-    # ── Кешируем на 10 минут ───────────────────────────────────
     await cache_set(cache_key, result, ttl=600)
-
     return result
+
 
 @router.get("/new", response_model=list[dict])
 async def new_recipes(
-    limit: int = Query(default=10, ge=1, le=20),
+    limit: int = Query(default=6, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
 ):
     cache_key = f"recipes:new:{limit}"
     cached = await cache_get(cache_key)
     if cached:
         return cached
-
-    from datetime import datetime, timedelta, timezone
-    from sqlalchemy import select
-    from app.models.recipe import RecipeStatus
 
     yesterday = datetime.now(timezone.utc) - timedelta(days=1)
 
@@ -115,7 +107,7 @@ async def new_recipes(
     recipes = result_db.scalars().all()
     result = [recipe_to_card(r) for r in recipes]
 
-    await cache_set(cache_key, result, ttl=600)
+    await cache_set(cache_key, result, ttl=60)
     return result
 
 
@@ -125,7 +117,6 @@ async def search_recipes(
     mode: str = Query(default="title"),
     db: AsyncSession = Depends(get_db),
 ):
-    # ── Поиск кешируем на 2 минуты ────────────────────────────
     cache_key = f"recipes:search:{mode}:{q}"
     cached = await cache_get(cache_key)
     if cached:
@@ -158,7 +149,6 @@ async def get_recipe(
     recipe_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    # ── Отдельный рецепт кешируем на 30 минут ─────────────────
     cache_key = f"recipes:detail:{recipe_id}"
     cached = await cache_get(cache_key)
     if cached:
@@ -167,7 +157,6 @@ async def get_recipe(
 
     recipe = await get_recipe_by_id(recipe_id, db)
 
-    # Кешируем сериализованную версию
     await cache_set(
         cache_key,
         RecipeDetailSchema.model_validate(recipe).model_dump(mode="json"),
@@ -183,7 +172,6 @@ async def suggest_recipe(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    from app.models.recipe import RecipeStatus
     from app.schemas.recipe import RecipeCreate as RC
     data_dict = data.model_dump()
     data_dict["status"] = "suggested"
@@ -192,7 +180,6 @@ async def suggest_recipe(
 
     result = await create_recipe(RC(**data_dict), db)
 
-    # ── Инвалидируем кеш списков после добавления рецепта ─────
     await cache_invalidate("recipes:list:")
     await cache_invalidate("recipes:popular:")
 
