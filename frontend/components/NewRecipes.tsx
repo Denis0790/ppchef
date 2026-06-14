@@ -1,8 +1,8 @@
-// components/NewRecipes.tsx
 "use client";
 import Link from "next/link";
 import Image from "next/image";
 import { Recipe } from "@/lib/api";
+import { useRef, useEffect } from "react";
 
 const CATEGORIES: Record<string, { label: string }> = {
   breakfast: { label: "завтрак" },
@@ -15,11 +15,20 @@ const CATEGORIES: Record<string, { label: string }> = {
 };
 
 export default function NewRecipes({ recipes }: { recipes: Recipe[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => { e.preventDefault(); el.scrollLeft += e.deltaY; };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
+
   if (!recipes.length) return null;
 
   return (
     <div style={{ marginBottom: 20 }}>
-      {/* Заголовок */}
       <div style={{
         display: "inline-flex", alignItems: "center", gap: 6,
         border: "1px solid #A6ED49",
@@ -37,14 +46,16 @@ export default function NewRecipes({ recipes }: { recipes: Recipe[] }) {
         </span>
       </div>
 
-      {/* Карусель */}
-      <div style={{
-        display: "flex",
-        gap: 12,
-        overflowX: "auto",
-        scrollbarWidth: "none",
-        paddingBottom: 4,
-      }}>
+      <div
+        ref={scrollRef}
+        style={{
+          display: "flex",
+          gap: 12,
+          overflowX: "auto",
+          scrollbarWidth: "none",
+          paddingBottom: 4,
+        }}
+      >
         {recipes.map((recipe) => {
           const cat = CATEGORIES[recipe.category];
           return (
@@ -63,7 +74,6 @@ export default function NewRecipes({ recipes }: { recipes: Recipe[] }) {
                 flexDirection: "column",
                 border: "1.5px solid #A6ED49",
               }}>
-                {/* Фото */}
                 <div style={{
                   height: 110,
                   flexShrink: 0,
@@ -87,7 +97,6 @@ export default function NewRecipes({ recipes }: { recipes: Recipe[] }) {
                     : "🥗"}
                 </div>
 
-                {/* Контент */}
                 <div style={{ padding: "9px 11px 4px", display: "flex", flexDirection: "column", flex: 1 }}>
                   <div style={{
                     fontSize: 9,
