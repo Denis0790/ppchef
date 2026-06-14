@@ -30,7 +30,7 @@ export default async function Home({
   const params = await searchParams;
   const [data, newRecipes] = await Promise.all([
     getRecipes(),
-    getNewRecipes(6),
+    getNewRecipes(6).catch(() => []),  // ← если упадёт — просто пустой массив
   ]);
   return <RecipeList initialData={data} newRecipes={newRecipes} refCode={params.ref} />;
 }
