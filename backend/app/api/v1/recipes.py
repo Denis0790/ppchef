@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.db.session import get_db
 from app.schemas.recipe import (
@@ -97,6 +98,7 @@ async def new_recipes(
 
     result_db = await db.execute(
         select(Recipe)
+        .options(selectinload(Recipe.ingredients))
         .where(
             Recipe.status == RecipeStatus.published,
             Recipe.updated_at >= yesterday,
