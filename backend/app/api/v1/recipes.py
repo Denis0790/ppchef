@@ -107,9 +107,9 @@ async def new_recipes(
         select(Recipe)
         .where(
             Recipe.status == RecipeStatus.published,
-            Recipe.updated_at >= yesterday,
+            Recipe.created_at >= yesterday,
         )
-        .order_by(Recipe.updated_at.desc())
+        .order_by(Recipe.created_at.desc())
         .limit(limit)
     )
     recipes = result_db.scalars().all()
