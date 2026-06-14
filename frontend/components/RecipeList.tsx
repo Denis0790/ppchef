@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { useSearchParams } from "next/navigation";
 import { getRecipes, Recipe, RecipesResponse, searchRecipes } from "@/lib/api";
-import PopularRecipes from "@/components/PopularRecipes";
+import NewRecipes from "@/components/NewRecipes";
 import { useAuth } from "@/lib/auth";
 import FavoriteButton from "@/components/FavoriteButton";
 import InstallBanner from "@/components/InstallBanner";
@@ -307,9 +307,9 @@ function DesktopSearchBar() {
   );
 }
 
-export default function RecipeList({ initialData, popularRecipes, refCode }: {
+export default function RecipeList({ initialData, newRecipes, refCode }: {
   initialData: RecipesResponse,
-  popularRecipes: Recipe[],
+  newRecipes: Recipe[],
   refCode?: string,
 }) {
   const searchParams = useSearchParams();
@@ -505,7 +505,7 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
 
           <div className="recipe-content" style={{ padding: "16px 16px 80px" }}>
 
-            {/* Поиск под баннером */}
+            {/* Поиск */}
             <DesktopSearchBar />
 
             {/* Результаты поиска */}
@@ -536,6 +536,11 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
             {/* Обычная лента */}
             {!isDesktopSearchActive && (
               <>
+                {/* ── НОВЫЕ РЕЦЕПТЫ — всегда вверху если нет фильтра ── */}
+                {!activeCategory && newRecipes.length > 0 && (
+                  <NewRecipes recipes={newRecipes.slice(0, 6)} />
+                )}
+
                 {loading ? (
                   <div style={{ textAlign: "center", padding: 60, color: "#aaa" }}>Загрузка...</div>
                 ) : recipes.length === 0 ? (
@@ -545,15 +550,8 @@ export default function RecipeList({ initialData, popularRecipes, refCode }: {
                   </div>
                 ) : (
                   <div className="recipe-grid" style={{ display: "flex", flexDirection: "column", gap: 12, opacity: loading ? 0 : 1, transition: "opacity 0.3s ease" }}>
-                    {recipes.map((recipe, index) => (
-                      <Fragment key={recipe.id}>
-                        <RecipeCard recipe={recipe} />
-                        {index === 19 && !activeCategory && (
-                          <div className="recipe-grid-full">
-                            <PopularRecipes recipes={popularRecipes} />
-                          </div>
-                        )}
-                      </Fragment>
+                    {recipes.map((recipe) => (
+                      <RecipeCard key={recipe.id} recipe={recipe} />
                     ))}
                   </div>
                 )}

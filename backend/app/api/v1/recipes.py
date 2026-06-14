@@ -87,6 +87,37 @@ async def popular_recipes(
 
     return result
 
+@router.get("/new", response_model=list[dict])
+async def new_recipes(
+    limit: int = Query(default=10, ge=1, le=20),
+    db: AsyncSession = Depends(get_db),
+):
+    cache_key = f"recipes:new:{limit}"
+    cached = await cache_get(cache_key)
+    if cached:
+        return cached
+
+    from datetime import datetime, timedelta, timezone
+    from sqlalchemy import select
+    from app.models.recipe import RecipeStatus
+
+    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
+
+    result_db = await db.execute(
+        select(Recipe)
+        .where(
+            Recipe.status == RecipeStatus.published,
+            Recipe.created_at >= yesterday,
+        )
+        .order_by(Recipe.created_at.desc())
+        .limit(limit)
+    )
+    recipes = result_db.scalars().all()
+    result = [recipe_to_card(r) for r in recipes]
+
+    await cache_set(cache_key, result, ttl=600)
+    return result
+
 
 @router.get("/search", response_model=list[dict])
 async def search_recipes(

@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getRecipes, getPopularRecipes } from "@/lib/api";
+import { getRecipes, getNewRecipes } from "@/lib/api";
 import RecipeList from "@/components/RecipeList";
 
 export const metadata: Metadata = {
@@ -28,9 +28,9 @@ export default async function Home({
   searchParams: Promise<{ ref?: string }>;
 }) {
   const params = await searchParams;
-  const [data, popular] = await Promise.all([
+  const [data, newRecipes] = await Promise.all([
     getRecipes(),
-    getPopularRecipes(5),
+    getNewRecipes(6),
   ]);
-  return <RecipeList initialData={data} popularRecipes={popular} refCode={params.ref} />;
+  return <RecipeList initialData={data} newRecipes={newRecipes} refCode={params.ref} />;
 }

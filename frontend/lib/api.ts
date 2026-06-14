@@ -121,6 +121,10 @@ export async function getPopularRecipes(limit = 5): Promise<Recipe[]> {
   return apiFetch<Recipe[]>(`/recipes/popular?limit=${limit}`, { cache: "no-store" });
 }
 
+export async function getNewRecipes(limit = 10): Promise<Recipe[]> {
+  return apiFetch<Recipe[]>(`/recipes/new?limit=${limit}`, { cache: "no-store" });
+}
+
 // ─── Auth ─────────────────────────────────────────────────────
 export interface User {
   id: string;
