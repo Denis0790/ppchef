@@ -94,15 +94,10 @@ async def new_recipes(
     if cached:
         return cached
 
-    yesterday = datetime.now(timezone.utc) - timedelta(days=1)
-
     result_db = await db.execute(
         select(Recipe)
         .options(selectinload(Recipe.ingredients))
-        .where(
-            Recipe.status == RecipeStatus.published,
-            Recipe.updated_at >= yesterday,
-        )
+        .where(Recipe.status == RecipeStatus.published)
         .order_by(Recipe.updated_at.desc())
         .limit(limit)
     )
