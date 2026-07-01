@@ -565,7 +565,7 @@ function AuthForm() {
         </div>
 
         {/* Кнопка Google */}
-        <GoogleLoginButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} loading={loading} />
+        {/*<GoogleLoginButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} loading={loading} />*/}
 
         {/* Разделитель */}
         <div className="divider">
