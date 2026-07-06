@@ -149,10 +149,6 @@ function PromoModalInner() {
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          <GoogleButton
-            onSuccess={handleGoogleSuccess}
-            onError={() => setError("не удалось войти через google")}
-          />
           <button
             onClick={() => { setShow(false); router.push("/auth"); }}
             style={{
