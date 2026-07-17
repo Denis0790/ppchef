@@ -34,7 +34,7 @@ COOKIE_NAME = "refresh_token"
 COOKIE_MAX_AGE = 60 * 60 * 24 * 14  # 14 дней
 
 FRONTEND_AUTH_URL = "https://ppchef.ru/auth"
-YANDEX_REDIRECT_URI = "https://ppchef.ru/auth/yandex/callback"
+YANDEX_REDIRECT_URI = "https://ppchef.ru/api/v1/auth/yandex/callback"
 
 
 def set_refresh_cookie(response: Response, token: str) -> None:

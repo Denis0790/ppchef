@@ -9,7 +9,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 const YANDEX_CLIENT_ID = process.env.NEXT_PUBLIC_YANDEX_CLIENT_ID || "";
-const YANDEX_REDIRECT_URI = "https://ppchef.ru/auth/yandex/callback";
+const YANDEX_REDIRECT_URI = "https://ppchef.ru/api/v1/auth/yandex/callback";
 
 const globalStyles = `
   @font-face {
