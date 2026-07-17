@@ -5,9 +5,11 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { login, register, apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+const YANDEX_CLIENT_ID = process.env.NEXT_PUBLIC_YANDEX_CLIENT_ID || "";
+const YANDEX_REDIRECT_URI = "https://ppchef.ru/auth/yandex/callback";
 
 const globalStyles = `
   @font-face {
@@ -90,6 +92,26 @@ const globalStyles = `
   }
   .google-btn:hover { border-color: #A6ED49; opacity: 0.9; }
   .google-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .yandex-btn {
+    width: 271px;
+    height: 48px;
+    padding: 0;
+    background: transparent;
+    color: #F8FFEE;
+    border: 1.5px solid rgba(166,237,73,0.4);
+    border-radius: 100px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: border-color 0.2s, opacity 0.2s;
+    text-decoration: none;
+  }
+  .yandex-btn:hover { border-color: #A6ED49; opacity: 0.9; }
+  .yandex-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .tab-btn {
     flex: 1;
@@ -244,6 +266,9 @@ const globalStyles = `
     .google-btn {
       width: 300px;
     }
+    .yandex-btn {
+      width: 300px;
+    }
     .divider {
       width: 300px;
     }
@@ -285,6 +310,18 @@ function IconEye({ visible }: { visible: boolean }) {
   );
 }
 
+function IconYandex() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="12" fill="#FC3F1D" />
+      <path
+        fill="#fff"
+        d="M13.32 6.6h-1.28c-2.24 0-3.42 1.14-3.42 2.8 0 1.88 0.8 2.76 2.46 3.9l1.36 0.92-3.92 5.86h-2.1l3.52-5.24c-2.02-1.44-3.16-2.84-3.16-5.2 0-2.94 2.06-4.94 5.24-4.94h3.06v15.36h-1.76V6.6z"
+      />
+    </svg>
+  );
+}
+
 const Checkbox = ({ checked, onChange, label, link, linkLabel }: {
   checked: boolean; onChange: () => void; label: string; link?: string; linkLabel?: string;
 }) => {
@@ -312,41 +349,31 @@ const Checkbox = ({ checked, onChange, label, link, linkLabel }: {
   );
 };
 
-function GoogleLoginButton({ onSuccess, onError, loading }: {
-  onSuccess: (token: string) => void;
-  onError: () => void;
-  loading: boolean;
-}) {
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse: { access_token: string }) => {
-      try {
-        const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        if (!res.ok) throw new Error("Ошибка Google");
-        onSuccess(tokenResponse.access_token);
-      } catch {
-        onError();
-      }
-    },
-    onError: () => onError(),
-    flow: "implicit",
-  });
+function YandexLoginButton({ loading }: { loading: boolean }) {
+  function handleClick() {
+    if (!YANDEX_CLIENT_ID) {
+      // eslint-disable-next-line no-console
+      console.error("NEXT_PUBLIC_YANDEX_CLIENT_ID не задан");
+      return;
+    }
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: YANDEX_CLIENT_ID,
+      redirect_uri: YANDEX_REDIRECT_URI,
+      force_confirm: "yes",
+    });
+    window.location.href = `https://oauth.yandex.ru/authorize?${params.toString()}`;
+  }
 
   return (
     <button
-      className="google-btn"
-      onClick={() => googleLogin()}
+      className="yandex-btn"
+      onClick={handleClick}
       disabled={loading}
       style={{ fontFamily: "'Montserrat', sans-serif", fontStyle: "italic" }}
     >
-      <svg width="18" height="18" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      войти через google
+      <IconYandex />
+      войти через яндекс
     </button>
   );
 }
@@ -373,6 +400,26 @@ function AuthForm() {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get("ref");
     if (ref) localStorage.setItem("ref_code", ref);
+  }, []);
+
+  // Обработка возврата с бэкенда после /auth/yandex/callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const authError = params.get("auth_error");
+
+    if (token) {
+      setToken(token);
+      router.replace("/");
+      return;
+    }
+    if (authError) {
+      setError("Не удалось войти через Яндекс. Попробуйте ещё раз.");
+      const url = new URL(window.location.href);
+      url.searchParams.delete("auth_error");
+      window.history.replaceState({}, "", url.toString());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -471,27 +518,6 @@ function AuthForm() {
     }
   }
 
-  async function handleGoogleSuccess(accessToken: string) {
-    setError("");
-    setLoading(true);
-    try {
-      const data = await apiFetch("/auth/google", {
-        method: "POST",
-        body: JSON.stringify({ token: accessToken }),
-      }) as { access_token: string };
-      setToken(data.access_token);
-      router.push("/");
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Ошибка входа через Google");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function handleGoogleError() {
-    setError("Не удалось войти через Google");
-  }
-
   if (step === "verify") {
     return (
       <div className="auth-page-wrapper">
@@ -559,22 +585,18 @@ function AuthForm() {
     <div className="auth-page-wrapper">
       <div className="auth-card">
 
-        {/* Логотип */}
         <div style={{ marginBottom: 24 }}>
           <img src="/logo_vert.svg" alt="ШЕФ" style={{ width: 178, height: 117, objectFit: "contain" }} />
         </div>
 
-        {/* Кнопка Google */}
-        {/*<GoogleLoginButton onSuccess={handleGoogleSuccess} onError={handleGoogleError} loading={loading} />*/}
+        <YandexLoginButton loading={loading} />
 
-        {/* Разделитель */}
         <div className="divider">
           <div className="divider-line" />
           <span className="divider-text">или</span>
           <div className="divider-line" />
         </div>
 
-        {/* Табы */}
         <div className="auth-tabs" style={{
           display: "flex", background: "#013125",
           borderRadius: 100, padding: 4, marginBottom: 12,

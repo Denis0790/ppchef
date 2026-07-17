@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Request, Response, Cookie
+from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -31,6 +32,9 @@ router = APIRouter()
 
 COOKIE_NAME = "refresh_token"
 COOKIE_MAX_AGE = 60 * 60 * 24 * 14  # 14 дней
+
+FRONTEND_AUTH_URL = "https://ppchef.ru/auth"
+YANDEX_REDIRECT_URI = "https://ppchef.ru/auth/yandex/callback"
 
 
 def set_refresh_cookie(response: Response, token: str) -> None:
@@ -391,11 +395,9 @@ async def google_auth(
     if not google_id or not email:
         raise HTTPException(status_code=400, detail="Не удалось получить данные от Google")
 
-    # Ищем по google_id
     result = await db.execute(select(User).where(User.google_id == google_id))
     user = result.scalar_one_or_none()
 
-    # Не нашли по google_id — ищем по email
     if not user:
         result = await db.execute(select(User).where(User.email == email))
         user = result.scalar_one_or_none()
@@ -406,7 +408,6 @@ async def google_auth(
         user.is_active = True
         user.email_verified = True
     else:
-        # Новый пользователь — выдаём пробный премиум на 30 дней
         user = User(
             email=email,
             hashed_password=None,
@@ -426,3 +427,91 @@ async def google_auth(
     token_response, refresh_token = await create_tokens_for_user(user, db, request)
     set_refresh_cookie(response, refresh_token)
     return token_response
+
+
+# ── Yandex OAuth ──────────────────────────────────────────────────────────
+# Яндекс сам делает редирект браузера сюда с ?code=...
+
+@router.get("/yandex/callback")
+async def yandex_auth_callback(
+    request: Request,
+    code: Optional[str] = None,
+    error: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    import httpx
+    import secrets as secrets_module
+
+    if error or not code:
+        return RedirectResponse(url=f"{FRONTEND_AUTH_URL}?auth_error=yandex")
+
+    try:
+        async with httpx.AsyncClient() as client:
+            token_res = await client.post(
+                "https://oauth.yandex.ru/token",
+                data={
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "client_id": settings.YANDEX_CLIENT_ID,
+                    "client_secret": settings.YANDEX_CLIENT_SECRET,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+            if token_res.status_code != 200:
+                return RedirectResponse(url=f"{FRONTEND_AUTH_URL}?auth_error=yandex")
+
+            yandex_access_token = token_res.json().get("access_token")
+            if not yandex_access_token:
+                return RedirectResponse(url=f"{FRONTEND_AUTH_URL}?auth_error=yandex")
+
+            info_res = await client.get(
+                "https://login.yandex.ru/info",
+                params={"format": "json"},
+                headers={"Authorization": f"OAuth {yandex_access_token}"},
+            )
+            if info_res.status_code != 200:
+                return RedirectResponse(url=f"{FRONTEND_AUTH_URL}?auth_error=yandex")
+            info = info_res.json()
+    except Exception:
+        return RedirectResponse(url=f"{FRONTEND_AUTH_URL}?auth_error=yandex")
+
+    yandex_id = info.get("id")
+    email = info.get("default_email") or next(iter(info.get("emails") or []), None)
+
+    if not yandex_id or not email:
+        return RedirectResponse(url=f"{FRONTEND_AUTH_URL}?auth_error=yandex")
+
+    result = await db.execute(select(User).where(User.yandex_id == yandex_id))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        result = await db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+
+    if user:
+        if not user.yandex_id:
+            user.yandex_id = yandex_id
+        user.is_active = True
+        user.email_verified = True
+    else:
+        user = User(
+            email=email,
+            hashed_password=None,
+            yandex_id=yandex_id,
+            is_active=True,
+            email_verified=True,
+            ref_code=secrets_module.token_urlsafe(8),
+            is_premium=True,
+            subscription_plan="trial",
+            subscription_expires_at=datetime.now(timezone.utc) + timedelta(days=30),
+        )
+        db.add(user)
+
+    await db.commit()
+    await db.refresh(user)
+
+    token_response, refresh_token = await create_tokens_for_user(user, db, request)
+
+    redirect = RedirectResponse(url=f"{FRONTEND_AUTH_URL}?token={token_response.access_token}")
+    set_refresh_cookie(redirect, refresh_token)
+    return redirect
