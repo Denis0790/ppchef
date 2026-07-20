@@ -53,6 +53,7 @@ class Recipe(Base, TimestampMixin):
         Enum(RecipeStatus), default=RecipeStatus.draft, index=True
     )
     author_credit: Mapped[str | None] = mapped_column(String(255))
+    view_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False, index=True)
     search_vector: Mapped[str | None] = mapped_column(TSVECTOR)
 
     # Связи
