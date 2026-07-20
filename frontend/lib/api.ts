@@ -361,6 +361,7 @@ export interface AdminStats {
   draft_recipes: number;
   suggested_recipes: number;
   rps: number;
+  online_now: number;
 }
 
 export async function getAdminStats(token: string): Promise<AdminStats> {

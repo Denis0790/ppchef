@@ -142,6 +142,12 @@ async def get_stats(
         current = await redis.get("rps:current")
         rps = float(current) if current else 0
 
+    # Онлайн сейчас — считаем ключи online:* из Redis, которые кладёт middleware
+    online_now = 0
+    if redis:
+        async for _ in redis.scan_iter(match="online:*"):
+            online_now += 1
+
     return {
         "total_users": total_users,
         "today_users": today_users,
@@ -150,4 +156,5 @@ async def get_stats(
         "draft_recipes": draft,
         "suggested_recipes": suggested,
         "rps": rps,
+        "online_now": online_now,
     }

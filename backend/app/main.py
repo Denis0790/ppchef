@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.redis import init_redis, close_redis, get_redis
 from app.api.v1 import api_router
+from app.middleware.online import OnlineHeartbeatMiddleware
 import time
 
 
@@ -38,6 +39,7 @@ app.add_middleware(
 
 # ─── Роутеры ──────────────────────────────────────────────────
 app.include_router(api_router, prefix="/api/v1")
+app.add_middleware(OnlineHeartbeatMiddleware)
 
 @app.middleware("http")
 async def count_requests(request, call_next):

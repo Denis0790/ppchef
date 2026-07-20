@@ -136,6 +136,12 @@ export default function AdminDashboard() {
 
   useEffect(() => { loadRecipes(); }, [loadRecipes]);
 
+  const TAB_COUNTS: Record<Tab, number> = {
+    funnel: stats?.draft_recipes ?? 0,
+    published: stats?.published_recipes ?? 0,
+    suggest: stats?.suggested_recipes ?? 0,
+  };
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
@@ -230,7 +236,7 @@ export default function AdminDashboard() {
     aside: { width: 220, flexShrink: 0, background: "#fff", borderRight: "1px solid rgba(0,0,0,0.07)", padding: "28px 16px", display: "flex", flexDirection: "column" as const, gap: 2, position: "fixed" as const, top: 0, bottom: 0, left: 0, boxShadow: "2px 0 20px rgba(0,0,0,0.04)", zIndex: 100 },
     main: { marginLeft: 220, flex: 1, display: "flex", flexDirection: "column" as const, minHeight: "100vh" },
     topbar: { position: "sticky" as const, top: 0, zIndex: 50, background: "rgba(245,240,232,0.94)", backdropFilter: "blur(16px)", padding: "16px 32px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" },
-    content: { padding: "28px 32px 60px", flex: 1 },
+    content: { padding: "20px 32px 32px", flex: 1, display: "flex", flexDirection: "column" as const, minHeight: 0 },
     aLabel: { fontSize: 10, letterSpacing: "1.2px", textTransform: "uppercase" as const, color: "#888880", padding: "14px 10px 6px", fontWeight: 500 },
     aItem: (on: boolean) => ({ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", fontSize: 13.5, color: on ? "#4F7453" : "#888880", background: on ? "#E4EFE4" : "transparent", fontWeight: on ? 500 : 400, transition: "all .2s" }),
     aBadge: { marginLeft: "auto", background: "#C4975A", color: "#fff", fontSize: 10, fontWeight: 600, padding: "1px 7px", borderRadius: 20 },
@@ -240,11 +246,11 @@ export default function AdminDashboard() {
       ...(variant === "outline" ? { background: "#fff", color: "#333", border: "1.5px solid rgba(0,0,0,0.1)" } : {}),
       ...(variant === "danger" ? { background: "#FDEAEA", color: "#E07070", border: "1.5px solid rgba(224,112,112,0.2)" } : {}),
     }),
-    tabs: { display: "flex", gap: 4, marginBottom: 24, background: "#fff", padding: 4, borderRadius: 12, width: "fit-content", boxShadow: "0 2px 16px rgba(0,0,0,0.07)" },
+    tabs: { display: "flex", gap: 4, marginBottom: 16, background: "#fff", padding: 4, borderRadius: 12, width: "fit-content", boxShadow: "0 2px 16px rgba(0,0,0,0.07)", flexShrink: 0 },
     tab: (on: boolean) => ({ padding: "8px 18px", borderRadius: 9, fontSize: 13, cursor: "pointer", color: on ? "#fff" : "#888880", background: on ? "#7A9E7E" : "transparent", fontWeight: on ? 500 : 400, display: "flex", alignItems: "center", gap: 6, transition: "all .2s" }),
     tabCount: (on: boolean) => ({ background: on ? "rgba(255,255,255,0.25)" : "#EDE8DE", borderRadius: 10, padding: "1px 7px", fontSize: 11, color: on ? "#fff" : "#888880" }),
-    statCard: (accent?: boolean) => ({ flex: 1, background: accent ? "linear-gradient(135deg,#7A9E7E,#4F7453)" : "#fff", borderRadius: 12, padding: "16px 18px", boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }),
-    rtable: { background: "#fff", borderRadius: 16, boxShadow: "0 2px 16px rgba(0,0,0,0.07)", overflow: "hidden" },
+    statCard: (accent?: boolean) => ({ flex: 1, background: accent ? "linear-gradient(135deg,#7A9E7E,#4F7453)" : "#fff", borderRadius: 10, padding: "8px 14px", boxShadow: "0 2px 16px rgba(0,0,0,0.07)" }),
+    rtable: { background: "#fff", borderRadius: 16, boxShadow: "0 2px 16px rgba(0,0,0,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" as const, minHeight: 0 },
     actBtn: (variant: "view" | "edit" | "pub" | "del") => ({
       width: 32, height: 32, borderRadius: 8, border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "transform .2s",
       ...(variant === "view" ? { background: "#F5F0E8", color: "#888880" } : {}),
@@ -283,13 +289,13 @@ export default function AdminDashboard() {
 
           <div style={S.aLabel}>Рецепты</div>
           <div className="a-item-hover" onClick={() => { setTab("funnel"); setPage(1); }} style={S.aItem(tab === "funnel")}>
-            <IcoFilter /> Воронка {tab === "funnel" && total > 0 && <span style={S.aBadge}>{total}</span>}
+            <IcoFilter /> Воронка {tab === "funnel" && <span style={S.aBadge}>{TAB_COUNTS.funnel}</span>}
           </div>
           <div className="a-item-hover" onClick={() => { setTab("published"); setPage(1); }} style={S.aItem(tab === "published")}>
-            <IcoBook /> Опубликованные {tab === "published" && total > 0 && <span style={S.aBadge}>{total}</span>}
+            <IcoBook /> Опубликованные {tab === "published" && <span style={S.aBadge}>{TAB_COUNTS.published}</span>}
           </div>
           <div className="a-item-hover" onClick={() => { setTab("suggest"); setPage(1); }} style={S.aItem(tab === "suggest")}>
-            <IcoUsers /> Предложенные {tab === "suggest" && total > 0 && <span style={S.aBadge}>{total}</span>}
+            <IcoUsers /> Предложенные {tab === "suggest" && <span style={S.aBadge}>{TAB_COUNTS.suggest}</span>}
           </div>
 
           <div style={{ height: 1, background: "#EDE8DE", margin: "12px 0" }} />
@@ -314,37 +320,38 @@ export default function AdminDashboard() {
 
           <div style={S.content}>
             {/* STATS */}
-          <div style={{ display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" }}>
-            {[
-              { label: "Всего пользователей", value: stats?.total_users ?? "—", accent: true },
-              { label: "Сегодня зарегалось", value: stats?.today_users ?? "—" },
-              { label: "Premium", value: stats?.premium_users ?? "—" },
-              { label: "Опубликовано", value: stats?.published_recipes ?? "—" },
-              { label: "В воронке", value: stats?.draft_recipes ?? "—" },
-              { label: "RPS (ср/сек)", value: stats ? stats.rps.toFixed(1) : "—" },
-            ].map(({ label, value, accent }) => (
-              <div key={label} style={{ ...S.statCard(!!accent), minWidth: 120, flex: "1 1 120px" }}>
-                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 28, fontWeight: 600, color: accent ? "#fff" : "#333" }}>
-                  {value}
+            <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap", flexShrink: 0 }}>
+              {[
+                { label: "Онлайн сейчас", value: stats?.online_now ?? "—", accent: true },
+                { label: "Всего пользователей", value: stats?.total_users ?? "—" },
+                { label: "Сегодня зарегалось", value: stats?.today_users ?? "—" },
+                { label: "Premium", value: stats?.premium_users ?? "—" },
+                { label: "Опубликовано", value: stats?.published_recipes ?? "—" },
+                { label: "В воронке", value: stats?.draft_recipes ?? "—" },
+                { label: "RPS (ср/сек)", value: stats ? stats.rps.toFixed(1) : "—" },
+              ].map(({ label, value, accent }) => (
+                <div key={label} style={{ ...S.statCard(!!accent), minWidth: 110, flex: "1 1 110px" }}>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, fontWeight: 600, color: accent ? "#fff" : "#333" }}>
+                    {value}
+                  </div>
+                  <div style={{ fontSize: 11, color: accent ? "rgba(255,255,255,0.65)" : "#888880", marginTop: 1 }}>
+                    {label}
+                  </div>
                 </div>
-                <div style={{ fontSize: 12, color: accent ? "rgba(255,255,255,0.6)" : "#888880", marginTop: 2 }}>
-                  {label}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
             {/* TABS */}
             <div style={S.tabs}>
               {([["funnel", "Воронка"], ["published", "Опубликованные"], ["suggest", "Предложенные"]] as const).map(([t, label]) => (
                 <div key={t} style={S.tab(tab === t)} onClick={() => { setTab(t); setPage(1); }}>
-                  {label} <span style={S.tabCount(tab === t)}>{tab === t ? total : 0}</span>
+                  {label} <span style={S.tabCount(tab === t)}>{TAB_COUNTS[t]}</span>
                 </div>
               ))}
             </div>
 
             {/* TOOLBAR */}
-            <div style={{ display: "flex", gap: 10, marginBottom: 20, alignItems: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 16, alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
               <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 360 }}>
                 <IcoSearch />
                 <input value={searchInput} onChange={e => setSearchInput(e.target.value)}
@@ -361,85 +368,87 @@ export default function AdminDashboard() {
             </div>
 
             {/* TABLE */}
-            <div style={S.rtable}>
-              <div style={{ display: "grid", gridTemplateColumns: gridForTab, padding: "12px 20px", background: "#F5F0E8", fontSize: 11, letterSpacing: ".8px", textTransform: "uppercase", color: "#888880", fontWeight: 500, borderBottom: "1px solid #EDE8DE" }}>
+            <div style={{ ...S.rtable, flex: 1, minHeight: 0 }}>
+              <div style={{ display: "grid", gridTemplateColumns: gridForTab, padding: "12px 20px", background: "#F5F0E8", fontSize: 11, letterSpacing: ".8px", textTransform: "uppercase", color: "#888880", fontWeight: 500, borderBottom: "1px solid #EDE8DE", flexShrink: 0 }}>
                 <span>Рецепт</span>
                 {tab === "funnel" && <><span>Категория</span><span>Статус</span><span>Картинка</span><span style={{ textAlign: "right" }}>Действия</span></>}
                 {tab === "published" && <><span>Категория</span><span>Калории</span><span>КБЖУ</span><span>Добавлен</span><span style={{ textAlign: "right" }}>Действия</span></>}
                 {tab === "suggest" && <><span>Автор</span><span>Категория</span><span>Дата</span><span style={{ textAlign: "right" }}>Действия</span></>}
               </div>
 
-              {loading ? (
-                <div style={{ padding: 60, textAlign: "center", color: "#888880" }}>Загрузка...</div>
-              ) : recipes.length === 0 ? (
-                <div style={{ padding: 60, textAlign: "center", color: "#888880" }}>
-                  <div style={{ fontSize: 48, marginBottom: 12 }}>🥗</div>
-                  <div>Рецептов не найдено</div>
-                </div>
-              ) : recipes.map((r, i) => (
-                <div key={r.id} className="rrow-hover" onClick={() => openEdit(r.id)}
-                  style={{ display: "grid", gridTemplateColumns: gridForTab, padding: "14px 20px", borderBottom: i < recipes.length - 1 ? "1px solid #F5F0E8" : "none", alignItems: "center", cursor: "pointer", transition: "background .15s" }}>
+              <div style={{ overflowY: "auto", flex: 1, minHeight: 0 }}>
+                {loading ? (
+                  <div style={{ padding: 60, textAlign: "center", color: "#888880" }}>Загрузка...</div>
+                ) : recipes.length === 0 ? (
+                  <div style={{ padding: 60, textAlign: "center", color: "#888880" }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>🥗</div>
+                    <div>Рецептов не найдено</div>
+                  </div>
+                ) : recipes.map((r, i) => (
+                  <div key={r.id} className="rrow-hover" onClick={() => openEdit(r.id)}
+                    style={{ display: "grid", gridTemplateColumns: gridForTab, padding: "14px 20px", borderBottom: i < recipes.length - 1 ? "1px solid #F5F0E8" : "none", alignItems: "center", cursor: "pointer", transition: "background .15s" }}>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ width: 46, height: 46, borderRadius: 10, background: "#E4EFE4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, overflow: "hidden" }}>
-                      {r.image_url ? <img src={r.image_url} style={{ width: 46, height: 46, objectFit: "cover" }} alt="" /> : (CAT_EMOJI[r.category] || "🍽")}
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 46, height: 46, borderRadius: 10, background: "#E4EFE4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, overflow: "hidden" }}>
+                        {r.image_url ? <img src={r.image_url} style={{ width: 46, height: 46, objectFit: "cover" }} alt="" /> : (CAT_EMOJI[r.category] || "🍽")}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 3 }}>{r.title}</div>
+                        <div style={{ fontSize: 11, color: "#888880" }}>
+                          {r.calories ? `${Math.round(r.calories)} ккал · ` : ""}
+                          {r.protein ? `Б${Math.round(r.protein)} ` : ""}
+                          {r.fat ? `Ж${Math.round(r.fat)} ` : ""}
+                          {r.carbs ? `У${Math.round(r.carbs)}` : ""}
+                          {r.cook_time_minutes ? ` · ⏱ ${r.cook_time_minutes} мин` : ""}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 3 }}>{r.title}</div>
-                      <div style={{ fontSize: 11, color: "#888880" }}>
-                        {r.calories ? `${Math.round(r.calories)} ккал · ` : ""}
+
+                    {tab === "funnel" && <>
+                      <span><span style={S.badge("cat")}>{CAT_EMOJI[r.category]} {CAT_LABEL[r.category]}</span></span>
+                      <span><span style={S.badge(r.status === "published" ? "pub" : r.status === "draft" ? "draft" : "pend")}>
+                        {r.status === "published" ? "✓ Готово" : r.status === "draft" ? "Черновик" : "На правках"}
+                      </span></span>
+                      <div onClick={e => e.stopPropagation()}>
+                        <input defaultValue={r.image_url || ""} placeholder="s3://путь/к/фото"
+                          style={{ fontSize: 11, fontFamily: "monospace", background: "#F5F0E8", border: "1px solid transparent", borderRadius: 6, padding: "4px 8px", color: "#4F7453", outline: "none", width: 150 }} />
+                      </div>
+                    </>}
+
+                    {tab === "published" && <>
+                      <span><span style={S.badge("cat")}>{CAT_EMOJI[r.category]} {CAT_LABEL[r.category]}</span></span>
+                      <span style={{ fontWeight: 500 }}>{r.calories ? `${Math.round(r.calories)} ккал` : "—"}</span>
+                      <span style={{ fontSize: 12, color: "#888880" }}>
                         {r.protein ? `Б${Math.round(r.protein)} ` : ""}
                         {r.fat ? `Ж${Math.round(r.fat)} ` : ""}
                         {r.carbs ? `У${Math.round(r.carbs)}` : ""}
-                        {r.cook_time_minutes ? ` · ⏱ ${r.cook_time_minutes} мин` : ""}
+                      </span>
+                      <span style={{ fontSize: 12, color: "#888880" }}>{new Date(r.created_at).toLocaleDateString("ru")}</span>
+                    </>}
+
+                    {tab === "suggest" && <>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 500 }}>{r.author_credit || "Аноним"}</div>
+                        <div style={{ fontSize: 11, color: "#888880" }}>Ждёт разрешения</div>
                       </div>
+                      <span><span style={S.badge("cat")}>{CAT_EMOJI[r.category]} {CAT_LABEL[r.category]}</span></span>
+                      <span style={{ fontSize: 12, color: "#888880" }}>{new Date(r.created_at).toLocaleDateString("ru")}</span>
+                    </>}
+
+                    <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }} onClick={e => e.stopPropagation()}>
+                      <button className="act-eye" onClick={() => openEdit(r.id)} style={S.actBtn("view")} title="Просмотр"><IcoEye /></button>
+                      <button className="act-edit" onClick={() => openEdit(r.id)} style={S.actBtn("edit")} title="Редактировать"><IcoEdit /></button>
+                      <button className="act-pub" onClick={() => handlePublishToggle(r.id, r.status === "published")} style={S.actBtn("pub")} title="Публикация"><IcoPub /></button>
+                      <button className="act-del" onClick={() => handleDelete(r.id, r.title)} style={S.actBtn("del")} title="Удалить"><IcoTrash /></button>
                     </div>
                   </div>
-
-                  {tab === "funnel" && <>
-                    <span><span style={S.badge("cat")}>{CAT_EMOJI[r.category]} {CAT_LABEL[r.category]}</span></span>
-                    <span><span style={S.badge(r.status === "published" ? "pub" : r.status === "draft" ? "draft" : "pend")}>
-                      {r.status === "published" ? "✓ Готово" : r.status === "draft" ? "Черновик" : "На правках"}
-                    </span></span>
-                    <div onClick={e => e.stopPropagation()}>
-                      <input defaultValue={r.image_url || ""} placeholder="s3://путь/к/фото"
-                        style={{ fontSize: 11, fontFamily: "monospace", background: "#F5F0E8", border: "1px solid transparent", borderRadius: 6, padding: "4px 8px", color: "#4F7453", outline: "none", width: 150 }} />
-                    </div>
-                  </>}
-
-                  {tab === "published" && <>
-                    <span><span style={S.badge("cat")}>{CAT_EMOJI[r.category]} {CAT_LABEL[r.category]}</span></span>
-                    <span style={{ fontWeight: 500 }}>{r.calories ? `${Math.round(r.calories)} ккал` : "—"}</span>
-                    <span style={{ fontSize: 12, color: "#888880" }}>
-                      {r.protein ? `Б${Math.round(r.protein)} ` : ""}
-                      {r.fat ? `Ж${Math.round(r.fat)} ` : ""}
-                      {r.carbs ? `У${Math.round(r.carbs)}` : ""}
-                    </span>
-                    <span style={{ fontSize: 12, color: "#888880" }}>{new Date(r.created_at).toLocaleDateString("ru")}</span>
-                  </>}
-
-                  {tab === "suggest" && <>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 500 }}>{r.author_credit || "Аноним"}</div>
-                      <div style={{ fontSize: 11, color: "#888880" }}>Ждёт разрешения</div>
-                    </div>
-                    <span><span style={S.badge("cat")}>{CAT_EMOJI[r.category]} {CAT_LABEL[r.category]}</span></span>
-                    <span style={{ fontSize: 12, color: "#888880" }}>{new Date(r.created_at).toLocaleDateString("ru")}</span>
-                  </>}
-
-                  <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }} onClick={e => e.stopPropagation()}>
-                    <button className="act-eye" onClick={() => openEdit(r.id)} style={S.actBtn("view")} title="Просмотр"><IcoEye /></button>
-                    <button className="act-edit" onClick={() => openEdit(r.id)} style={S.actBtn("edit")} title="Редактировать"><IcoEdit /></button>
-                    <button className="act-pub" onClick={() => handlePublishToggle(r.id, r.status === "published")} style={S.actBtn("pub")} title="Публикация"><IcoPub /></button>
-                    <button className="act-del" onClick={() => handleDelete(r.id, r.title)} style={S.actBtn("del")} title="Удалить"><IcoTrash /></button>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* ПАГИНАЦИЯ */}
             {totalPages > 1 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end", marginTop: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "flex-end", marginTop: 12, flexShrink: 0 }}>
                 <button onClick={() => setPage(p => Math.max(1, p - 1))} style={{ width: 32, height: 32, background: "#fff", border: "1px solid rgba(0,0,0,0.09)", borderRadius: 8, cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", color: "#888880" }}>‹</button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                   <button key={p} onClick={() => setPage(p)} style={{ width: 32, height: 32, background: p === page ? "#7A9E7E" : "#fff", color: p === page ? "#fff" : "#888880", border: p === page ? "none" : "1px solid rgba(0,0,0,0.09)", borderRadius: 8, cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center" }}>{p}</button>
