@@ -16,7 +16,12 @@ export default function IngredientsList({ ingredients }: { ingredients: Ingredie
       if (!raw) return [];
       const norm = JSON.parse(raw);
       if (!norm.stop_words) return [];
-      return norm.stop_words.toLowerCase().split(",").map((s: string) => s.trim()).filter(Boolean);
+      return norm.stop_words
+        .toLowerCase()
+        .replace(/,/g, " ")
+        .split(/\s+/)
+        .map((s: string) => s.trim())
+        .filter(Boolean);
     } catch { return []; }
   });
 

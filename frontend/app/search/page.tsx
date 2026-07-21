@@ -92,7 +92,12 @@ function SearchCard({ recipe, normCalories, showNorm }: {
         if (!raw) return;
         const norm = JSON.parse(raw);
         if (norm.stop_words) {
-          const stops = norm.stop_words.toLowerCase().split(",").map((s: string) => s.trim()).filter(Boolean);
+          const stops = norm.stop_words
+            .toLowerCase()
+            .replace(/,/g, " ")
+            .split(/\s+/)
+            .map((s: string) => s.trim())
+            .filter(Boolean);
           const ingredientNames = (recipe as SearchRecipe & { ingredient_names?: string[] }).ingredient_names;
           if (stops.length && ingredientNames?.length) {
             const found = ingredientNames.some((ing: string) =>

@@ -62,7 +62,12 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
           setNormPercent(Math.round(recipe.calories * 100 / norm.calories));
         }
         if (norm.stop_words) {
-          const stops = norm.stop_words.toLowerCase().split(",").map((s: string) => s.trim()).filter(Boolean);
+          const stops = norm.stop_words
+            .toLowerCase()
+            .replace(/,/g, " ")
+            .split(/\s+/)
+            .map((s: string) => s.trim())
+            .filter(Boolean);
           if (stops.length && recipe.ingredient_names?.length) {
             const found = recipe.ingredient_names.some(ing =>
               stops.some((stop: string) => ing.toLowerCase().includes(stop))
