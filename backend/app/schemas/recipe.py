@@ -43,6 +43,7 @@ class RecipeCardSchema(BaseModel):
     author_credit: str | None
     created_at: datetime
     ingredient_names: list[str] = []
+    view_count: int = 0
 
     model_config = {"from_attributes": True}
 
