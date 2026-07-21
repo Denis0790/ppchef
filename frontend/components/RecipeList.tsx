@@ -138,6 +138,12 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                   {recipe.servings} порц.
                 </span>
               )}
+              {recipe.view_count >= 10 && (
+                <span className="card-text-meta" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: DESIGN.cardTimeColor }}>
+                  <Image src="/icons/glaz.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
+                  смотрели {recipe.view_count} раз
+                </span>
+              )}
               {normPercent !== null && (
                 <span className="card-text-meta" style={{ fontSize: 11, color: DESIGN.cardTimeColor }}>{normPercent}% нормы</span>
               )}
@@ -380,51 +386,52 @@ export default function RecipeList({ initialData, newRecipes, refCode }: {
   }, [desktopChips, desktopMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const isBack = isBackRef.current;
-    isBackRef.current = false;
-    sessionStorage.removeItem("isBack");
+  const isBack = isBackRef.current;
+  isBackRef.current = false;
+  sessionStorage.removeItem("isBack");
 
-    if (isBack) {
-      const cachedStr = sessionStorage.getItem("cachedRecipes");
-      const cachedPage = sessionStorage.getItem("cachedPage");
-      const cachedHasMore = sessionStorage.getItem("cachedHasMore");
-      const cachedCategory = sessionStorage.getItem("cachedCategory") || "";
-      const savedScroll = sessionStorage.getItem("scrollY");
+  if (isBack) {
+    const cachedStr = sessionStorage.getItem("cachedRecipes");
+    const cachedPage = sessionStorage.getItem("cachedPage");
+    const cachedHasMore = sessionStorage.getItem("cachedHasMore");
+    const cachedCategory = sessionStorage.getItem("cachedCategory") || "";
+    const savedScroll = sessionStorage.getItem("scrollY");
 
-      if (cachedStr) {
-        const cached = JSON.parse(cachedStr) as Recipe[];
-        setRecipes(cached);
-        setPage(parseInt(cachedPage || "1"));
-        setHasMore(cachedHasMore === "1");
-        setActiveCategory(cachedCategory);
-        if (cachedCategory) window.history.replaceState(null, "", `/?category=${cachedCategory}`);
-        else window.history.replaceState(null, "", "/");
-        if (savedScroll && parseInt(savedScroll) > 0) {
-          setTimeout(() => { window.scrollTo(0, parseInt(savedScroll)); sessionStorage.removeItem("scrollY"); }, 100);
-        }
-        setTimeout(() => {
-          const savedFilterScroll = sessionStorage.getItem("filterScrollX");
-          if (filterRef.current && savedFilterScroll) filterRef.current.scrollLeft = parseInt(savedFilterScroll);
-        }, 50);
-        return;
+    if (cachedStr) {
+      const cached = JSON.parse(cachedStr) as Recipe[];
+      setRecipes(cached);
+      setPage(parseInt(cachedPage || "1"));
+      setHasMore(cachedHasMore === "1");
+      setActiveCategory(cachedCategory);
+      if (cachedCategory) window.history.replaceState(null, "", `/?category=${cachedCategory}`);
+      else window.history.replaceState(null, "", "/");
+      if (savedScroll && parseInt(savedScroll) > 0) {
+        setTimeout(() => { window.scrollTo(0, parseInt(savedScroll)); sessionStorage.removeItem("scrollY"); }, 100);
       }
+      setTimeout(() => {
+        const savedFilterScroll = sessionStorage.getItem("filterScrollX");
+        if (filterRef.current && savedFilterScroll) filterRef.current.scrollLeft = parseInt(savedFilterScroll);
+      }, 50);
+      return;
     }
+  }
 
-    const category = searchParams.get("category") || "";
-    setActiveCategory(category);
-    setPage(1);
-    setLoading(true);
-    getRecipes({ category: category || undefined, page: 1, page_size: PAGE_SIZE })
-      .then(result => {
-        setRecipes(result.items);
-        setHasMore(result.total > result.items.length);
-        sessionStorage.setItem("cachedRecipes", JSON.stringify(result.items));
-        sessionStorage.setItem("cachedPage", "1");
-        sessionStorage.setItem("cachedHasMore", result.total > result.items.length ? "1" : "0");
-        sessionStorage.setItem("cachedCategory", category);
-      })
-      .finally(() => setLoading(false));
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+  const category = searchParams.get("category") || "";
+  setActiveCategory(category);
+  setPage(1);
+  setLoading(true);
+  getRecipes({ category: category || undefined, page: 1, page_size: PAGE_SIZE })
+    .then(result => {
+      setRecipes(result.items);
+      setHasMore(result.total > result.items.length);
+      sessionStorage.setItem("cachedRecipes", JSON.stringify(result.items));
+      sessionStorage.setItem("cachedPage", "1");
+      sessionStorage.setItem("cachedHasMore", result.total > result.items.length ? "1" : "0");
+      sessionStorage.setItem("cachedCategory", category);
+    })
+    .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;

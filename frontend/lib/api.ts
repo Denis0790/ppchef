@@ -66,6 +66,7 @@ export interface Recipe {
   author_credit: string | null;
   created_at: string;
   ingredient_names: string[];
+  view_count: number;
 }
 export interface RecipeDetail extends Recipe {
   benefit: string | null;
