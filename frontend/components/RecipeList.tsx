@@ -138,12 +138,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
                   {recipe.servings} порц.
                 </span>
               )}
-              {recipe.view_count >= 10 && (
-                <span className="card-text-meta" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: DESIGN.cardTimeColor }}>
-                  <Image src="/icons/glaz.svg" alt="" width={14} height={14} style={{ objectFit: "contain" }} />
-                  смотрели {recipe.view_count} раз
-                </span>
-              )}
+              
               {normPercent !== null && (
                 <span className="card-text-meta" style={{ fontSize: 11, color: DESIGN.cardTimeColor }}>{normPercent}% нормы</span>
               )}
